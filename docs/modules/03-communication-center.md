@@ -96,10 +96,10 @@ Help content must not:
 
 ```text
 CommReq01RouteIntent -> CommReq02ResolvedTarget -> CommReq03DeliveryEnvelope -> CommResp04DeliveryAccepted
-CommReq01ReadyReport -> CommReq02ResolvedAgent -> CommReq03DeliveryEnvelope -> CommResp04DeliveryAccepted
-CommReq01TaskBoardQuery -> CommReq02AuthorizedQuery -> CommReq03TaskBoardQueryEnvelope -> CommResp04DeliveryAccepted
-CommReq01TaskClaim -> CommReq02AuthorizedClaim -> CommReq03TaskClaimEnvelope -> CommResp04DeliveryAccepted
-CommReq01Broadcast -> CommReq02ResolvedTeamMembers -> CommReq03DeliveryEnvelope -> CommResp04DeliveryAccepted
+CommReq05ReadyReport -> CommReq06ResolvedAgent -> CommReq07ReadyEnvelope -> CommResp08ReadyAccepted
+CommReq11BroadcastIntent -> CommReq12ResolvedTeamMembers -> CommReq13BroadcastEnvelope -> CommResp14BroadcastAccepted
+CommReq21TaskBoardQuery -> CommReq22AuthorizedQuery -> CommReq23TaskBoardQueryEnvelope -> CommResp24TaskBoardQueryAccepted
+CommReq31TaskClaim -> CommReq32AuthorizedClaim -> CommReq33TaskClaimEnvelope -> CommResp34TaskClaimAccepted
 CommReq01NoteDelivery -> CommReq02ResolvedTarget -> CommReq03AgentVisibleEnvelope -> CommResp04DeliveryAccepted
 CommReq01RouteIntent -> DomainRoute04Plan -> CommReq03DeliveryEnvelope -> CommResp04DeliveryAccepted
 ```

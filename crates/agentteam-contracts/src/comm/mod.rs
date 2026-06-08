@@ -2,6 +2,9 @@ use serde::Serialize;
 
 use crate::pipeline::PipelineNodeName;
 
+#[cfg(test)]
+mod tests;
+
 pub const FEATURE_ID: &str = "comm.center";
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize)]
@@ -89,6 +92,93 @@ pub struct CommResp04DeliveryAccepted {
 
 impl CommResp04DeliveryAccepted {
     pub const NODE: PipelineNodeName = PipelineNodeName::new("Comm", "Resp", 4, "DeliveryAccepted");
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
+pub struct CommReq05ReadyReport {
+    pub sender: String,
+    pub team_id: String,
+    pub agent_name: String,
+    pub body: String,
+}
+
+impl CommReq05ReadyReport {
+    pub const NODE: PipelineNodeName = PipelineNodeName::new("Comm", "Req", 5, "ReadyReport");
+
+    pub fn new(
+        sender: impl Into<String>,
+        team_id: impl Into<String>,
+        agent_name: impl Into<String>,
+        body: impl Into<String>,
+    ) -> Self {
+        Self {
+            sender: sender.into(),
+            team_id: team_id.into(),
+            agent_name: agent_name.into(),
+            body: body.into(),
+        }
+    }
+
+    pub fn resolve_agent(self) -> CommReq06ResolvedAgent {
+        CommReq06ResolvedAgent {
+            sender: self.sender,
+            team_id: self.team_id,
+            agent_name: self.agent_name,
+            body: self.body,
+        }
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
+pub struct CommReq06ResolvedAgent {
+    pub sender: String,
+    pub team_id: String,
+    pub agent_name: String,
+    pub body: String,
+}
+
+impl CommReq06ResolvedAgent {
+    pub const NODE: PipelineNodeName = PipelineNodeName::new("Comm", "Req", 6, "ResolvedAgent");
+
+    pub fn delivery_envelope(self) -> CommReq07ReadyEnvelope {
+        CommReq07ReadyEnvelope {
+            sender: self.sender,
+            team_id: self.team_id,
+            agent_name: self.agent_name,
+            body: self.body,
+        }
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
+pub struct CommReq07ReadyEnvelope {
+    pub sender: String,
+    pub team_id: String,
+    pub agent_name: String,
+    pub body: String,
+}
+
+impl CommReq07ReadyEnvelope {
+    pub const NODE: PipelineNodeName = PipelineNodeName::new("Comm", "Req", 7, "ReadyEnvelope");
+
+    pub fn accept(self, delivery_id: impl Into<String>) -> CommResp08ReadyAccepted {
+        CommResp08ReadyAccepted {
+            delivery_id: delivery_id.into(),
+            team_id: self.team_id,
+            agent_name: self.agent_name,
+        }
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
+pub struct CommResp08ReadyAccepted {
+    pub delivery_id: String,
+    pub team_id: String,
+    pub agent_name: String,
+}
+
+impl CommResp08ReadyAccepted {
+    pub const NODE: PipelineNodeName = PipelineNodeName::new("Comm", "Resp", 8, "ReadyAccepted");
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize)]
@@ -185,38 +275,189 @@ impl CommResp14BroadcastAccepted {
         PipelineNodeName::new("Comm", "Resp", 14, "BroadcastAccepted");
 }
 
-#[cfg(test)]
-mod tests {
-    use super::*;
+#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
+pub struct CommReq21TaskBoardQuery {
+    pub sender: String,
+    pub team_id: String,
+    pub query: String,
+    pub body: String,
+}
 
-    #[test]
-    fn comm_message_chain_uses_adjacent_nodes() {
-        let accepted = CommReq01RouteIntent::new("Kevin", "Alice", "message", "hello")
-            .resolve_target()
-            .delivery_envelope()
-            .accept("delivery-1");
+impl CommReq21TaskBoardQuery {
+    pub const NODE: PipelineNodeName = PipelineNodeName::new("Comm", "Req", 21, "TaskBoardQuery");
 
-        assert_eq!(accepted.delivery_id, "delivery-1");
-        assert_eq!(accepted.target, "Alice");
-        assert_eq!(CommReq01RouteIntent::NODE.number, 1);
-        assert_eq!(CommResp04DeliveryAccepted::NODE.number, 4);
+    pub fn new(
+        sender: impl Into<String>,
+        team_id: impl Into<String>,
+        query: impl Into<String>,
+        body: impl Into<String>,
+    ) -> Self {
+        Self {
+            sender: sender.into(),
+            team_id: team_id.into(),
+            query: query.into(),
+            body: body.into(),
+        }
     }
 
-    #[test]
-    fn comm_broadcast_chain_uses_adjacent_nodes() {
-        let accepted = CommReq11BroadcastIntent::new("Kevin", "default", "broadcast", "hello")
-            .resolve_team_members(vec!["Alice".to_owned(), "Bob".to_owned()])
-            .delivery_envelope()
-            .accept("delivery-2");
+    pub fn resolve_team(self) -> CommReq22AuthorizedQuery {
+        CommReq22AuthorizedQuery {
+            sender: self.sender,
+            team_id: self.team_id,
+            query: self.query,
+            body: self.body,
+        }
+    }
+}
 
-        assert_eq!(accepted.team_id, "default");
-        assert_eq!(accepted.recipient_count, 2);
-        assert_eq!(CommReq11BroadcastIntent::NODE.number, 11);
-        assert_eq!(CommResp14BroadcastAccepted::NODE.number, 14);
+#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
+pub struct CommReq22AuthorizedQuery {
+    pub sender: String,
+    pub team_id: String,
+    pub query: String,
+    pub body: String,
+}
+
+impl CommReq22AuthorizedQuery {
+    pub const NODE: PipelineNodeName = PipelineNodeName::new("Comm", "Req", 22, "AuthorizedQuery");
+
+    pub fn delivery_envelope(self) -> CommReq23TaskBoardQueryEnvelope {
+        CommReq23TaskBoardQueryEnvelope {
+            sender: self.sender,
+            team_id: self.team_id,
+            query: self.query,
+            body: self.body,
+        }
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
+pub struct CommReq23TaskBoardQueryEnvelope {
+    pub sender: String,
+    pub team_id: String,
+    pub query: String,
+    pub body: String,
+}
+
+impl CommReq23TaskBoardQueryEnvelope {
+    pub const NODE: PipelineNodeName =
+        PipelineNodeName::new("Comm", "Req", 23, "TaskBoardQueryEnvelope");
+
+    pub fn accept(self, delivery_id: impl Into<String>) -> CommResp24TaskBoardQueryAccepted {
+        CommResp24TaskBoardQueryAccepted {
+            delivery_id: delivery_id.into(),
+            team_id: self.team_id,
+            query: self.query,
+        }
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
+pub struct CommResp24TaskBoardQueryAccepted {
+    pub delivery_id: String,
+    pub team_id: String,
+    pub query: String,
+}
+
+impl CommResp24TaskBoardQueryAccepted {
+    pub const NODE: PipelineNodeName =
+        PipelineNodeName::new("Comm", "Resp", 24, "TaskBoardQueryAccepted");
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
+pub struct CommReq31TaskClaim {
+    pub sender: String,
+    pub team_id: String,
+    pub worker_name: String,
+    pub worker_role: String,
+    pub body: String,
+}
+
+impl CommReq31TaskClaim {
+    pub const NODE: PipelineNodeName = PipelineNodeName::new("Comm", "Req", 31, "TaskClaim");
+
+    pub fn new(
+        sender: impl Into<String>,
+        team_id: impl Into<String>,
+        worker_name: impl Into<String>,
+        worker_role: impl Into<String>,
+        body: impl Into<String>,
+    ) -> Self {
+        Self {
+            sender: sender.into(),
+            team_id: team_id.into(),
+            worker_name: worker_name.into(),
+            worker_role: worker_role.into(),
+            body: body.into(),
+        }
     }
 
-    #[test]
-    fn comm_feature_id_is_stable() {
-        assert_eq!(FEATURE_ID, "comm.center");
+    pub fn resolve_claim(self) -> CommReq32AuthorizedClaim {
+        CommReq32AuthorizedClaim {
+            sender: self.sender,
+            team_id: self.team_id,
+            worker_name: self.worker_name,
+            worker_role: self.worker_role,
+            body: self.body,
+        }
     }
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
+pub struct CommReq32AuthorizedClaim {
+    pub sender: String,
+    pub team_id: String,
+    pub worker_name: String,
+    pub worker_role: String,
+    pub body: String,
+}
+
+impl CommReq32AuthorizedClaim {
+    pub const NODE: PipelineNodeName = PipelineNodeName::new("Comm", "Req", 32, "AuthorizedClaim");
+
+    pub fn delivery_envelope(self) -> CommReq33TaskClaimEnvelope {
+        CommReq33TaskClaimEnvelope {
+            sender: self.sender,
+            team_id: self.team_id,
+            worker_name: self.worker_name,
+            worker_role: self.worker_role,
+            body: self.body,
+        }
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
+pub struct CommReq33TaskClaimEnvelope {
+    pub sender: String,
+    pub team_id: String,
+    pub worker_name: String,
+    pub worker_role: String,
+    pub body: String,
+}
+
+impl CommReq33TaskClaimEnvelope {
+    pub const NODE: PipelineNodeName =
+        PipelineNodeName::new("Comm", "Req", 33, "TaskClaimEnvelope");
+
+    pub fn accept(self, delivery_id: impl Into<String>) -> CommResp34TaskClaimAccepted {
+        CommResp34TaskClaimAccepted {
+            delivery_id: delivery_id.into(),
+            team_id: self.team_id,
+            worker_name: self.worker_name,
+            worker_role: self.worker_role,
+        }
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
+pub struct CommResp34TaskClaimAccepted {
+    pub delivery_id: String,
+    pub team_id: String,
+    pub worker_name: String,
+    pub worker_role: String,
+}
+
+impl CommResp34TaskClaimAccepted {
+    pub const NODE: PipelineNodeName =
+        PipelineNodeName::new("Comm", "Resp", 34, "TaskClaimAccepted");
 }

@@ -1,13 +1,8 @@
 # CACHE
 
 2026-06-08:
-- Use `agentteam-dev` for repo development. Required truth docs: `docs/goals/mvp-runtime-vertical-slice-plan.md`, `docs/architecture/function-map.md`, `docs/architecture/verification-map.md`.
-- Hard gates: every Rust function under `crates/` and `xtask/src/` must be in `docs/architecture/function-map.md`; required new files must be tracked before `verify-required-files`; hand-written Rust leaf files stay under 500 lines.
-- Completed commits through daemon check: `e3b7055 feat(cli): add daemon check`.
-- Current completed slice: Phase 8 Task Engine local MVP. `agentteam-runtime::task` owns task event state; local CLI supports `task send/list/status/done/error` with `--runtime-home`, persists through `agentteam-persist`, and replays `events/agentteam.jsonl` for board/status.
-- New completed slice: tmux loopback smoke. `agentteam-tmux` now owns `tmux loopback`; runtime/CLI expose `tmux loopback --runtime-home <path> --session-count <n> --json`; smoke proved 2 managed TA sessions can round-trip stdin/stdout, with `capture-pane -pJ` needed to avoid wrap-splitting markers and exact session cleanup verified.
-- Shared event hash truth: persisted event payload hash uses `agentteam-contracts::event_hash::event_payload_hash`; per-module duplicate hash helpers were removed from debug/error/resource.
-- Current CLI task smoke passed: `task send` created `AT-000001`, `task list` replayed it, `task done` wrote sequence 2, `task status` returned done, and invalid `task error AT-404` returned explicit task error.
-- Latest full verification passed: `cargo xtask verify`.
-- Still out of scope: no daemon loop, no zterm daemon launch, no Communication Center routing, no TANote implementation, no task claim/scheduling/role concurrency yet.
-- Next main phase: Communication Center envelope routing or Task Engine claim/schedule slice, depending on desired vertical path.
+- Current verified slice: Communication Center routing for message, broadcast, ready report, task-board query, and task claim.
+- `agentteam-contracts::comm` now has adjacent-node contracts for all comm routes; tests were split out of `comm/mod.rs` to satisfy the 500-line Rust leaf limit.
+- `agentteam-comm` exports `route_message`, `route_broadcast`, `route_ready_report`, `route_task_board_query`, and `route_task_claim`.
+- Verified: `cargo test -p agentteam-contracts -p agentteam-comm`, `cargo xtask verify-function-map`, `cargo xtask verify`.
+- `cargo xtask verify` passed after the comm split and code-size gate is clean.

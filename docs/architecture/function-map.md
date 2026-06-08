@@ -329,27 +329,66 @@ Every Rust function or method under `crates/` and `xtask/src/` must be listed he
 | `crates::agentteam-contracts::src::comm::mod::CommReq01RouteIntent::resolve_target` | Communication Center contracts | `comm.center` | `crates/agentteam-contracts/src/comm/mod.rs` | contract unit, function map gate |
 | `crates::agentteam-contracts::src::comm::mod::CommReq02ResolvedTarget::delivery_envelope` | Communication Center contracts | `comm.center` | `crates/agentteam-contracts/src/comm/mod.rs` | contract unit, function map gate |
 | `crates::agentteam-contracts::src::comm::mod::CommReq03DeliveryEnvelope::accept` | Communication Center contracts | `comm.center` | `crates/agentteam-contracts/src/comm/mod.rs` | contract unit, function map gate |
+| `crates::agentteam-contracts::src::comm::mod::CommReq05ReadyReport::new` | Communication Center contracts | `comm.center` | `crates/agentteam-contracts/src/comm/mod.rs` | contract unit, function map gate |
+| `crates::agentteam-contracts::src::comm::mod::CommReq05ReadyReport::resolve_agent` | Communication Center contracts | `comm.center` | `crates/agentteam-contracts/src/comm/mod.rs` | contract unit, function map gate |
+| `crates::agentteam-contracts::src::comm::mod::CommReq06ResolvedAgent::delivery_envelope` | Communication Center contracts | `comm.center` | `crates/agentteam-contracts/src/comm/mod.rs` | contract unit, function map gate |
+| `crates::agentteam-contracts::src::comm::mod::CommReq07ReadyEnvelope::accept` | Communication Center contracts | `comm.center` | `crates/agentteam-contracts/src/comm/mod.rs` | contract unit, function map gate |
 | `crates::agentteam-contracts::src::comm::mod::CommReq11BroadcastIntent::new` | Communication Center contracts | `comm.center` | `crates/agentteam-contracts/src/comm/mod.rs` | contract unit, function map gate |
 | `crates::agentteam-contracts::src::comm::mod::CommReq11BroadcastIntent::resolve_team_members` | Communication Center contracts | `comm.center` | `crates/agentteam-contracts/src/comm/mod.rs` | contract unit, function map gate |
 | `crates::agentteam-contracts::src::comm::mod::CommReq12ResolvedTeamMembers::delivery_envelope` | Communication Center contracts | `comm.center` | `crates/agentteam-contracts/src/comm/mod.rs` | contract unit, function map gate |
 | `crates::agentteam-contracts::src::comm::mod::CommReq13BroadcastEnvelope::accept` | Communication Center contracts | `comm.center` | `crates/agentteam-contracts/src/comm/mod.rs` | contract unit, function map gate |
-| `crates::agentteam-contracts::src::comm::mod::comm_broadcast_chain_uses_adjacent_nodes` | Communication Center contract test | `comm.center` | `crates/agentteam-contracts/src/comm/mod.rs` | cargo test, function map gate |
-| `crates::agentteam-contracts::src::comm::mod::comm_feature_id_is_stable` | Communication Center contract test | `comm.center` | `crates/agentteam-contracts/src/comm/mod.rs` | cargo test, function map gate |
-| `crates::agentteam-contracts::src::comm::mod::comm_message_chain_uses_adjacent_nodes` | Communication Center contract test | `comm.center` | `crates/agentteam-contracts/src/comm/mod.rs` | cargo test, function map gate |
+| `crates::agentteam-contracts::src::comm::mod::CommReq21TaskBoardQuery::new` | Communication Center contracts | `comm.center` | `crates/agentteam-contracts/src/comm/mod.rs` | contract unit, function map gate |
+| `crates::agentteam-contracts::src::comm::mod::CommReq21TaskBoardQuery::resolve_team` | Communication Center contracts | `comm.center` | `crates/agentteam-contracts/src/comm/mod.rs` | contract unit, function map gate |
+| `crates::agentteam-contracts::src::comm::mod::CommReq22AuthorizedQuery::delivery_envelope` | Communication Center contracts | `comm.center` | `crates/agentteam-contracts/src/comm/mod.rs` | contract unit, function map gate |
+| `crates::agentteam-contracts::src::comm::mod::CommReq23TaskBoardQueryEnvelope::accept` | Communication Center contracts | `comm.center` | `crates/agentteam-contracts/src/comm/mod.rs` | contract unit, function map gate |
+| `crates::agentteam-contracts::src::comm::mod::CommReq31TaskClaim::new` | Communication Center contracts | `comm.center` | `crates/agentteam-contracts/src/comm/mod.rs` | contract unit, function map gate |
+| `crates::agentteam-contracts::src::comm::mod::CommReq31TaskClaim::resolve_claim` | Communication Center contracts | `comm.center` | `crates/agentteam-contracts/src/comm/mod.rs` | contract unit, function map gate |
+| `crates::agentteam-contracts::src::comm::mod::CommReq32AuthorizedClaim::delivery_envelope` | Communication Center contracts | `comm.center` | `crates/agentteam-contracts/src/comm/mod.rs` | contract unit, function map gate |
+| `crates::agentteam-contracts::src::comm::mod::CommReq33TaskClaimEnvelope::accept` | Communication Center contracts | `comm.center` | `crates/agentteam-contracts/src/comm/mod.rs` | contract unit, function map gate |
+| `crates::agentteam-contracts::src::comm::tests::comm_broadcast_chain_uses_adjacent_nodes` | Communication Center contract test | `comm.center` | `crates/agentteam-contracts/src/comm/tests.rs` | cargo test, function map gate |
+| `crates::agentteam-contracts::src::comm::tests::comm_feature_id_is_stable` | Communication Center contract test | `comm.center` | `crates/agentteam-contracts/src/comm/tests.rs` | cargo test, function map gate |
+| `crates::agentteam-contracts::src::comm::tests::comm_message_chain_uses_adjacent_nodes` | Communication Center contract test | `comm.center` | `crates/agentteam-contracts/src/comm/tests.rs` | cargo test, function map gate |
+| `crates::agentteam-contracts::src::comm::tests::comm_ready_chain_uses_adjacent_nodes` | Communication Center contract test | `comm.center` | `crates/agentteam-contracts/src/comm/tests.rs` | cargo test, function map gate |
+| `crates::agentteam-contracts::src::comm::tests::comm_task_board_chain_uses_adjacent_nodes` | Communication Center contract test | `comm.center` | `crates/agentteam-contracts/src/comm/tests.rs` | cargo test, function map gate |
+| `crates::agentteam-contracts::src::comm::tests::comm_task_claim_chain_uses_adjacent_nodes` | Communication Center contract test | `comm.center` | `crates/agentteam-contracts/src/comm/tests.rs` | cargo test, function map gate |
 | `crates::agentteam-comm::src::error::CommCenterError::reason` | Communication Center | `comm.center` | `crates/agentteam-comm/src/error.rs` | routing unit, function map gate |
 | `crates::agentteam-comm::src::model::CommRouteRequest::new` | Communication Center | `comm.center` | `crates/agentteam-comm/src/model.rs` | routing unit, function map gate |
+| `crates::agentteam-comm::src::model::CommReadyReportEnvelope::accept` | Communication Center | `comm.center` | `crates/agentteam-comm/src/model.rs` | routing unit, function map gate |
+| `crates::agentteam-comm::src::model::CommReadyReportRequest::new` | Communication Center | `comm.center` | `crates/agentteam-comm/src/model.rs` | routing unit, function map gate |
+| `crates::agentteam-comm::src::model::CommReadyReportRequest::resolve_agent` | Communication Center | `comm.center` | `crates/agentteam-comm/src/model.rs` | routing unit, function map gate |
+| `crates::agentteam-comm::src::model::CommReadyReportTarget::delivery_envelope` | Communication Center | `comm.center` | `crates/agentteam-comm/src/model.rs` | routing unit, function map gate |
+| `crates::agentteam-comm::src::model::CommTaskBoardQueryEnvelope::accept` | Communication Center | `comm.center` | `crates/agentteam-comm/src/model.rs` | routing unit, function map gate |
+| `crates::agentteam-comm::src::model::CommTaskBoardQueryRequest::new` | Communication Center | `comm.center` | `crates/agentteam-comm/src/model.rs` | routing unit, function map gate |
+| `crates::agentteam-comm::src::model::CommTaskBoardQueryRequest::resolve_team` | Communication Center | `comm.center` | `crates/agentteam-comm/src/model.rs` | routing unit, function map gate |
+| `crates::agentteam-comm::src::model::CommTaskBoardQueryTarget::delivery_envelope` | Communication Center | `comm.center` | `crates/agentteam-comm/src/model.rs` | routing unit, function map gate |
+| `crates::agentteam-comm::src::model::CommTaskClaimEnvelope::accept` | Communication Center | `comm.center` | `crates/agentteam-comm/src/model.rs` | routing unit, function map gate |
+| `crates::agentteam-comm::src::model::CommTaskClaimRequest::new` | Communication Center | `comm.center` | `crates/agentteam-comm/src/model.rs` | routing unit, function map gate |
+| `crates::agentteam-comm::src::model::CommTaskClaimRequest::resolve_claim` | Communication Center | `comm.center` | `crates/agentteam-comm/src/model.rs` | routing unit, function map gate |
+| `crates::agentteam-comm::src::model::CommTaskClaimTarget::delivery_envelope` | Communication Center | `comm.center` | `crates/agentteam-comm/src/model.rs` | routing unit, function map gate |
 | `crates::agentteam-comm::src::model::CommTeamBroadcastRequest::new` | Communication Center | `comm.center` | `crates/agentteam-comm/src/model.rs` | routing unit, function map gate |
 | `crates::agentteam-comm::src::route::CommCenter::new` | Communication Center | `comm.center` | `crates/agentteam-comm/src/route.rs` | routing unit, function map gate |
 | `crates::agentteam-comm::src::route::CommCenter::route_broadcast` | Communication Center | `comm.center` | `crates/agentteam-comm/src/route.rs` | routing unit, function map gate |
 | `crates::agentteam-comm::src::route::CommCenter::route_message` | Communication Center | `comm.center` | `crates/agentteam-comm/src/route.rs` | routing unit, function map gate |
+| `crates::agentteam-comm::src::route::CommCenter::route_ready_report` | Communication Center | `comm.center` | `crates/agentteam-comm/src/route.rs` | routing unit, function map gate |
+| `crates::agentteam-comm::src::route::CommCenter::route_task_board_query` | Communication Center | `comm.center` | `crates/agentteam-comm/src/route.rs` | routing unit, function map gate |
+| `crates::agentteam-comm::src::route::CommCenter::route_task_claim` | Communication Center | `comm.center` | `crates/agentteam-comm/src/route.rs` | routing unit, function map gate |
 | `crates::agentteam-comm::src::route::delivery_id_for` | Communication Center | `comm.center` | `crates/agentteam-comm/src/route.rs` | routing unit, function map gate |
 | `crates::agentteam-comm::src::route::route_broadcast` | Communication Center | `comm.center` | `crates/agentteam-comm/src/route.rs` | routing unit, function map gate |
 | `crates::agentteam-comm::src::route::route_message` | Communication Center | `comm.center` | `crates/agentteam-comm/src/route.rs` | routing unit, function map gate |
+| `crates::agentteam-comm::src::route::route_ready_report` | Communication Center | `comm.center` | `crates/agentteam-comm/src/route.rs` | routing unit, function map gate |
+| `crates::agentteam-comm::src::route::route_task_board_query` | Communication Center | `comm.center` | `crates/agentteam-comm/src/route.rs` | routing unit, function map gate |
+| `crates::agentteam-comm::src::route::route_task_claim` | Communication Center | `comm.center` | `crates/agentteam-comm/src/route.rs` | routing unit, function map gate |
 | `crates::agentteam-comm::src::route::validate_broadcast_members` | Communication Center | `comm.center` | `crates/agentteam-comm/src/route.rs` | routing unit, function map gate |
 | `crates::agentteam-comm::src::route::validate_message_target` | Communication Center | `comm.center` | `crates/agentteam-comm/src/route.rs` | routing unit, function map gate |
+| `crates::agentteam-comm::src::route::validate_ready_report` | Communication Center | `comm.center` | `crates/agentteam-comm/src/route.rs` | routing unit, function map gate |
+| `crates::agentteam-comm::src::route::validate_task_board_query` | Communication Center | `comm.center` | `crates/agentteam-comm/src/route.rs` | routing unit, function map gate |
+| `crates::agentteam-comm::src::route::validate_task_claim` | Communication Center | `comm.center` | `crates/agentteam-comm/src/route.rs` | routing unit, function map gate |
 | `crates::agentteam-comm::src::tests::route_broadcast_accepts_exact_member_list` | Communication Center test | `comm.center` | `crates/agentteam-comm/src/tests.rs` | cargo test, function map gate |
+| `crates::agentteam-comm::src::tests::route_ready_report_accepts_agent_name` | Communication Center test | `comm.center` | `crates/agentteam-comm/src/tests.rs` | cargo test, function map gate |
 | `crates::agentteam-comm::src::tests::route_message_accepts_non_empty_target` | Communication Center test | `comm.center` | `crates/agentteam-comm/src/tests.rs` | cargo test, function map gate |
 | `crates::agentteam-comm::src::tests::route_message_rejects_empty_target` | Communication Center test | `comm.center` | `crates/agentteam-comm/src/tests.rs` | cargo test, function map gate |
+| `crates::agentteam-comm::src::tests::route_task_board_query_preserves_query` | Communication Center test | `comm.center` | `crates/agentteam-comm/src/tests.rs` | cargo test, function map gate |
+| `crates::agentteam-comm::src::tests::route_task_claim_accepts_worker_scope` | Communication Center test | `comm.center` | `crates/agentteam-comm/src/tests.rs` | cargo test, function map gate |
 | `crates::agentteam-runtime::src::local::execute_task_done` | Team Orchestrator | `team.orchestration` | `crates/agentteam-runtime/src/local.rs` | runtime unit, function map gate |
 | `crates::agentteam-runtime::src::local::execute_task_error` | Team Orchestrator | `team.orchestration` | `crates/agentteam-runtime/src/local.rs` | runtime unit, function map gate |
 | `crates::agentteam-runtime::src::local::execute_task_list` | Team Orchestrator | `team.orchestration` | `crates/agentteam-runtime/src/local.rs` | runtime unit, function map gate |

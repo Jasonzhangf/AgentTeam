@@ -45,3 +45,8 @@
 
 2026-06-08 tmux loopback slice start: user prioritized proving multiple tmux sessions can exchange stdin/stdout before further Task/Comm work. Scope: adapter-owned real tmux smoke command that creates multiple managed TA sessions, injects input, captures output evidence, and cleans sessions by exact names. Runtime and CLI must not call tmux directly; no daemon/zterm launch yet.
 2026-06-08 tmux loopback slice result: implemented `tmux loopback` vertical smoke through `agentteam-tmux` + runtime/local CLI. Real smoke passed with 2 sessions: ready/input/output observed on both, `cleanup_status=cleaned_exact_handles`, and no residual `TA-agentteam-tmux-smoke-loopback*` sessions after exact cleanup. Key fix: tmux pane capture needed `capture-pane -J` to join wrapped lines; launch required `sh -lc` wrapper.
+2026-06-08 Communication Center slice result:
+- Added typed ready / task-board query / task claim pipeline nodes in `agentteam-contracts::comm` and routed them through `agentteam-comm`.
+- `agentteam-comm` now exports `route_ready_report`, `route_task_board_query`, and `route_task_claim`, with validation-only routing and explicit acceptance results.
+- Split `crates/agentteam-contracts/src/comm/mod.rs` test block into `crates/agentteam-contracts/src/comm/tests.rs` to satisfy the 500-line hard limit.
+- Verified with `cargo test -p agentteam-contracts -p agentteam-comm`, `cargo xtask verify-function-map`, and full `cargo xtask verify`.
