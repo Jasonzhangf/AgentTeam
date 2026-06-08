@@ -7,6 +7,7 @@ name = "agentteam-cli"
 version = "0.1.0"
 dependencies = [
  "agentteam-contracts",
+ "agentteam-gateway",
 ]
 
 [[package]]
@@ -55,6 +56,8 @@ name = "agentteam-gateway"
 version = "0.1.0"
 dependencies = [
  "agentteam-contracts",
+ "serde",
+ "serde_json",
 ]
 
 [[package]]

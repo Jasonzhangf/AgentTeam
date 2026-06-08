@@ -21,3 +21,5 @@
 - Commit `7a18c69` contains Phase 5.
 - Phase 6 implemented `agentteam-resource` owner lease registry and `agentteam-debug` persisted bundle capture. Debug bundle flow is acquire debug_bundle lease -> resource snapshot through public API -> persist debug_bundle event -> release lease -> return bundle projection with receipt and resource snapshot id.
 - `cargo xtask verify` passed during Phase 6 implementation before commit. Next phase after commit: start CLI/API vertical slice wiring for config/domain/debug commands, unless Task/Comm is chosen first.
+- User agreed to run local parsing clearly before first agent launch. Implemented Gateway parse-only CLI slice for `config check`, `domain resolve`, `debug snapshot`; CLI output marks `local_parse_only: true`.
+- Verified local parsing with `cargo xtask verify` and three `cargo run -p agentteam-cli -- ... --json` smoke commands. Next step: wire validated intents to owner execution for config/domain/debug while keeping Gateway/Output boundaries.

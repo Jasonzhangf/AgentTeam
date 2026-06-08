@@ -38,6 +38,33 @@ Every Rust function or method under `crates/` and `xtask/src/` must be listed he
 | symbol | owner | feature_id | allowed paths | required gates |
 |---|---|---|---|---|
 | `crates::agentteam-cli::src::main::main` | CLI/Skill | `cli.agent_skill` | `crates/agentteam-cli/src/main.rs` | cargo test, function map gate |
+| `crates::agentteam-gateway::src::error::GatewayError::output` | Output Gateway | `gateway.output` | `crates/agentteam-gateway/src/error.rs` | gateway unit, function map gate |
+| `crates::agentteam-gateway::src::error::GatewayError::parse` | Input Gateway | `gateway.input` | `crates/agentteam-gateway/src/error.rs` | gateway unit, function map gate |
+| `crates::agentteam-gateway::src::error::GatewayError::validation` | Input Gateway | `gateway.input` | `crates/agentteam-gateway/src/error.rs` | gateway unit, function map gate |
+| `crates::agentteam-gateway::src::input::contains_flag` | Input Gateway | `gateway.input` | `crates/agentteam-gateway/src/input.rs` | gateway unit, function map gate |
+| `crates::agentteam-gateway::src::input::option_value` | Input Gateway | `gateway.input` | `crates/agentteam-gateway/src/input.rs` | gateway unit, function map gate |
+| `crates::agentteam-gateway::src::input::parse_cli_args` | Input Gateway | `gateway.input` | `crates/agentteam-gateway/src/input.rs` | gateway unit, function map gate |
+| `crates::agentteam-gateway::src::input::parse_cli_raw` | Input Gateway | `gateway.input` | `crates/agentteam-gateway/src/input.rs` | gateway unit, function map gate |
+| `crates::agentteam-gateway::src::input::parse_config_check` | Input Gateway | `gateway.input` | `crates/agentteam-gateway/src/input.rs` | gateway unit, function map gate |
+| `crates::agentteam-gateway::src::input::parse_debug_snapshot` | Input Gateway | `gateway.input` | `crates/agentteam-gateway/src/input.rs` | gateway unit, function map gate |
+| `crates::agentteam-gateway::src::input::parse_domain_resolve` | Input Gateway | `gateway.input` | `crates/agentteam-gateway/src/input.rs` | gateway unit, function map gate |
+| `crates::agentteam-gateway::src::input::parse_options` | Input Gateway | `gateway.input` | `crates/agentteam-gateway/src/input.rs` | gateway unit, function map gate |
+| `crates::agentteam-gateway::src::input::require_json` | Input Gateway | `gateway.input` | `crates/agentteam-gateway/src/input.rs` | gateway unit, function map gate |
+| `crates::agentteam-gateway::src::input::require_value` | Input Gateway | `gateway.input` | `crates/agentteam-gateway/src/input.rs` | gateway unit, function map gate |
+| `crates::agentteam-gateway::src::input::validate_intent` | Input Gateway | `gateway.input` | `crates/agentteam-gateway/src/input.rs` | gateway unit, function map gate |
+| `crates::agentteam-gateway::src::model::TeamReq01CliRaw::new` | Input Gateway | `gateway.input` | `crates/agentteam-gateway/src/model.rs` | gateway unit, function map gate |
+| `crates::agentteam-gateway::src::model::TeamReq03ValidatedIntent::command_name` | Input Gateway | `gateway.input` | `crates/agentteam-gateway/src/model.rs` | gateway unit, function map gate |
+| `crates::agentteam-gateway::src::output::encode_error_projection` | Output Gateway | `gateway.output` | `crates/agentteam-gateway/src/output.rs` | gateway unit, function map gate |
+| `crates::agentteam-gateway::src::output::encode_intent_projection` | Output Gateway | `gateway.output` | `crates/agentteam-gateway/src/output.rs` | gateway unit, function map gate |
+| `crates::agentteam-gateway::src::output::render_gateway_error_json` | Output Gateway | `gateway.output` | `crates/agentteam-gateway/src/output.rs` | gateway unit, function map gate |
+| `crates::agentteam-gateway::src::output::render_intent_json` | Output Gateway | `gateway.output` | `crates/agentteam-gateway/src/output.rs` | gateway unit, function map gate |
+| `crates::agentteam-gateway::src::tests::missing_json_is_validation_error` | Input Gateway test | `gateway.input` | `crates/agentteam-gateway/src/tests.rs` | cargo test, function map gate |
+| `crates::agentteam-gateway::src::tests::parses_config_check_intent` | Input Gateway test | `gateway.input` | `crates/agentteam-gateway/src/tests.rs` | cargo test, function map gate |
+| `crates::agentteam-gateway::src::tests::parses_debug_snapshot_intent` | Input Gateway test | `gateway.input` | `crates/agentteam-gateway/src/tests.rs` | cargo test, function map gate |
+| `crates::agentteam-gateway::src::tests::parses_domain_resolve_intent` | Input Gateway test | `gateway.input` | `crates/agentteam-gateway/src/tests.rs` | cargo test, function map gate |
+| `crates::agentteam-gateway::src::tests::render_intent_json_marks_parse_only` | Output Gateway test | `gateway.output` | `crates/agentteam-gateway/src/tests.rs` | cargo test, function map gate |
+| `crates::agentteam-gateway::src::tests::strings` | Input Gateway test helper | `gateway.input` | `crates/agentteam-gateway/src/tests.rs` | cargo test, function map gate |
+| `crates::agentteam-gateway::src::tests::unknown_flag_is_parse_error` | Input Gateway test | `gateway.input` | `crates/agentteam-gateway/src/tests.rs` | cargo test, function map gate |
 | `crates::agentteam-contracts::src::config::mod::ConfigErr01Parse::new` | Config Center contracts | `config.center` | `crates/agentteam-contracts/src/config/mod.rs` | contract unit, function map gate |
 | `crates::agentteam-contracts::src::config::mod::ConfigErr02Validation::new` | Config Center contracts | `config.center` | `crates/agentteam-contracts/src/config/mod.rs` | contract unit, function map gate |
 | `crates::agentteam-contracts::src::config::mod::ConfigReq01TomlPath::new` | Config Center contracts | `config.center` | `crates/agentteam-contracts/src/config/mod.rs` | contract unit, function map gate |

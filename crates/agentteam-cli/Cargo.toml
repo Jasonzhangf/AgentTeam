@@ -11,3 +11,4 @@ path = "src/main.rs"
 
 [dependencies]
 agentteam-contracts = { path = "../agentteam-contracts" }
+agentteam-gateway = { path = "../agentteam-gateway" }
