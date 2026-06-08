@@ -1,0 +1,67 @@
+# TANote
+
+This is an example of the project `TANote.md` projection.
+
+Agents read this file directly, but write through:
+
+```text
+agentteam note post --team default --from Kevin --to agent:Alice --action ask --text "..."
+```
+
+Direct manual edits are invalid.
+
+<!-- TANOTE:BEGIN v1 -->
+### TN-20260608T120102Z-000001
+
+```toml
+version = 1
+note_id = "TN-20260608T120102Z-000001"
+thread_id = "TH-20260608T120000Z-000001"
+seq = 1
+time = "2026-06-08T12:01:02Z"
+from = "Kevin"
+to = ["agent:Alice"]
+action = "ask"
+team_id = "default"
+task_id = "AT-1"
+message_id = "MSG-1"
+reply_to = ""
+visibility = "team"
+delivery = ["tanote", "tmux"]
+event_id = "EVT-20260608T120102Z-000001"
+evidence_id = ""
+```
+
+Body:
+
+Please inspect the config module and reply in this thread.
+
+<!-- TANOTE:END TN-20260608T120102Z-000001 -->
+
+<!-- TANOTE:BEGIN v1 -->
+### TN-20260608T120830Z-000002
+
+```toml
+version = 1
+note_id = "TN-20260608T120830Z-000002"
+thread_id = "TH-20260608T120000Z-000001"
+seq = 2
+time = "2026-06-08T12:08:30Z"
+from = "Alice"
+to = ["agent:Kevin", "role:reviewer"]
+action = "reply"
+team_id = "default"
+task_id = "AT-1"
+message_id = "MSG-2"
+reply_to = "TN-20260608T120102Z-000001"
+visibility = "team"
+delivery = ["tanote"]
+event_id = "EVT-20260608T120830Z-000002"
+evidence_id = "EVD-20260608T120800Z-000001"
+```
+
+Body:
+
+Config Center already forbids runtime state in user config. I attached evidence id `EVD-20260608T120800Z-000001`.
+
+<!-- TANOTE:END TN-20260608T120830Z-000002 -->

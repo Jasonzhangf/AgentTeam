@@ -1,0 +1,107 @@
+# AgentTeam user config.
+# Default location: ~/.agentteam/config.toml
+# This file stores project-related user configuration only.
+# Do not store runtime state, task state, message history, debug snapshots,
+# pid files, event logs, derived tmux pane state, or zterm buffer state here.
+# Runtime-normalized config must be built by Config Center only.
+
+[project]
+# Stable project slug used in tmux session names and persistence keys.
+slug = "agentteam"
+
+# Root directory for team workspaces.
+root = "/Users/fanzhang/Documents/github/agentteam"
+
+[runtime]
+# Runtime home stores daemon-owned runtime data.
+# This path is configured here, but runtime data is not stored inside config.toml.
+home = "~/.agentteam/runtime/agentteam"
+
+# Local daemon listen address.
+host = "127.0.0.1"
+port = 43210
+
+[tmux]
+# All managed session names must start with this prefix.
+managed_prefix = "TA"
+
+# Explicit tmux binary. Empty means Config Center must reject until set or discovered by approved install flow.
+binary = "tmux"
+
+[zterm]
+# zterm bridge endpoint used by the terminal adapter.
+host = "127.0.0.1"
+port = 3333
+
+# Optional zterm auth token. Empty means no token.
+auth_token = ""
+
+[daemon_domain]
+# Stable daemon domain id. Agent names are unique inside this domain, not globally.
+id = "local"
+
+# Optional aliases for human-friendly targeting. Aliases must be unique.
+aliases = ["agentteam-main"]
+
+[[daemon_domains.remote]]
+# Remote daemon domain for cross-daemon communication.
+id = "review-daemon"
+aliases = ["review"]
+host = "127.0.0.1"
+port = 43211
+
+# Optional remote daemon auth token. Redacted in snapshots/output.
+auth_token = ""
+
+[team_defaults]
+# Team category examples: development, review, research, ops, custom.
+category = "development"
+
+[[teams]]
+# Team id is unique inside this config.
+id = "default"
+
+# Team category controls default orchestration presets.
+category = "development"
+
+# Declared member count. Config Center rejects mismatch with members list.
+agent_count = 3
+
+[[teams.members]]
+# v1 super manager name is fixed.
+name = "Kevin"
+
+# Team role category controls capability. v1 allows one manager.
+team_role = "manager"
+
+# Work role can describe responsibility.
+role = "manager"
+
+# Working directory for this agent process.
+cwd = "/Users/fanzhang/Documents/github/agentteam"
+
+# Agent launcher command.
+command = "codex"
+
+# Launcher arguments are explicit argv items, not shell-expanded text.
+args = []
+
+# Optional environment values for this member only.
+[teams.members.env]
+AGENTTEAM_ROLE = "manager"
+
+[[teams.members]]
+name = "Alice"
+team_role = "worker"
+role = "builder"
+cwd = "/Users/fanzhang/Documents/github/agentteam"
+command = "codex"
+args = []
+
+[[teams.members]]
+name = "Bob"
+team_role = "worker"
+role = "reviewer"
+cwd = "/Users/fanzhang/Documents/github/agentteam"
+command = "codex"
+args = []

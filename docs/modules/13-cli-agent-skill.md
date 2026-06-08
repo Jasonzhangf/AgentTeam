@@ -1,0 +1,163 @@
+# 13 CLI Agent Skill
+
+## Purpose
+
+The CLI and local skill are the agent-facing operating surface.
+
+## Owns
+
+- Human/agent command examples.
+- CLI command mapping.
+- Skill usage instructions.
+- No hidden protocol requirement for agents.
+- No tmux/session detail exposure to agents.
+- Kevin framework-operation guidance.
+- Domain-qualified addressing examples for cross-daemon communication.
+
+## Does Not Own
+
+- Runtime state.
+- Error classification.
+- Terminal transport.
+- Config parsing.
+- tmux/session identity handling.
+- Daemon domain resolution.
+
+## Module Function Map
+
+| function_id | Owner | Purpose | Input | Output | Required red tests |
+|---|---|---|---|---|---|
+| `cli.map_command` | CLI/Skill + Input Gateway | Map agent/human CLI command to raw input | argv | `TeamReq01CliRaw` | CLI bypasses Input Gateway |
+| `cli.render_result` | CLI/Skill + Output Gateway | Display output produced by Output Gateway | rendered response | process output | direct module rendering |
+| `skill.describe_runtime_ops` | CLI/Skill | Teach agents team/task/message/debug commands | skill read | agent guidance | hidden wire dependency |
+| `skill.describe_domain_ops` | CLI/Skill + Daemon Domain Registry | Teach agents `agent@domain` cross-daemon addressing | skill/help text | agent guidance | hidden endpoint dependency |
+| `skill.describe_kevin_ops` | CLI/Skill | Teach Kevin bootstrap, task publish, wait, debug | skill read | Kevin guidance | missing Kevin ops |
+| `skill.describe_worker_ops` | CLI/Skill | Teach workers ready/query/claim/done/error/note flow | skill read | worker guidance | worker direct tmux |
+| `skill.hide_internals` | CLI/Skill | Keep tmux/session/zterm internals out of agent docs | skill/help text | agent-safe docs | internals exposed |
+| `cli.snapshot` | CLI/Skill | Provide CLI command/help snapshot to Debug Center if needed | CLI state | CLI snapshot | durable handle retained |
+| `cli.help` | CLI/Skill | Describe agent-facing CLI commands | help topic | help model | broad kill instruction |
+
+## Module Help Contract
+
+Required help topics:
+
+```text
+agentteam help cli
+agentteam help agent-skill
+agentteam help kevin
+agentteam help worker
+agentteam help task
+agentteam help message
+agentteam help domain
+agentteam help note
+agentteam help debug
+agentteam help cli red-tests
+```
+
+Help content must explain:
+
+- agents use CLI/skills only
+- Kevin initializes, publishes tasks, messages workers, waits by projections, and asks Debug Center for evidence
+- workers report ready, query/claim tasks, update/done/error tasks, and write notes
+- agents communicate by names, roles, tasks, messages, notes, and projections
+- cross-daemon communication uses domain-qualified targets such as `Alice@review-daemon`
+- `agentteam-dev` is for repository module development, not runtime team communication
+
+Help content must not:
+
+- depend on hidden daemon wire protocol
+- expose tmux session names, pane ids, descriptor paths, or zterm endpoints
+- expose daemon endpoint/auth details in agent-facing examples
+- teach manual `TANote.md` edits
+- teach direct cleanup, broad process kill, or direct state-file writes
+
+## Public CLI Surface Draft
+
+```text
+agentteam daemon start
+agentteam daemon status
+agentteam daemon stop --pid <pid>
+
+agentteam startup init
+agentteam startup status
+
+agentteam team list
+agentteam team create --id <team_id>
+
+agentteam agent list --team <team_id>
+agentteam agent add --team <team_id> --name <name> --role <role> --cmd <cmd> --cwd <path>
+agentteam agent status --team <team_id> --name <name>
+
+agentteam task send --team <team_id> --to <role_or_name> --text <text>
+agentteam task list --team <team_id>
+agentteam task status --id <task_id>
+agentteam task done --id <task_id> --summary <text>
+agentteam task error --id <task_id> --message <text>
+
+agentteam msg send --team <team_id> --from <name> --to <role_or_name> --text <text>
+agentteam msg send --team <team_id> --from Kevin@local --to Alice@review-daemon --text <text>
+agentteam msg list --team <team_id> --agent <name>
+
+agentteam note post --team <team_id> --from <name> --to <target> --action <action> --text <text>
+agentteam note thread --team <team_id> --thread <thread_id>
+agentteam note tail --team <team_id> --limit <n>
+
+agentteam render --team <team_id> --agent <name>
+agentteam debug snapshot
+agentteam debug resources --team <team_id>
+```
+
+## Required Behavior
+
+- Agents use CLI only.
+- CLI can output machine-readable JSON.
+- Skill docs must mention team discovery, message send, task check, task completion, error report, debug snapshot.
+- Skill docs must mention Kevin bootstrap and worker identity.
+- Skill must not depend on hidden daemon wire protocol.
+- Skill must teach Kevin how to initialize framework, query task board, publish tasks, message child agents, and wait for results.
+- Skill must teach agents to write work notes through `agentteam note post`, read `TANote.md`/note projections, and reference `thread_id`/`note_id` during discussion.
+- Skill must not expose tmux session names, pane ids, session descriptor paths, zterm endpoints, or event log paths to agents.
+- Agents operate through names, roles, tasks, messages, and projections only.
+- Cross-daemon agent references use `agent@domain`; bare names are local-domain only.
+- Agents must not manually edit `TANote.md`; direct edits are invalid because daemon order, ids, and event receipts would be missing.
+- Skill must teach Kevin to inspect resource/debug projections when waiting or diagnosing stuck workers.
+
+## Error Behavior
+
+CLI errors go through Input Gateway and Error Center.
+
+## Debug Snapshot
+
+CLI can request Debug Center snapshots. CLI does not collect snapshots itself.
+
+## Resource Lifecycle
+
+CLI/Skill owns no durable runtime resources.
+
+Rules:
+
+- CLI commands may create short-lived input/output handles through Input/Output Gateway.
+- CLI must not hold daemon state, task state, debug bundles, or resource handles after command exit.
+- CLI must not perform cleanup directly; it requests scoped cleanup through daemon/resource owner commands.
+- Skill instructions must not teach manual process/session/file cleanup.
+
+## Red Tests
+
+- Skill references hidden protocol fails doc gate.
+- Skill references tmux/session internals fails doc gate.
+- Kevin skill missing init/task/message/wait instructions fails doc gate.
+- Skill missing TANote read/post/thread instructions fails doc gate.
+- Skill telling agents to manually edit `TANote.md` fails doc gate.
+- CLI command bypasses Input Gateway fails architecture gate.
+- Broad process kill command in docs fails.
+- CLI holding durable resource handle after command exit fails.
+- Skill teaching direct cleanup fails.
+- Skill hiding cross-daemon address syntax fails doc gate.
+- Skill exposing daemon endpoint/auth details fails doc gate.
+
+## Open Decisions
+
+- Exact CLI naming: `agentteam agent` vs `agentteam member`.
+- Whether `--json` is global.
+- Whether `task done` can be called only by assigned agent.
+- Exact note target grammar: `agent:<name>`, `role:<role>`, `team:<team_id>`, or `all`.

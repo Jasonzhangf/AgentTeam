@@ -1,0 +1,25 @@
+[workspace]
+members = [
+  "crates/agentteam-contracts",
+  "crates/agentteam-config",
+  "crates/agentteam-error",
+  "crates/agentteam-comm",
+  "crates/agentteam-debug",
+  "crates/agentteam-persist",
+  "crates/agentteam-runtime",
+  "crates/agentteam-startup",
+  "crates/agentteam-tanote",
+  "crates/agentteam-resource",
+  "crates/agentteam-tmux",
+  "crates/agentteam-tui-adapter",
+  "crates/agentteam-gateway",
+  "crates/agentteam-cli",
+  "crates/agentteamd",
+  "xtask",
+]
+resolver = "2"
+
+[workspace.package]
+edition = "2021"
+license = "MIT"
+repository = "https://github.com/Jasonzhangf/AgentTeam.git"
