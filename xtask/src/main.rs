@@ -3,6 +3,9 @@ use std::fs;
 use std::path::Path;
 use std::process::{Command, ExitCode};
 
+mod function_map;
+mod red_tests;
+
 const REQUIRED_FILES: &[&str] = &[
     "AGENTS.md",
     ".gitignore",
@@ -23,6 +26,7 @@ const REQUIRED_FILES: &[&str] = &[
     "docs/architecture/code-size-policy.md",
     "docs/config/config.toml.example",
     "docs/flows/build-regression-flow.md",
+    "docs/goals/mvp-runtime-vertical-slice-plan.md",
     "docs/modules/00-module-discussion-index.md",
     "docs/modules/01-config-center.md",
     "docs/modules/02-error-center.md",
@@ -49,6 +53,15 @@ const REQUIRED_FILES: &[&str] = &[
     ".agents/skills/agentteam-dev/SKILL.md",
     "crates/agentteam-contracts/Cargo.toml",
     "crates/agentteam-contracts/src/lib.rs",
+    "crates/agentteam-contracts/src/config/mod.rs",
+    "crates/agentteam-contracts/src/debug/mod.rs",
+    "crates/agentteam-contracts/src/domain/mod.rs",
+    "crates/agentteam-contracts/src/error/mod.rs",
+    "crates/agentteam-contracts/src/feature_map/mod.rs",
+    "crates/agentteam-contracts/src/persist/mod.rs",
+    "crates/agentteam-contracts/src/pipeline/mod.rs",
+    "crates/agentteam-contracts/src/resource/mod.rs",
+    "crates/agentteam-contracts/src/verification_map/mod.rs",
     "crates/agentteam-config/Cargo.toml",
     "crates/agentteam-config/src/lib.rs",
     "crates/agentteam-error/Cargo.toml",
@@ -78,7 +91,9 @@ const REQUIRED_FILES: &[&str] = &[
     "crates/agentteamd/Cargo.toml",
     "crates/agentteamd/src/main.rs",
     "xtask/Cargo.toml",
+    "xtask/src/function_map.rs",
     "xtask/src/main.rs",
+    "xtask/src/red_tests.rs",
     ".cargo/config.toml",
 ];
 
@@ -105,11 +120,12 @@ const MODULE_DOCS: &[&str] = &[
 
 fn main() -> ExitCode {
     let Some(command) = env::args().nth(1) else {
-        eprintln!("usage: cargo xtask <red-tests|verify-required-files|verify-skill-frontmatter|verify-resource-lifecycle|verify-function-map|verify-code-size>");
+        eprintln!("usage: cargo xtask <verify|red-tests|verify-required-files|verify-skill-frontmatter|verify-resource-lifecycle|verify-function-map|verify-code-size>");
         return ExitCode::from(2);
     };
 
     let result = match command.as_str() {
+        "verify" => verify_all(),
         "red-tests" => red_tests(),
         "verify-required-files" => verify_required_files(),
         "verify-skill-frontmatter" => verify_skill_frontmatter(),
@@ -128,21 +144,46 @@ fn main() -> ExitCode {
     }
 }
 
-fn red_tests() -> Result<(), String> {
-    require_file("docs/red-tests/red-test-plan.md")?;
-    let plan = read("docs/red-tests/red-test-plan.md")?;
-    for required in [
-        "red.debug.not_persisted",
-        "red.resource.no_lease",
-        "red.resource.temp_left_after_shutdown",
-        "red.kevin.skill_missing_ops",
-        "red.required_file_untracked",
-        "red.domain.remote_fallback_to_local",
-        "red.domain.comm_parses_domain_directly",
-    ] {
-        require_contains("docs/red-tests/red-test-plan.md", &plan, required)?;
+fn verify_all() -> Result<(), String> {
+    verify_function_map()?;
+    run_command("cargo", &["fmt", "--check"])?;
+    run_command(
+        "cargo",
+        &[
+            "clippy",
+            "--workspace",
+            "--all-targets",
+            "--",
+            "-D",
+            "warnings",
+        ],
+    )?;
+    run_command("cargo", &["test", "--workspace"])?;
+    red_tests()?;
+    verify_required_files()?;
+    verify_skill_frontmatter()?;
+    verify_resource_lifecycle()?;
+    verify_code_size()
+}
+
+fn run_command(program: &str, args: &[&str]) -> Result<(), String> {
+    let status = Command::new(program)
+        .args(args)
+        .status()
+        .map_err(|error| format!("failed to run {program} {}: {error}", args.join(" ")))?;
+
+    if status.success() {
+        Ok(())
+    } else {
+        Err(format!(
+            "{program} {} failed with status {status}",
+            args.join(" ")
+        ))
     }
-    Ok(())
+}
+
+fn red_tests() -> Result<(), String> {
+    red_tests::run()
 }
 
 fn verify_required_files() -> Result<(), String> {
@@ -241,54 +282,7 @@ fn verify_resource_lifecycle() -> Result<(), String> {
 }
 
 fn verify_function_map() -> Result<(), String> {
-    let function_map = read("docs/architecture/function-map.md")?;
-    let verification_map = read("docs/architecture/verification-map.md")?;
-    let contracts_map = read("crates/agentteam-contracts/src/feature_map/mod.rs")?;
-
-    for feature_id in [
-        "config.center",
-        "error.center",
-        "comm.center",
-        "domain.registry",
-        "gateway.input",
-        "gateway.output",
-        "gateway.ui",
-        "agent.naming_pool",
-        "team.orchestration",
-        "task.engine",
-        "debug.center",
-        "persist.event_log",
-        "adapter.zterm_tmux",
-        "adapter.tui_agent",
-        "startup.session",
-        "tanote.board",
-        "resource.lifecycle",
-        "cli.agent_skill",
-    ] {
-        require_contains(
-            "docs/architecture/function-map.md",
-            &function_map,
-            feature_id,
-        )?;
-        require_contains(
-            "docs/architecture/verification-map.md",
-            &verification_map,
-            feature_id,
-        )?;
-        require_contains(
-            "crates/agentteam-contracts/src/feature_map/mod.rs",
-            &contracts_map,
-            feature_id,
-        )?;
-    }
-
-    for module in MODULE_DOCS {
-        let doc = read(module)?;
-        require_contains(module, &doc, "## Module Function Map")?;
-        require_contains(module, &doc, "## Module Help Contract")?;
-    }
-
-    Ok(())
+    function_map::run(MODULE_DOCS)
 }
 
 fn verify_code_size() -> Result<(), String> {

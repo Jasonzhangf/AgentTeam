@@ -1,15 +1,9 @@
 # CACHE
 
 2026-06-08:
-- New project `/Users/fanzhang/Documents/github/agentteam` started as empty directory.
-- User requires Rust implementation, no code yet, first create detailed docs and file structure.
-- User requires global AGENTS-compatible naming, shared blocks, pure orchestration, isolated module APIs.
-- Required modules: Error Center, Communication Center, UI Gateway, Input Gateway, Output Gateway, Debug Center, Config Center, agent naming pool, task/team orchestration, zterm/tmux adapter.
-- User requires detailed ASCII flow diagrams and per-feature red tests.
-- Added TANote Collaboration Board requirement: each agent writes work notes via `agentteam note post`; project `TANote.md` is a forum-style projection with from/to/action/thread/note ids, while task truth stays in Task Engine.
-- Fixed local skill YAML frontmatter after Codex skipped `.agents/skills/agentteam/SKILL.md`.
-- Added Resource Lifecycle Manager and MVP Debug Build docs for resource leases, orphan/leak detection, exact-handle cleanup, and efficiency budget reporting.
-- Latest decisions: debug is persisted in v1; daemon/session close cleans scoped resources and temp files; memory policy is growth-control, not aggressive hard caps.
-- Latest governance decisions: function map is a hard implementation gate; 500-line hard limit applies to hand-written Rust leaf files including shared blocks/contracts.
-- Local skill split: use `agentteam-dev` for per-module development cycle; keep `agentteam` for runtime/CLI team collaboration guidance.
-- New requirement: zterm supports multiple daemons; AgentTeam supports cross-daemon communication through daemon domains. `agent@domain` parsing/route resolution belongs to Daemon Domain Registry; Agent Registry names are domain-local.
+- AgentTeam is Rust-first, tmux/zterm-backed, but current completed scope is MVP scaffold Phase 0 + Phase 1 only: no business runtime, no daemon start, no real tmux/zterm execution.
+- Use `agentteam-dev` for development. Required truth docs: `docs/goals/mvp-runtime-vertical-slice-plan.md`, `docs/architecture/function-map.md`, `docs/architecture/verification-map.md`.
+- Phase 0 implemented `xtask/src/red_tests.rs` scans for broad kill, transport internal leaks, TOML owner, state-file owner, domain parsing owner, non-adjacent `From/TryFrom` conversions, and contract feature ids.
+- User added hard rule: every new/changed Rust function must be in function map. Implemented in `xtask/src/function_map.rs`; `verify-function-map` scans `crates/` and `xtask/src/` functions. Canonical `cargo xtask verify` runs this before compile/test gates.
+- Phase 1 implemented typed contracts in `agentteam-contracts`: config, domain, persist, error, debug, resource. Unit tests: 13 contract tests.
+- All full gates passed after staging required new files via `cargo xtask verify`: function-map first, then fmt, clippy, test, red-tests, required-files, skill-frontmatter, resource-lifecycle, code-size.

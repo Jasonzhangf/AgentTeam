@@ -11,7 +11,15 @@ git status --short
 
 ## Future Rust Flow
 
-Every build must include regression gates:
+Canonical full verification:
+
+```text
+cargo xtask verify
+```
+
+`cargo xtask verify` runs `cargo xtask verify-function-map` first. If a new or changed Rust function is missing from the function map, verification stops before compile/test gates.
+
+Expanded gate list:
 
 ```text
 cargo fmt --check
@@ -49,6 +57,8 @@ cargo xtask verify-code-size
 - contracts constants include the same required feature ids
 - every module doc has a module function map
 - every module doc has a module help contract
+- every Rust function or method under `crates/` and `xtask/src/` has a matching function-level registry entry
+- new or changed functions cannot pass the gate until `docs/architecture/function-map.md` is updated
 
 ## Code Size Gate
 

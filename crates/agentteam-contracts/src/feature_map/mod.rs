@@ -1,4 +1,6 @@
 pub const REQUIRED_FEATURE_IDS: &[&str] = &[
+    "architecture.gate",
+    "contract.pipeline",
     "config.center",
     "error.center",
     "comm.center",

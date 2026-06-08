@@ -66,7 +66,7 @@ Help content must explain:
 Help content must not:
 
 - depend on hidden daemon wire protocol
-- expose tmux session names, pane ids, descriptor paths, or zterm endpoints
+- must not expose tmux session names, pane ids, descriptor paths, or zterm endpoints
 - expose daemon endpoint/auth details in agent-facing examples
 - teach manual `TANote.md` edits
 - teach direct cleanup, broad process kill, or direct state-file writes

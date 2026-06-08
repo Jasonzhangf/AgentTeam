@@ -29,6 +29,8 @@ git status --short
 
 | feature_id | Unit tests | Contract/red tests | Integration/smoke |
 |---|---|---|---|
+| `architecture.gate` | xtask scanner unit intent through cargo xtask commands | function registry missing entry fails; red-test scans block owner bypass | full xtask gate sequence |
+| `contract.pipeline` | pipeline node naming and adjacent contract tests | non-adjacent conversion helpers rejected by review/gate | contracts compile through workspace |
 | `config.center` | parse TOML, normalize user config, reject duplicate names, reject agent count mismatch | no module can parse config directly; runtime-state keys in user config fail | load `~/.agentteam/config.toml` or sample config |
 | `error.center` | classify module fault facts, assign severity, generate code, generate evidence_id | no success-wrapped error, no swallowed error, every error persisted, evidence fetchable | CLI shows explicit error with code/severity/evidence_id |
 | `comm.center` | route message/broadcast/task/ready/claim/task-board envelopes, enforce sender scope | no adapter-owned business routing; no task priority ownership; every delivery persisted; no partial broadcast success | super manager publishes task, worker ready/query/claim/update, broadcast all through daemon |

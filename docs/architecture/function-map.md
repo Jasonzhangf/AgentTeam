@@ -6,6 +6,8 @@ The hard gate is `cargo xtask verify-function-map`.
 
 | feature_id | Owner module | Canonical contracts | Allowed paths | Forbidden paths | Required gates |
 |---|---|---|---|---|---|
+| `architecture.gate` | Architecture Gate / xtask | `xtask verify-*`, red-test scans | `xtask`, `docs/architecture/*`, `docs/red-tests/*` | runtime/business crates bypassing gates; unregistered Rust functions | xtask unit, function map gate, red tests |
+| `contract.pipeline` | Contracts Pipeline | `PipelineNodeName`, typed node constructors | `agentteam-contracts`, `docs/architecture/function-map.md` | non-adjacent conversion helpers; duplicate DTOs outside contracts | contract unit, function map gate |
 | `config.center` | Config Center | `ConfigReq*`, `ConfigResp*`, `ConfigErr*` | `agentteam-config`, `docs/modules/01-*`, `docs/config/config.toml.example` | runtime, gateway, CLI parsing TOML directly; runtime/task/debug state inside user config | config unit, config red tests |
 | `error.center` | Error Center | `TeamErr*` | `agentteam-error`, contracts error chain | all modules rendering final error text | error unit, success-wrapped-error red test |
 | `comm.center` | Communication Center | `CommReq*`, `CommResp*` | `agentteam-comm` | tmux adapter owning task/message semantics | routing unit, duplicate-owner red test |
@@ -28,6 +30,106 @@ The hard gate is `cargo xtask verify-function-map`.
 ## Owner Rule
 
 Each row has one owner module. Shared helpers must be moved into `agentteam-contracts` or explicit block modules, not duplicated in owner crates.
+
+## Function Registry
+
+Every Rust function or method under `crates/` and `xtask/src/` must be listed here before the function-map gate passes.
+
+| symbol | owner | feature_id | allowed paths | required gates |
+|---|---|---|---|---|
+| `crates::agentteam-cli::src::main::main` | CLI/Skill | `cli.agent_skill` | `crates/agentteam-cli/src/main.rs` | cargo test, function map gate |
+| `crates::agentteam-contracts::src::config::mod::ConfigErr01Parse::new` | Config Center contracts | `config.center` | `crates/agentteam-contracts/src/config/mod.rs` | contract unit, function map gate |
+| `crates::agentteam-contracts::src::config::mod::ConfigErr02Validation::new` | Config Center contracts | `config.center` | `crates/agentteam-contracts/src/config/mod.rs` | contract unit, function map gate |
+| `crates::agentteam-contracts::src::config::mod::ConfigReq01TomlPath::new` | Config Center contracts | `config.center` | `crates/agentteam-contracts/src/config/mod.rs` | contract unit, function map gate |
+| `crates::agentteam-contracts::src::config::mod::ConfigReq01TomlPath::read_as_raw` | Config Center contracts | `config.center` | `crates/agentteam-contracts/src/config/mod.rs` | contract unit, function map gate |
+| `crates::agentteam-contracts::src::config::mod::ConfigReq02TomlRaw::parse_as_document` | Config Center contracts | `config.center` | `crates/agentteam-contracts/src/config/mod.rs` | contract unit, function map gate |
+| `crates::agentteam-contracts::src::config::mod::ConfigReq03ParsedToml::validate_user_config` | Config Center contracts | `config.center` | `crates/agentteam-contracts/src/config/mod.rs` | contract unit, function map gate |
+| `crates::agentteam-contracts::src::config::mod::ConfigReq04ValidatedUserConfig::normalize_runtime` | Config Center contracts | `config.center` | `crates/agentteam-contracts/src/config/mod.rs` | contract unit, function map gate |
+| `crates::agentteam-contracts::src::config::mod::ConfigResp05RuntimeConfig::snapshot` | Config Center contracts | `config.center` | `crates/agentteam-contracts/src/config/mod.rs` | contract unit, function map gate |
+| `crates::agentteam-contracts::src::config::mod::config_chain_uses_adjacent_nodes` | Config Center contract test | `config.center` | `crates/agentteam-contracts/src/config/mod.rs` | cargo test, function map gate |
+| `crates::agentteam-contracts::src::config::mod::config_feature_id_is_stable` | Config Center contract test | `config.center` | `crates/agentteam-contracts/src/config/mod.rs` | cargo test, function map gate |
+| `crates::agentteam-contracts::src::debug::mod::DebugReq01SnapshotIntent::new` | Debug Center contracts | `debug.center` | `crates/agentteam-contracts/src/debug/mod.rs` | contract unit, function map gate |
+| `crates::agentteam-contracts::src::debug::mod::DebugReq01SnapshotIntent::request_module` | Debug Center contracts | `debug.center` | `crates/agentteam-contracts/src/debug/mod.rs` | contract unit, function map gate |
+| `crates::agentteam-contracts::src::debug::mod::DebugReq02ModuleSnapshotRequest::bundle` | Debug Center contracts | `debug.center` | `crates/agentteam-contracts/src/debug/mod.rs` | contract unit, function map gate |
+| `crates::agentteam-contracts::src::debug::mod::debug_bundle_requires_persistence_receipt` | Debug Center contract test | `debug.center` | `crates/agentteam-contracts/src/debug/mod.rs` | cargo test, function map gate |
+| `crates::agentteam-contracts::src::debug::mod::debug_feature_id_is_stable` | Debug Center contract test | `debug.center` | `crates/agentteam-contracts/src/debug/mod.rs` | cargo test, function map gate |
+| `crates::agentteam-contracts::src::domain::mod::DomainAgentAddr03Resolved::plan_route` | Daemon Domain Registry contracts | `domain.registry` | `crates/agentteam-contracts/src/domain/mod.rs` | contract unit, function map gate |
+| `crates::agentteam-contracts::src::domain::mod::DomainReq01RawTarget::new` | Daemon Domain Registry contracts | `domain.registry` | `crates/agentteam-contracts/src/domain/mod.rs` | contract unit, function map gate |
+| `crates::agentteam-contracts::src::domain::mod::DomainReq01RawTarget::validate` | Daemon Domain Registry contracts | `domain.registry` | `crates/agentteam-contracts/src/domain/mod.rs` | contract unit, function map gate |
+| `crates::agentteam-contracts::src::domain::mod::DomainReq02Validated::resolve_agent` | Daemon Domain Registry contracts | `domain.registry` | `crates/agentteam-contracts/src/domain/mod.rs` | contract unit, function map gate |
+| `crates::agentteam-contracts::src::domain::mod::DomainRouteEndpoint::new` | Daemon Domain Registry contracts | `domain.registry` | `crates/agentteam-contracts/src/domain/mod.rs` | contract unit, function map gate |
+| `crates::agentteam-contracts::src::domain::mod::domain_chain_plans_local_route` | Daemon Domain Registry contract test | `domain.registry` | `crates/agentteam-contracts/src/domain/mod.rs` | cargo test, function map gate |
+| `crates::agentteam-contracts::src::domain::mod::domain_feature_id_is_stable` | Daemon Domain Registry contract test | `domain.registry` | `crates/agentteam-contracts/src/domain/mod.rs` | cargo test, function map gate |
+| `crates::agentteam-contracts::src::error::mod::TeamErr01FaultFact::classify` | Error Center contracts | `error.center` | `crates/agentteam-contracts/src/error/mod.rs` | contract unit, function map gate |
+| `crates::agentteam-contracts::src::error::mod::TeamErr01FaultFact::new` | Error Center contracts | `error.center` | `crates/agentteam-contracts/src/error/mod.rs` | contract unit, function map gate |
+| `crates::agentteam-contracts::src::error::mod::TeamErr02Classified::link_evidence` | Error Center contracts | `error.center` | `crates/agentteam-contracts/src/error/mod.rs` | contract unit, function map gate |
+| `crates::agentteam-contracts::src::error::mod::TeamErr02EvidenceLinked::persist_as_event` | Error Center contracts | `error.center` | `crates/agentteam-contracts/src/error/mod.rs` | contract unit, function map gate |
+| `crates::agentteam-contracts::src::error::mod::TeamErr03RuntimeEvent::project` | Error Center contracts | `error.center` | `crates/agentteam-contracts/src/error/mod.rs` | contract unit, function map gate |
+| `crates::agentteam-contracts::src::error::mod::error_chain_keeps_evidence_and_receipt` | Error Center contract test | `error.center` | `crates/agentteam-contracts/src/error/mod.rs` | cargo test, function map gate |
+| `crates::agentteam-contracts::src::error::mod::error_feature_id_is_stable` | Error Center contract test | `error.center` | `crates/agentteam-contracts/src/error/mod.rs` | cargo test, function map gate |
+| `crates::agentteam-contracts::src::persist::mod::PersistReq01EventDraft::new` | Persistence contracts | `persist.event_log` | `crates/agentteam-contracts/src/persist/mod.rs` | contract unit, function map gate |
+| `crates::agentteam-contracts::src::persist::mod::PersistReq01EventDraft::validate` | Persistence contracts | `persist.event_log` | `crates/agentteam-contracts/src/persist/mod.rs` | contract unit, function map gate |
+| `crates::agentteam-contracts::src::persist::mod::PersistReq02ValidatedEvent::append_receipt` | Persistence contracts | `persist.event_log` | `crates/agentteam-contracts/src/persist/mod.rs` | contract unit, function map gate |
+| `crates::agentteam-contracts::src::persist::mod::PersistReq04Replay::materialize` | Persistence contracts | `persist.event_log` | `crates/agentteam-contracts/src/persist/mod.rs` | contract unit, function map gate |
+| `crates::agentteam-contracts::src::persist::mod::PersistReq04Replay::new` | Persistence contracts | `persist.event_log` | `crates/agentteam-contracts/src/persist/mod.rs` | contract unit, function map gate |
+| `crates::agentteam-contracts::src::persist::mod::persist_append_chain_uses_adjacent_nodes` | Persistence contract test | `persist.event_log` | `crates/agentteam-contracts/src/persist/mod.rs` | cargo test, function map gate |
+| `crates::agentteam-contracts::src::persist::mod::persist_feature_id_is_stable` | Persistence contract test | `persist.event_log` | `crates/agentteam-contracts/src/persist/mod.rs` | cargo test, function map gate |
+| `crates::agentteam-contracts::src::persist::mod::persist_replay_chain_materializes_state` | Persistence contract test | `persist.event_log` | `crates/agentteam-contracts/src/persist/mod.rs` | cargo test, function map gate |
+| `crates::agentteam-contracts::src::pipeline::mod::PipelineNodeName::new` | Contracts Pipeline | `contract.pipeline` | `crates/agentteam-contracts/src/pipeline/mod.rs` | cargo test, function map gate |
+| `crates::agentteam-contracts::src::resource::mod::ResourceLease04Active::release` | Resource Lifecycle contracts | `resource.lifecycle` | `crates/agentteam-contracts/src/resource/mod.rs` | contract unit, function map gate |
+| `crates::agentteam-contracts::src::resource::mod::ResourceMetric03Initial::activate` | Resource Lifecycle contracts | `resource.lifecycle` | `crates/agentteam-contracts/src/resource/mod.rs` | contract unit, function map gate |
+| `crates::agentteam-contracts::src::resource::mod::ResourceReq01AcquireIntent::new` | Resource Lifecycle contracts | `resource.lifecycle` | `crates/agentteam-contracts/src/resource/mod.rs` | contract unit, function map gate |
+| `crates::agentteam-contracts::src::resource::mod::ResourceReq01AcquireIntent::validate_scope` | Resource Lifecycle contracts | `resource.lifecycle` | `crates/agentteam-contracts/src/resource/mod.rs` | contract unit, function map gate |
+| `crates::agentteam-contracts::src::resource::mod::ResourceReq02ValidatedScope::initial_metric` | Resource Lifecycle contracts | `resource.lifecycle` | `crates/agentteam-contracts/src/resource/mod.rs` | contract unit, function map gate |
+| `crates::agentteam-contracts::src::resource::mod::resource_chain_requires_active_lease_before_release` | Resource Lifecycle contract test | `resource.lifecycle` | `crates/agentteam-contracts/src/resource/mod.rs` | cargo test, function map gate |
+| `crates::agentteam-contracts::src::resource::mod::resource_feature_id_is_stable` | Resource Lifecycle contract test | `resource.lifecycle` | `crates/agentteam-contracts/src/resource/mod.rs` | cargo test, function map gate |
+| `crates::agentteamd::src::main::main` | Daemon binary scaffold | `startup.session` | `crates/agentteamd/src/main.rs` | cargo test, function map gate |
+| `xtask::src::function_map::collect_rust_function_symbols` | Architecture Gate | `architecture.gate` | `xtask/src/function_map.rs` | function map gate |
+| `xtask::src::function_map::collect_rust_function_symbols_in` | Architecture Gate | `architecture.gate` | `xtask/src/function_map.rs` | function map gate |
+| `xtask::src::function_map::collect_symbols_from_content` | Architecture Gate | `architecture.gate` | `xtask/src/function_map.rs` | function map gate |
+| `xtask::src::function_map::module_symbol` | Architecture Gate | `architecture.gate` | `xtask/src/function_map.rs` | function map gate |
+| `xtask::src::function_map::parse_function_name` | Architecture Gate | `architecture.gate` | `xtask/src/function_map.rs` | function map gate |
+| `xtask::src::function_map::parse_impl_type` | Architecture Gate | `architecture.gate` | `xtask/src/function_map.rs` | function map gate |
+| `xtask::src::function_map::read` | Architecture Gate | `architecture.gate` | `xtask/src/function_map.rs` | function map gate |
+| `xtask::src::function_map::require_contains` | Architecture Gate | `architecture.gate` | `xtask/src/function_map.rs` | function map gate |
+| `xtask::src::function_map::run` | Architecture Gate | `architecture.gate` | `xtask/src/function_map.rs` | function map gate |
+| `xtask::src::function_map::verify_feature_ids` | Architecture Gate | `architecture.gate` | `xtask/src/function_map.rs` | function map gate |
+| `xtask::src::function_map::verify_module_docs` | Architecture Gate | `architecture.gate` | `xtask/src/function_map.rs` | function map gate |
+| `xtask::src::function_map::verify_rust_function_registry` | Architecture Gate | `architecture.gate` | `xtask/src/function_map.rs` | function map gate |
+| `xtask::src::main::collect_oversized_rust_files` | Architecture Gate | `architecture.gate` | `xtask/src/main.rs` | code-size gate |
+| `xtask::src::main::main` | Architecture Gate | `architecture.gate` | `xtask/src/main.rs` | xtask command smoke |
+| `xtask::src::main::read` | Architecture Gate | `architecture.gate` | `xtask/src/main.rs` | xtask gates |
+| `xtask::src::main::red_tests` | Architecture Gate | `architecture.gate` | `xtask/src/main.rs` | red-tests gate |
+| `xtask::src::main::require_contains` | Architecture Gate | `architecture.gate` | `xtask/src/main.rs` | xtask gates |
+| `xtask::src::main::require_file` | Architecture Gate | `architecture.gate` | `xtask/src/main.rs` | required-file gate |
+| `xtask::src::main::run_command` | Architecture Gate | `architecture.gate` | `xtask/src/main.rs` | canonical verify gate |
+| `xtask::src::main::verify_all` | Architecture Gate | `architecture.gate` | `xtask/src/main.rs` | canonical verify gate |
+| `xtask::src::main::verify_code_size` | Architecture Gate | `architecture.gate` | `xtask/src/main.rs` | code-size gate |
+| `xtask::src::main::verify_function_map` | Architecture Gate | `architecture.gate` | `xtask/src/main.rs` | function map gate |
+| `xtask::src::main::verify_one_skill_frontmatter` | Architecture Gate | `architecture.gate` | `xtask/src/main.rs` | skill-frontmatter gate |
+| `xtask::src::main::verify_required_files` | Architecture Gate | `architecture.gate` | `xtask/src/main.rs` | required-file gate |
+| `xtask::src::main::verify_resource_lifecycle` | Architecture Gate | `architecture.gate` | `xtask/src/main.rs` | resource lifecycle gate |
+| `xtask::src::main::verify_skill_frontmatter` | Architecture Gate | `architecture.gate` | `xtask/src/main.rs` | skill-frontmatter gate |
+| `xtask::src::red_tests::allowed_broad_kill_reference` | Architecture Gate | `architecture.gate` | `xtask/src/red_tests.rs` | red-tests gate |
+| `xtask::src::red_tests::contains_forbidden_context` | Architecture Gate | `architecture.gate` | `xtask/src/red_tests.rs` | red-tests gate |
+| `xtask::src::red_tests::extract_declared_feature_id` | Architecture Gate | `architecture.gate` | `xtask/src/red_tests.rs` | red-tests gate |
+| `xtask::src::red_tests::ignored_path` | Architecture Gate | `architecture.gate` | `xtask/src/red_tests.rs` | red-tests gate |
+| `xtask::src::red_tests::is_text_candidate` | Architecture Gate | `architecture.gate` | `xtask/src/red_tests.rs` | red-tests gate |
+| `xtask::src::red_tests::no_violations` | Architecture Gate | `architecture.gate` | `xtask/src/red_tests.rs` | red-tests gate |
+| `xtask::src::red_tests::normalize_repo_path` | Architecture Gate | `architecture.gate` | `xtask/src/red_tests.rs` | red-tests gate |
+| `xtask::src::red_tests::read` | Architecture Gate | `architecture.gate` | `xtask/src/red_tests.rs` | red-tests gate |
+| `xtask::src::red_tests::require_contains` | Architecture Gate | `architecture.gate` | `xtask/src/red_tests.rs` | red-tests gate |
+| `xtask::src::red_tests::require_plan_entries` | Architecture Gate | `architecture.gate` | `xtask/src/red_tests.rs` | red-tests gate |
+| `xtask::src::red_tests::run` | Architecture Gate | `architecture.gate` | `xtask/src/red_tests.rs` | red-tests gate |
+| `xtask::src::red_tests::scan_agent_facing_internal_leaks` | Architecture Gate | `architecture.gate` | `xtask/src/red_tests.rs` | red-tests gate |
+| `xtask::src::red_tests::scan_broad_kill_patterns` | Architecture Gate | `architecture.gate` | `xtask/src/red_tests.rs` | red-tests gate |
+| `xtask::src::red_tests::scan_contract_feature_ids` | Architecture Gate | `architecture.gate` | `xtask/src/red_tests.rs` | red-tests gate |
+| `xtask::src::red_tests::scan_domain_owner_boundaries` | Architecture Gate | `architecture.gate` | `xtask/src/red_tests.rs` | red-tests gate |
+| `xtask::src::red_tests::scan_non_adjacent_pipeline_conversions` | Architecture Gate | `architecture.gate` | `xtask/src/red_tests.rs` | red-tests gate |
+| `xtask::src::red_tests::scan_rust_files` | Architecture Gate | `architecture.gate` | `xtask/src/red_tests.rs` | red-tests gate |
+| `xtask::src::red_tests::scan_state_file_write_owner` | Architecture Gate | `architecture.gate` | `xtask/src/red_tests.rs` | red-tests gate |
+| `xtask::src::red_tests::scan_text_files` | Architecture Gate | `architecture.gate` | `xtask/src/red_tests.rs` | red-tests gate |
+| `xtask::src::red_tests::scan_toml_parsing_owner` | Architecture Gate | `architecture.gate` | `xtask/src/red_tests.rs` | red-tests gate |
 
 ## Discussion Items
 
