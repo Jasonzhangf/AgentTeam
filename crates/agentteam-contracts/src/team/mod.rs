@@ -71,6 +71,12 @@ pub enum TeamReq02ParsedCommand {
         detail: Option<String>,
         json: bool,
     },
+    TaskClaim {
+        runtime_home: Option<String>,
+        worker_name: Option<String>,
+        worker_role: Option<String>,
+        json: bool,
+    },
     TmuxLoopback {
         runtime_home: Option<String>,
         session_count: Option<String>,
@@ -132,6 +138,12 @@ pub enum TeamReq03ValidatedIntent {
         detail: String,
         json: bool,
     },
+    TaskClaim {
+        runtime_home: String,
+        worker_name: String,
+        worker_role: String,
+        json: bool,
+    },
     TmuxLoopback {
         runtime_home: String,
         session_count: String,
@@ -153,6 +165,7 @@ impl TeamReq03ValidatedIntent {
             Self::TaskStatus { .. } => "task.status",
             Self::TaskDone { .. } => "task.done",
             Self::TaskError { .. } => "task.error",
+            Self::TaskClaim { .. } => "task.claim",
             Self::TmuxLoopback { .. } => "tmux.loopback",
         }
     }
@@ -180,6 +193,13 @@ mod tests {
             json: true,
         };
         assert_eq!(intent.command_name(), "task.list");
+        let intent = TeamReq03ValidatedIntent::TaskClaim {
+            runtime_home: "target/agentteam-smoke".to_owned(),
+            worker_name: "Alice".to_owned(),
+            worker_role: "builder".to_owned(),
+            json: true,
+        };
+        assert_eq!(intent.command_name(), "task.claim");
         let intent = TeamReq03ValidatedIntent::TmuxLoopback {
             runtime_home: "target/agentteam-smoke".to_owned(),
             session_count: "2".to_owned(),

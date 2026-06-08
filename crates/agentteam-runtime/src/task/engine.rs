@@ -3,7 +3,8 @@ use std::path::{Path, PathBuf};
 use crate::task::error::{TaskEngineError, TaskEngineResult};
 use crate::task::materialize::materialize_task_board;
 use crate::task::model::{
-    TaskBoard, TaskCreateInput, TaskEventPayload, TaskStateChanged, TaskStatus, TaskTransitionInput,
+    TaskBoard, TaskClaimInput, TaskCreateInput, TaskEventPayload, TaskStateChanged, TaskStatus,
+    TaskTransitionInput,
 };
 use crate::task::persist::persist_task_event;
 
@@ -32,9 +33,78 @@ impl TaskEngine {
             target: input.target,
             title: input.title,
             body: input.body,
+            priority: input.priority,
+            blocked: input.blocked,
             detail: "created".to_owned(),
         };
         persist_state_change(&self.log_path, "task_created", payload)
+    }
+
+    pub fn claim_task(&self, input: TaskClaimInput) -> TaskEngineResult<TaskStateChanged> {
+        validate_claim_input(&input)?;
+        let board = self.board()?;
+        let mut same_scope_running = false;
+        let mut candidates = board
+            .tasks
+            .iter()
+            .filter(|task| {
+                let same_scope = claim_scope_matches(task, &input);
+                if same_scope && task.status == TaskStatus::Running {
+                    same_scope_running = true;
+                }
+                same_scope && task.status == TaskStatus::Queued
+            })
+            .collect::<Vec<_>>();
+
+        if same_scope_running {
+            return Err(TaskEngineError::Validation {
+                reason: format!(
+                    "worker {} with role {} already has a running task",
+                    input.worker_name, input.worker_role
+                ),
+            });
+        }
+
+        candidates.sort_by_key(|task| {
+            (
+                if task.target_kind == crate::task::model::TaskTargetKind::Agent
+                    && task.target == input.worker_name
+                {
+                    0usize
+                } else {
+                    1usize
+                },
+                if task.blocked { 0usize } else { 1usize },
+                std::cmp::Reverse(task.priority),
+                task.latest_sequence,
+            )
+        });
+
+        let Some(task) = candidates.first() else {
+            return Err(TaskEngineError::Validation {
+                reason: format!(
+                    "no claimable task for worker {} with role {}",
+                    input.worker_name, input.worker_role
+                ),
+            });
+        };
+
+        let detail = format!(
+            "claimed by {} as {} priority={} blocked={}",
+            input.worker_name,
+            claim_scope_label(task, &input),
+            task.priority,
+            task.blocked
+        );
+        self.transition_task(
+            TaskTransitionInput {
+                task_id: task.task_id.clone(),
+                actor: input.worker_name,
+                detail,
+            },
+            TaskStatus::Running,
+            "task_claimed",
+        )
     }
 
     pub fn mark_running(&self, input: TaskTransitionInput) -> TaskEngineResult<TaskStateChanged> {
@@ -100,6 +170,8 @@ impl TaskEngine {
             target: task.target.clone(),
             title: task.title.clone(),
             body: task.body.clone(),
+            priority: task.priority,
+            blocked: task.blocked,
             detail: input.detail,
         };
         persist_state_change(&self.log_path, event_kind, payload)
@@ -113,6 +185,16 @@ fn validate_create_input(input: &TaskCreateInput) -> TaskEngineResult<()> {
         ("target", input.target.as_str()),
         ("title", input.title.as_str()),
         ("body", input.body.as_str()),
+    ] {
+        require_non_empty(field, value)?;
+    }
+    Ok(())
+}
+
+fn validate_claim_input(input: &TaskClaimInput) -> TaskEngineResult<()> {
+    for (field, value) in [
+        ("worker_name", input.worker_name.as_str()),
+        ("worker_role", input.worker_role.as_str()),
     ] {
         require_non_empty(field, value)?;
     }
@@ -185,4 +267,24 @@ fn persist_state_change(
 
 fn next_task_id(board: &TaskBoard) -> String {
     format!("AT-{:06}", board.task_count + 1)
+}
+
+fn claim_scope_matches(task: &crate::task::model::TaskRecord, input: &TaskClaimInput) -> bool {
+    match task.target_kind {
+        crate::task::model::TaskTargetKind::Agent => task.target == input.worker_name,
+        crate::task::model::TaskTargetKind::Role => task.target == input.worker_role,
+    }
+}
+
+fn claim_scope_label(
+    task: &crate::task::model::TaskRecord,
+    input: &TaskClaimInput,
+) -> &'static str {
+    match task.target_kind {
+        crate::task::model::TaskTargetKind::Agent if task.target == input.worker_name => "assigned",
+        crate::task::model::TaskTargetKind::Role if task.target == input.worker_role => {
+            "role-matching"
+        }
+        _ => "unknown",
+    }
 }

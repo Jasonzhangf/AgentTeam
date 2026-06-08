@@ -101,6 +101,7 @@ fn local_result_command_name(result: &LocalCommandResult) -> &'static str {
         LocalCommandResult::TaskStatus { .. } => "task.status",
         LocalCommandResult::TaskDone { .. } => "task.done",
         LocalCommandResult::TaskError { .. } => "task.error",
+        LocalCommandResult::TaskClaim { .. } => "task.claim",
         LocalCommandResult::TmuxLoopback { .. } => "tmux.loopback",
     }
 }

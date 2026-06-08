@@ -33,6 +33,7 @@ fn apply_task_event(
     if record.event_kind == "task_created" {
         insert_created(tasks, record, payload)
     } else if record.event_kind == "task_running"
+        || record.event_kind == "task_claimed"
         || record.event_kind == "task_done"
         || record.event_kind == "task_error"
     {
@@ -62,6 +63,8 @@ fn insert_created(
             target: payload.target,
             title: payload.title,
             body: payload.body,
+            priority: payload.priority,
+            blocked: payload.blocked,
             created_by: payload.actor.clone(),
             latest_actor: payload.actor,
             latest_detail: payload.detail,

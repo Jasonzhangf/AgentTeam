@@ -2,7 +2,8 @@ use std::path::PathBuf;
 use std::time::{SystemTime, UNIX_EPOCH};
 
 use crate::task::{
-    TaskCreateInput, TaskEngine, TaskEngineError, TaskStatus, TaskTargetKind, TaskTransitionInput,
+    TaskClaimInput, TaskCreateInput, TaskEngine, TaskEngineError, TaskStatus, TaskTargetKind,
+    TaskTransitionInput,
 };
 
 fn temp_log_path(test_name: &str) -> PathBuf {
@@ -24,6 +25,8 @@ fn create_input(title: &str) -> TaskCreateInput {
         target: "builder".to_owned(),
         title: title.to_owned(),
         body: "Implement the requested slice".to_owned(),
+        priority: 100,
+        blocked: false,
     }
 }
 
@@ -87,4 +90,82 @@ fn unknown_task_status_fails() {
     let error = engine.status("AT-404").unwrap_err();
 
     assert_eq!(error.reason(), "task AT-404 was not found");
+}
+
+#[test]
+fn claim_prefers_assigned_task_over_role_match() {
+    let path = temp_log_path("claim_assigned");
+    let engine = TaskEngine::new(path);
+    engine
+        .create_task(TaskCreateInput {
+            team_id: "default".to_owned(),
+            created_by: "Kevin".to_owned(),
+            target_kind: TaskTargetKind::Role,
+            target: "builder".to_owned(),
+            title: "Role task".to_owned(),
+            body: "Role match".to_owned(),
+            priority: 100,
+            blocked: false,
+        })
+        .unwrap();
+    engine
+        .create_task(TaskCreateInput {
+            team_id: "default".to_owned(),
+            created_by: "Kevin".to_owned(),
+            target_kind: TaskTargetKind::Agent,
+            target: "Alice".to_owned(),
+            title: "Assigned task".to_owned(),
+            body: "Assigned match".to_owned(),
+            priority: 10,
+            blocked: false,
+        })
+        .unwrap();
+
+    let changed = engine
+        .claim_task(TaskClaimInput {
+            worker_name: "Alice".to_owned(),
+            worker_role: "builder".to_owned(),
+        })
+        .unwrap();
+    assert_eq!(changed.task_id, "AT-000002");
+    assert_eq!(changed.status, TaskStatus::Running);
+}
+
+#[test]
+fn claim_prefers_blocked_task_inside_same_class() {
+    let path = temp_log_path("claim_blocked");
+    let engine = TaskEngine::new(path);
+    engine
+        .create_task(TaskCreateInput {
+            team_id: "default".to_owned(),
+            created_by: "Kevin".to_owned(),
+            target_kind: TaskTargetKind::Role,
+            target: "builder".to_owned(),
+            title: "Open task".to_owned(),
+            body: "Unblocked".to_owned(),
+            priority: 200,
+            blocked: false,
+        })
+        .unwrap();
+    engine
+        .create_task(TaskCreateInput {
+            team_id: "default".to_owned(),
+            created_by: "Kevin".to_owned(),
+            target_kind: TaskTargetKind::Role,
+            target: "builder".to_owned(),
+            title: "Blocked task".to_owned(),
+            body: "Blocked".to_owned(),
+            priority: 50,
+            blocked: true,
+        })
+        .unwrap();
+
+    let changed = engine
+        .claim_task(TaskClaimInput {
+            worker_name: "Bob".to_owned(),
+            worker_role: "builder".to_owned(),
+        })
+        .unwrap();
+    assert_eq!(changed.task_id, "AT-000002");
+    assert_eq!(changed.status, TaskStatus::Running);
 }

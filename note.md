@@ -50,3 +50,8 @@
 - `agentteam-comm` now exports `route_ready_report`, `route_task_board_query`, and `route_task_claim`, with validation-only routing and explicit acceptance results.
 - Split `crates/agentteam-contracts/src/comm/mod.rs` test block into `crates/agentteam-contracts/src/comm/tests.rs` to satisfy the 500-line hard limit.
 - Verified with `cargo test -p agentteam-contracts -p agentteam-comm`, `cargo xtask verify-function-map`, and full `cargo xtask verify`.
+2026-06-08 Task Engine claim slice result:
+- Added task claim truth to `agentteam-runtime::task` with `priority`/`blocked` carried in task records and event payloads.
+- `TaskEngine::claim_task` now selects assigned tasks before role-matching tasks, with blocked-before-unblocked ordering inside the same claim class and explicit `task_claimed` persistence.
+- Added CLI/Gateway support for `task claim --runtime-home ... --worker-name ... --worker-role ... --json` and a local runtime smoke that claims a task, transitions it to running, then completes it.
+- Verified with `cargo test -p agentteam-runtime -p agentteam-gateway`, `cargo xtask verify-function-map`, `cargo fmt --check`, `cargo clippy --workspace --all-targets -- -D warnings`, `cargo test --workspace`, `cargo xtask verify-code-size`, and `cargo xtask verify`.

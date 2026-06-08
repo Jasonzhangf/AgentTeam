@@ -103,6 +103,23 @@ fn parses_task_status_intent() {
 }
 
 #[test]
+fn parses_task_claim_intent() {
+    let intent = parse_cli_args(strings(&[
+        "task",
+        "claim",
+        "--runtime-home",
+        "target/agentteam-smoke",
+        "--worker-name",
+        "Alice",
+        "--worker-role",
+        "builder",
+        "--json",
+    ]))
+    .unwrap();
+    assert_eq!(intent.command_name(), "task.claim");
+}
+
+#[test]
 fn parses_tmux_loopback_intent() {
     let intent = parse_cli_args(strings(&[
         "tmux",

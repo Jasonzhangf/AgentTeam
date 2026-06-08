@@ -16,7 +16,8 @@ use crate::local_projection::{
 };
 pub use crate::local_projection::{LocalCommandError, LocalCommandResult};
 use crate::task::{
-    TaskCreateInput, TaskEngine, TaskEngineError, TaskTargetKind, TaskTransitionInput,
+    TaskClaimInput, TaskCreateInput, TaskEngine, TaskEngineError, TaskTargetKind,
+    TaskTransitionInput,
 };
 
 pub fn execute_local_intent(
@@ -77,6 +78,12 @@ pub fn execute_local_intent(
             detail,
             ..
         } => execute_task_error(runtime_home, task_id, actor, detail),
+        TeamReq03ValidatedIntent::TaskClaim {
+            runtime_home,
+            worker_name,
+            worker_role,
+            ..
+        } => execute_task_claim(runtime_home, worker_name, worker_role),
         TeamReq03ValidatedIntent::TmuxLoopback {
             runtime_home,
             session_count,
@@ -154,6 +161,8 @@ fn execute_task_send(
             target,
             title,
             body,
+            priority: 100,
+            blocked: false,
         })
         .map_err(task_error)?;
     Ok(LocalCommandResult::TaskSend {
@@ -212,6 +221,23 @@ fn execute_task_error(
         })
         .map_err(task_error)?;
     Ok(LocalCommandResult::TaskError {
+        task: task_changed_result(changed),
+    })
+}
+
+fn execute_task_claim(
+    runtime_home: String,
+    worker_name: String,
+    worker_role: String,
+) -> Result<LocalCommandResult, LocalCommandError> {
+    let engine = TaskEngine::new(event_log_path(runtime_home));
+    let changed = engine
+        .claim_task(TaskClaimInput {
+            worker_name,
+            worker_role,
+        })
+        .map_err(task_error)?;
+    Ok(LocalCommandResult::TaskClaim {
         task: task_changed_result(changed),
     })
 }

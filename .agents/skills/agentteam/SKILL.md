@@ -56,6 +56,7 @@ agentteam domain resolve --target Alice@review-daemon --config docs/config/confi
 agentteam debug snapshot --config docs/config/config.toml.example --runtime-home target/agentteam-smoke --json
 agentteam task send --runtime-home target/agentteam-task-smoke --team default --created-by Kevin --target-kind role --target builder --title "Implement approved module" --body "Use owner APIs and gates" --json
 agentteam task list --runtime-home target/agentteam-task-smoke --json
+agentteam task claim --runtime-home target/agentteam-task-smoke --worker-name Alice --worker-role builder --json
 agentteam task status --runtime-home target/agentteam-task-smoke --task AT-000001 --json
 agentteam task done --runtime-home target/agentteam-task-smoke --task AT-000001 --actor Alice --detail "Completed with tests" --json
 agentteam task error --runtime-home target/agentteam-task-smoke --task AT-000001 --actor Alice --detail "Blocked by missing config" --json

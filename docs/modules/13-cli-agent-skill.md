@@ -83,6 +83,7 @@ agentteam debug snapshot --config <path> --runtime-home <runtime_home> --json
 
 agentteam task send --runtime-home <runtime_home> --team <team_id> --created-by <agent> --target-kind <agent|role> --target <name_or_role> --title <title> --body <text> --json
 agentteam task list --runtime-home <runtime_home> --json
+agentteam task claim --runtime-home <runtime_home> --worker-name <agent> --worker-role <role> --json
 agentteam task status --runtime-home <runtime_home> --task <task_id> --json
 agentteam task done --runtime-home <runtime_home> --task <task_id> --actor <agent> --detail <text> --json
 agentteam task error --runtime-home <runtime_home> --task <task_id> --actor <agent> --detail <text> --json

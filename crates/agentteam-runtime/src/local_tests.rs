@@ -130,6 +130,21 @@ fn local_task_commands_persist_and_replay_state() {
         other => panic!("unexpected result {other:?}"),
     }
 
+    let claim = execute_local_intent(TeamReq03ValidatedIntent::TaskClaim {
+        runtime_home: home.clone(),
+        worker_name: "Alice".to_owned(),
+        worker_role: "builder".to_owned(),
+        json: true,
+    })
+    .unwrap();
+    match claim {
+        LocalCommandResult::TaskClaim { task } => {
+            assert_eq!(task.task_id, "AT-000001");
+            assert_eq!(task.status, "running");
+        }
+        other => panic!("unexpected result {other:?}"),
+    }
+
     let done = execute_local_intent(TeamReq03ValidatedIntent::TaskDone {
         runtime_home: home.clone(),
         task_id: "AT-000001".to_owned(),

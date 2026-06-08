@@ -318,10 +318,12 @@ Every Rust function or method under `crates/` and `xtask/src/` must be listed he
 | `crates::agentteam-gateway::src::input::parse_task_done` | Input Gateway | `gateway.input` | `crates/agentteam-gateway/src/input.rs` | gateway unit, function map gate |
 | `crates::agentteam-gateway::src::input::parse_task_error` | Input Gateway | `gateway.input` | `crates/agentteam-gateway/src/input.rs` | gateway unit, function map gate |
 | `crates::agentteam-gateway::src::input::parse_task_list` | Input Gateway | `gateway.input` | `crates/agentteam-gateway/src/input.rs` | gateway unit, function map gate |
+| `crates::agentteam-gateway::src::input::parse_task_claim` | Input Gateway | `gateway.input` | `crates/agentteam-gateway/src/input.rs` | gateway unit, function map gate |
 | `crates::agentteam-gateway::src::input::parse_task_send` | Input Gateway | `gateway.input` | `crates/agentteam-gateway/src/input.rs` | gateway unit, function map gate |
 | `crates::agentteam-gateway::src::input::parse_task_status` | Input Gateway | `gateway.input` | `crates/agentteam-gateway/src/input.rs` | gateway unit, function map gate |
 | `crates::agentteam-gateway::src::input::parse_tmux_loopback` | Input Gateway | `gateway.input` | `crates/agentteam-gateway/src/input.rs` | gateway unit, function map gate |
 | `crates::agentteam-gateway::src::tests::parses_task_send_intent` | Input Gateway test | `gateway.input` | `crates/agentteam-gateway/src/tests.rs` | cargo test, function map gate |
+| `crates::agentteam-gateway::src::tests::parses_task_claim_intent` | Input Gateway test | `gateway.input` | `crates/agentteam-gateway/src/tests.rs` | cargo test, function map gate |
 | `crates::agentteam-gateway::src::tests::parses_task_status_intent` | Input Gateway test | `gateway.input` | `crates/agentteam-gateway/src/tests.rs` | cargo test, function map gate |
 | `crates::agentteam-gateway::src::tests::parses_tmux_loopback_intent` | Input Gateway test | `gateway.input` | `crates/agentteam-gateway/src/tests.rs` | cargo test, function map gate |
 | `crates::agentteam-gateway::src::tests::render_task_result_json_uses_task_command_name` | Output Gateway test | `gateway.output` | `crates/agentteam-gateway/src/tests.rs` | cargo test, function map gate |
@@ -390,6 +392,7 @@ Every Rust function or method under `crates/` and `xtask/src/` must be listed he
 | `crates::agentteam-comm::src::tests::route_task_board_query_preserves_query` | Communication Center test | `comm.center` | `crates/agentteam-comm/src/tests.rs` | cargo test, function map gate |
 | `crates::agentteam-comm::src::tests::route_task_claim_accepts_worker_scope` | Communication Center test | `comm.center` | `crates/agentteam-comm/src/tests.rs` | cargo test, function map gate |
 | `crates::agentteam-runtime::src::local::execute_task_done` | Team Orchestrator | `team.orchestration` | `crates/agentteam-runtime/src/local.rs` | runtime unit, function map gate |
+| `crates::agentteam-runtime::src::local::execute_task_claim` | Team Orchestrator | `team.orchestration` | `crates/agentteam-runtime/src/local.rs` | runtime unit, function map gate |
 | `crates::agentteam-runtime::src::local::execute_task_error` | Team Orchestrator | `team.orchestration` | `crates/agentteam-runtime/src/local.rs` | runtime unit, function map gate |
 | `crates::agentteam-runtime::src::local::execute_task_list` | Team Orchestrator | `team.orchestration` | `crates/agentteam-runtime/src/local.rs` | runtime unit, function map gate |
 | `crates::agentteam-runtime::src::local::execute_task_send` | Team Orchestrator | `team.orchestration` | `crates/agentteam-runtime/src/local.rs` | runtime unit, function map gate |
@@ -409,6 +412,7 @@ Every Rust function or method under `crates/` and `xtask/src/` must be listed he
 | `crates::agentteam-runtime::src::local_tests::local_task_commands_persist_and_replay_state` | Team Orchestrator test | `team.orchestration` | `crates/agentteam-runtime/src/local_tests.rs` | cargo test, function map gate |
 | `crates::agentteam-runtime::src::task::engine::TaskEngine::board` | Task Engine | `task.engine` | `crates/agentteam-runtime/src/task/engine.rs` | task unit, function map gate |
 | `crates::agentteam-runtime::src::task::engine::TaskEngine::create_task` | Task Engine | `task.engine` | `crates/agentteam-runtime/src/task/engine.rs` | task unit, function map gate |
+| `crates::agentteam-runtime::src::task::engine::TaskEngine::claim_task` | Task Engine | `task.engine` | `crates/agentteam-runtime/src/task/engine.rs` | task unit, function map gate |
 | `crates::agentteam-runtime::src::task::engine::TaskEngine::mark_done` | Task Engine | `task.engine` | `crates/agentteam-runtime/src/task/engine.rs` | task unit, function map gate |
 | `crates::agentteam-runtime::src::task::engine::TaskEngine::mark_error` | Task Engine | `task.engine` | `crates/agentteam-runtime/src/task/engine.rs` | task unit, function map gate |
 | `crates::agentteam-runtime::src::task::engine::TaskEngine::mark_running` | Task Engine | `task.engine` | `crates/agentteam-runtime/src/task/engine.rs` | task unit, function map gate |
@@ -417,7 +421,10 @@ Every Rust function or method under `crates/` and `xtask/src/` must be listed he
 | `crates::agentteam-runtime::src::task::engine::TaskEngine::transition_task` | Task Engine | `task.engine` | `crates/agentteam-runtime/src/task/engine.rs` | task unit, function map gate |
 | `crates::agentteam-runtime::src::task::engine::next_task_id` | Task Engine | `task.engine` | `crates/agentteam-runtime/src/task/engine.rs` | task unit, function map gate |
 | `crates::agentteam-runtime::src::task::engine::persist_state_change` | Task Engine | `task.engine` | `crates/agentteam-runtime/src/task/engine.rs` | task unit, function map gate |
+| `crates::agentteam-runtime::src::task::engine::claim_scope_label` | Task Engine | `task.engine` | `crates/agentteam-runtime/src/task/engine.rs` | task unit, function map gate |
+| `crates::agentteam-runtime::src::task::engine::claim_scope_matches` | Task Engine | `task.engine` | `crates/agentteam-runtime/src/task/engine.rs` | task unit, function map gate |
 | `crates::agentteam-runtime::src::task::engine::require_non_empty` | Task Engine | `task.engine` | `crates/agentteam-runtime/src/task/engine.rs` | task unit, function map gate |
+| `crates::agentteam-runtime::src::task::engine::validate_claim_input` | Task Engine | `task.engine` | `crates/agentteam-runtime/src/task/engine.rs` | task unit, function map gate |
 | `crates::agentteam-runtime::src::task::engine::validate_create_input` | Task Engine | `task.engine` | `crates/agentteam-runtime/src/task/engine.rs` | task unit, function map gate |
 | `crates::agentteam-runtime::src::task::engine::validate_transition` | Task Engine | `task.engine` | `crates/agentteam-runtime/src/task/engine.rs` | task unit, function map gate |
 | `crates::agentteam-runtime::src::task::engine::validate_transition_input` | Task Engine | `task.engine` | `crates/agentteam-runtime/src/task/engine.rs` | task unit, function map gate |
@@ -430,10 +437,13 @@ Every Rust function or method under `crates/` and `xtask/src/` must be listed he
 | `crates::agentteam-runtime::src::task::materialize::materialize_task_board` | Task Engine | `task.engine` | `crates/agentteam-runtime/src/task/materialize.rs` | task unit, function map gate |
 | `crates::agentteam-runtime::src::task::model::TaskStatus::label` | Task Engine | `task.engine` | `crates/agentteam-runtime/src/task/model.rs` | task unit, function map gate |
 | `crates::agentteam-runtime::src::task::model::TaskTargetKind::label` | Task Engine | `task.engine` | `crates/agentteam-runtime/src/task/model.rs` | task unit, function map gate |
+| `crates::agentteam-runtime::src::task::model::default_task_priority` | Task Engine | `task.engine` | `crates/agentteam-runtime/src/task/model.rs` | task unit, function map gate |
 | `crates::agentteam-runtime::src::task::persist::encode_payload<T: Serialize>` | Task Engine | `task.engine` | `crates/agentteam-runtime/src/task/persist.rs` | task unit, function map gate |
 | `crates::agentteam-runtime::src::task::persist::persist_task_event<T: Serialize>` | Task Engine | `task.engine` | `crates/agentteam-runtime/src/task/persist.rs` | task unit, function map gate |
 | `crates::agentteam-runtime::src::task::tests::create_input` | Task Engine test helper | `task.engine` | `crates/agentteam-runtime/src/task/tests.rs` | cargo test, function map gate |
 | `crates::agentteam-runtime::src::task::tests::create_task_persists_and_replays_board` | Task Engine test | `task.engine` | `crates/agentteam-runtime/src/task/tests.rs` | cargo test, function map gate |
+| `crates::agentteam-runtime::src::task::tests::claim_prefers_assigned_task_over_role_match` | Task Engine test | `task.engine` | `crates/agentteam-runtime/src/task/tests.rs` | cargo test, function map gate |
+| `crates::agentteam-runtime::src::task::tests::claim_prefers_blocked_task_inside_same_class` | Task Engine test | `task.engine` | `crates/agentteam-runtime/src/task/tests.rs` | cargo test, function map gate |
 | `crates::agentteam-runtime::src::task::tests::task_error_is_normal_task_state` | Task Engine test | `task.engine` | `crates/agentteam-runtime/src/task/tests.rs` | cargo test, function map gate |
 | `crates::agentteam-runtime::src::task::tests::temp_log_path` | Task Engine test helper | `task.engine` | `crates/agentteam-runtime/src/task/tests.rs` | cargo test, function map gate |
 | `crates::agentteam-runtime::src::task::tests::terminal_state_requires_explicit_done_or_error` | Task Engine test | `task.engine` | `crates/agentteam-runtime/src/task/tests.rs` | cargo test, function map gate |

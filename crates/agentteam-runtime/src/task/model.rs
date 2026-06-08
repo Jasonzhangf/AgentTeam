@@ -24,6 +24,14 @@ pub struct TaskCreateInput {
     pub target: String,
     pub title: String,
     pub body: String,
+    pub priority: u32,
+    pub blocked: bool,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct TaskClaimInput {
+    pub worker_name: String,
+    pub worker_role: String,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -43,6 +51,10 @@ pub struct TaskEventPayload {
     pub target: String,
     pub title: String,
     pub body: String,
+    #[serde(default = "default_task_priority")]
+    pub priority: u32,
+    #[serde(default)]
+    pub blocked: bool,
     pub detail: String,
 }
 
@@ -55,6 +67,8 @@ pub struct TaskRecord {
     pub target: String,
     pub title: String,
     pub body: String,
+    pub priority: u32,
+    pub blocked: bool,
     pub created_by: String,
     pub latest_actor: String,
     pub latest_detail: String,
@@ -95,4 +109,8 @@ impl TaskTargetKind {
             Self::Role => "role",
         }
     }
+}
+
+fn default_task_priority() -> u32 {
+    100
 }

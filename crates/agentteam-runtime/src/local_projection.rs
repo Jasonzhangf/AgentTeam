@@ -50,6 +50,9 @@ pub enum LocalCommandResult {
     TaskError {
         task: TaskStateChangedResult,
     },
+    TaskClaim {
+        task: TaskStateChangedResult,
+    },
     TmuxLoopback {
         loopback: TmuxLoopbackResult,
     },
@@ -134,6 +137,8 @@ pub struct TaskRecordResult {
     pub target: String,
     pub title: String,
     pub body: String,
+    pub priority: u32,
+    pub blocked: bool,
     pub created_by: String,
     pub latest_actor: String,
     pub latest_detail: String,
@@ -247,6 +252,8 @@ pub fn task_board_result(board: TaskBoard) -> TaskBoardResult {
                 target: task.target,
                 title: task.title,
                 body: task.body,
+                priority: task.priority,
+                blocked: task.blocked,
                 created_by: task.created_by,
                 latest_actor: task.latest_actor,
                 latest_detail: task.latest_detail,

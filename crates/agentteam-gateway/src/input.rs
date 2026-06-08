@@ -36,6 +36,7 @@ fn parse_cli_raw(raw: TeamReq01CliRaw) -> GatewayResult<TeamReq02ParsedCommand> 
         }
         [area, action, rest @ ..] if area == "task" && action == "done" => parse_task_done(rest),
         [area, action, rest @ ..] if area == "task" && action == "error" => parse_task_error(rest),
+        [area, action, rest @ ..] if area == "task" && action == "claim" => parse_task_claim(rest),
         [area, action, rest @ ..] if area == "tmux" && action == "loopback" => {
             parse_tmux_loopback(rest)
         }
@@ -161,6 +162,20 @@ fn parse_task_error(args: &[String]) -> GatewayResult<TeamReq02ParsedCommand> {
         task_id: option_value(&options, "--task"),
         actor: option_value(&options, "--actor"),
         detail: option_value(&options, "--detail"),
+        json: options.json,
+    })
+}
+
+fn parse_task_claim(args: &[String]) -> GatewayResult<TeamReq02ParsedCommand> {
+    let options = parse_options(
+        args,
+        &["--runtime-home", "--worker-name", "--worker-role"],
+        &["--json"],
+    )?;
+    Ok(TeamReq02ParsedCommand::TaskClaim {
+        runtime_home: option_value(&options, "--runtime-home"),
+        worker_name: option_value(&options, "--worker-name"),
+        worker_role: option_value(&options, "--worker-role"),
         json: options.json,
     })
 }
@@ -314,6 +329,20 @@ fn validate_intent(parsed: TeamReq02ParsedCommand) -> GatewayResult<TeamReq03Val
                 task_id: require_value(task_id, "--task")?,
                 actor: require_value(actor, "--actor")?,
                 detail: require_value(detail, "--detail")?,
+                json,
+            })
+        }
+        TeamReq02ParsedCommand::TaskClaim {
+            runtime_home,
+            worker_name,
+            worker_role,
+            json,
+        } => {
+            require_json(json)?;
+            Ok(TeamReq03ValidatedIntent::TaskClaim {
+                runtime_home: require_value(runtime_home, "--runtime-home")?,
+                worker_name: require_value(worker_name, "--worker-name")?,
+                worker_role: require_value(worker_role, "--worker-role")?,
                 json,
             })
         }
