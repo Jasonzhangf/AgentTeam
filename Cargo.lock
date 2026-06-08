@@ -16,6 +16,7 @@ name = "agentteam-comm"
 version = "0.1.0"
 dependencies = [
  "agentteam-contracts",
+ "serde",
 ]
 
 [[package]]

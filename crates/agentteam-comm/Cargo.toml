@@ -7,3 +7,4 @@ repository.workspace = true
 
 [dependencies]
 agentteam-contracts = { path = "../agentteam-contracts" }
+serde = { version = "1.0", features = ["derive"] }
