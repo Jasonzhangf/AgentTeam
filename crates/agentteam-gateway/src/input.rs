@@ -20,6 +20,9 @@ fn parse_cli_raw(raw: TeamReq01CliRaw) -> GatewayResult<TeamReq02ParsedCommand> 
         [area, action, rest @ ..] if area == "config" && action == "check" => {
             parse_config_check(rest)
         }
+        [area, action, rest @ ..] if area == "daemon" && action == "check" => {
+            parse_daemon_check(rest)
+        }
         [area, action, rest @ ..] if area == "domain" && action == "resolve" => {
             parse_domain_resolve(rest)
         }
@@ -39,6 +42,14 @@ fn parse_cli_raw(raw: TeamReq01CliRaw) -> GatewayResult<TeamReq02ParsedCommand> 
 fn parse_config_check(args: &[String]) -> GatewayResult<TeamReq02ParsedCommand> {
     let options = parse_options(args, &["--config"], &["--json"])?;
     Ok(TeamReq02ParsedCommand::ConfigCheck {
+        config_path: option_value(&options, "--config"),
+        json: options.json,
+    })
+}
+
+fn parse_daemon_check(args: &[String]) -> GatewayResult<TeamReq02ParsedCommand> {
+    let options = parse_options(args, &["--config"], &["--json"])?;
+    Ok(TeamReq02ParsedCommand::DaemonCheck {
         config_path: option_value(&options, "--config"),
         json: options.json,
     })
@@ -106,6 +117,13 @@ fn validate_intent(parsed: TeamReq02ParsedCommand) -> GatewayResult<TeamReq03Val
         TeamReq02ParsedCommand::ConfigCheck { config_path, json } => {
             require_json(json)?;
             Ok(TeamReq03ValidatedIntent::ConfigCheck {
+                config_path: require_value(config_path, "--config")?,
+                json,
+            })
+        }
+        TeamReq02ParsedCommand::DaemonCheck { config_path, json } => {
+            require_json(json)?;
+            Ok(TeamReq03ValidatedIntent::DaemonCheck {
                 config_path: require_value(config_path, "--config")?,
                 json,
             })

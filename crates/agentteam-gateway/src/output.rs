@@ -93,6 +93,7 @@ fn encode_error_projection(projection: &ErrorProjection<'_>) -> GatewayResult<St
 fn local_result_command_name(result: &LocalCommandResult) -> &'static str {
     match result {
         LocalCommandResult::ConfigCheck { .. } => "config.check",
+        LocalCommandResult::DaemonCheck { .. } => "daemon.check",
         LocalCommandResult::DomainResolve { .. } => "domain.resolve",
         LocalCommandResult::DebugSnapshot { .. } => "debug.snapshot",
     }

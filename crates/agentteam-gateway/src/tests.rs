@@ -19,6 +19,19 @@ fn parses_config_check_intent() {
 }
 
 #[test]
+fn parses_daemon_check_intent() {
+    let intent = parse_cli_args(strings(&[
+        "daemon",
+        "check",
+        "--config",
+        "docs/config/config.toml.example",
+        "--json",
+    ]))
+    .unwrap();
+    assert_eq!(intent.command_name(), "daemon.check");
+}
+
+#[test]
 fn parses_domain_resolve_intent() {
     let intent = parse_cli_args(strings(&[
         "domain",

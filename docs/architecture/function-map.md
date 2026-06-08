@@ -49,6 +49,7 @@ Every Rust function or method under `crates/` and `xtask/src/` must be listed he
 | `crates::agentteam-gateway::src::input::parse_cli_args` | Input Gateway | `gateway.input` | `crates/agentteam-gateway/src/input.rs` | gateway unit, function map gate |
 | `crates::agentteam-gateway::src::input::parse_cli_raw` | Input Gateway | `gateway.input` | `crates/agentteam-gateway/src/input.rs` | gateway unit, function map gate |
 | `crates::agentteam-gateway::src::input::parse_config_check` | Input Gateway | `gateway.input` | `crates/agentteam-gateway/src/input.rs` | gateway unit, function map gate |
+| `crates::agentteam-gateway::src::input::parse_daemon_check` | Input Gateway | `gateway.input` | `crates/agentteam-gateway/src/input.rs` | gateway unit, function map gate |
 | `crates::agentteam-gateway::src::input::parse_debug_snapshot` | Input Gateway | `gateway.input` | `crates/agentteam-gateway/src/input.rs` | gateway unit, function map gate |
 | `crates::agentteam-gateway::src::input::parse_domain_resolve` | Input Gateway | `gateway.input` | `crates/agentteam-gateway/src/input.rs` | gateway unit, function map gate |
 | `crates::agentteam-gateway::src::input::parse_options` | Input Gateway | `gateway.input` | `crates/agentteam-gateway/src/input.rs` | gateway unit, function map gate |
@@ -69,6 +70,7 @@ Every Rust function or method under `crates/` and `xtask/src/` must be listed he
 | `crates::agentteam-gateway::src::output::render_local_result_json` | Output Gateway | `gateway.output` | `crates/agentteam-gateway/src/output.rs` | gateway unit, function map gate |
 | `crates::agentteam-gateway::src::tests::missing_json_is_validation_error` | Input Gateway test | `gateway.input` | `crates/agentteam-gateway/src/tests.rs` | cargo test, function map gate |
 | `crates::agentteam-gateway::src::tests::parses_config_check_intent` | Input Gateway test | `gateway.input` | `crates/agentteam-gateway/src/tests.rs` | cargo test, function map gate |
+| `crates::agentteam-gateway::src::tests::parses_daemon_check_intent` | Input Gateway test | `gateway.input` | `crates/agentteam-gateway/src/tests.rs` | cargo test, function map gate |
 | `crates::agentteam-gateway::src::tests::parses_debug_snapshot_intent` | Input Gateway test | `gateway.input` | `crates/agentteam-gateway/src/tests.rs` | cargo test, function map gate |
 | `crates::agentteam-gateway::src::tests::parses_domain_resolve_intent` | Input Gateway test | `gateway.input` | `crates/agentteam-gateway/src/tests.rs` | cargo test, function map gate |
 | `crates::agentteam-gateway::src::tests::render_intent_json_marks_parse_only` | Output Gateway test | `gateway.output` | `crates/agentteam-gateway/src/tests.rs` | cargo test, function map gate |
@@ -239,12 +241,14 @@ Every Rust function or method under `crates/` and `xtask/src/` must be listed he
 | `crates::agentteam-runtime::src::local::build_domain_registry` | Team Orchestrator | `team.orchestration` | `crates/agentteam-runtime/src/local.rs` | runtime unit, function map gate |
 | `crates::agentteam-runtime::src::local::config_error` | Team Orchestrator | `team.orchestration` | `crates/agentteam-runtime/src/local.rs` | runtime unit, function map gate |
 | `crates::agentteam-runtime::src::local::config_result` | Team Orchestrator | `team.orchestration` | `crates/agentteam-runtime/src/local.rs` | runtime unit, function map gate |
+| `crates::agentteam-runtime::src::local::daemon_check_result` | Team Orchestrator | `team.orchestration` | `crates/agentteam-runtime/src/local.rs` | runtime unit, function map gate |
 | `crates::agentteam-runtime::src::local::debug_bundle_result` | Team Orchestrator | `team.orchestration` | `crates/agentteam-runtime/src/local.rs` | runtime unit, function map gate |
 | `crates::agentteam-runtime::src::local::debug_error` | Team Orchestrator | `team.orchestration` | `crates/agentteam-runtime/src/local.rs` | runtime unit, function map gate |
 | `crates::agentteam-runtime::src::local::domain_error` | Team Orchestrator | `team.orchestration` | `crates/agentteam-runtime/src/local.rs` | runtime unit, function map gate |
 | `crates::agentteam-runtime::src::local::domain_snapshot_result` | Team Orchestrator | `team.orchestration` | `crates/agentteam-runtime/src/local.rs` | runtime unit, function map gate |
 | `crates::agentteam-runtime::src::local::event_log_path` | Team Orchestrator | `team.orchestration` | `crates/agentteam-runtime/src/local.rs` | runtime unit, function map gate |
 | `crates::agentteam-runtime::src::local::execute_config_check` | Team Orchestrator | `team.orchestration` | `crates/agentteam-runtime/src/local.rs` | runtime unit, function map gate |
+| `crates::agentteam-runtime::src::local::execute_daemon_check` | Team Orchestrator | `team.orchestration` | `crates/agentteam-runtime/src/local.rs` | runtime unit, function map gate |
 | `crates::agentteam-runtime::src::local::execute_debug_snapshot` | Team Orchestrator | `team.orchestration` | `crates/agentteam-runtime/src/local.rs` | runtime unit, function map gate |
 | `crates::agentteam-runtime::src::local::execute_domain_resolve` | Team Orchestrator | `team.orchestration` | `crates/agentteam-runtime/src/local.rs` | runtime unit, function map gate |
 | `crates::agentteam-runtime::src::local::execute_local_intent` | Team Orchestrator | `team.orchestration` | `crates/agentteam-runtime/src/local.rs` | runtime unit, function map gate |
@@ -254,6 +258,7 @@ Every Rust function or method under `crates/` and `xtask/src/` must be listed he
 | `crates::agentteam-runtime::src::local::target_kind_parts` | Team Orchestrator | `team.orchestration` | `crates/agentteam-runtime/src/local.rs` | runtime unit, function map gate |
 | `crates::agentteam-runtime::src::local_tests::example_config_path` | Team Orchestrator test helper | `team.orchestration` | `crates/agentteam-runtime/src/local_tests.rs` | cargo test, function map gate |
 | `crates::agentteam-runtime::src::local_tests::local_config_check_executes_config_center` | Team Orchestrator test | `team.orchestration` | `crates/agentteam-runtime/src/local_tests.rs` | cargo test, function map gate |
+| `crates::agentteam-runtime::src::local_tests::local_daemon_check_reports_routeability_without_starting_processes` | Team Orchestrator test | `team.orchestration` | `crates/agentteam-runtime/src/local_tests.rs` | cargo test, function map gate |
 | `crates::agentteam-runtime::src::local_tests::local_debug_snapshot_persists_event_log` | Team Orchestrator test | `team.orchestration` | `crates/agentteam-runtime/src/local_tests.rs` | cargo test, function map gate |
 | `crates::agentteam-runtime::src::local_tests::local_domain_resolve_executes_domain_registry` | Team Orchestrator test | `team.orchestration` | `crates/agentteam-runtime/src/local_tests.rs` | cargo test, function map gate |
 | `crates::agentteam-runtime::src::local_tests::temp_runtime_home` | Team Orchestrator test helper | `team.orchestration` | `crates/agentteam-runtime/src/local_tests.rs` | cargo test, function map gate |

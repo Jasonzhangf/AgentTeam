@@ -39,6 +39,27 @@ fn local_config_check_executes_config_center() {
 }
 
 #[test]
+fn local_daemon_check_reports_routeability_without_starting_processes() {
+    let result = execute_local_intent(TeamReq03ValidatedIntent::DaemonCheck {
+        config_path: example_config_path(),
+        json: true,
+    })
+    .unwrap();
+
+    match result {
+        LocalCommandResult::DaemonCheck { daemon } => {
+            assert_eq!(daemon.config_status, "valid");
+            assert_eq!(daemon.domain_registry_status, "routeable");
+            assert_eq!(daemon.routeable_endpoint_count, 2);
+            assert_eq!(daemon.daemon_process_status, "not_started_by_check");
+            assert_eq!(daemon.tmux_status, "not_touched_by_check");
+            assert_eq!(daemon.zterm_status, "not_touched_by_check");
+        }
+        other => panic!("unexpected result {other:?}"),
+    }
+}
+
+#[test]
 fn local_domain_resolve_executes_domain_registry() {
     let result = execute_local_intent(TeamReq03ValidatedIntent::DomainResolve {
         target: "Alice@review-daemon".to_owned(),

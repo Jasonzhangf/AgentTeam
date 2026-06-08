@@ -24,6 +24,10 @@ pub enum TeamReq02ParsedCommand {
         config_path: Option<String>,
         json: bool,
     },
+    DaemonCheck {
+        config_path: Option<String>,
+        json: bool,
+    },
     DomainResolve {
         target: Option<String>,
         config_path: Option<String>,
@@ -40,6 +44,10 @@ pub enum TeamReq02ParsedCommand {
 #[serde(tag = "command", rename_all = "snake_case")]
 pub enum TeamReq03ValidatedIntent {
     ConfigCheck {
+        config_path: String,
+        json: bool,
+    },
+    DaemonCheck {
         config_path: String,
         json: bool,
     },
@@ -61,6 +69,7 @@ impl TeamReq03ValidatedIntent {
     pub fn command_name(&self) -> &'static str {
         match self {
             Self::ConfigCheck { .. } => "config.check",
+            Self::DaemonCheck { .. } => "daemon.check",
             Self::DomainResolve { .. } => "domain.resolve",
             Self::DebugSnapshot { .. } => "debug.snapshot",
         }
@@ -79,6 +88,11 @@ mod tests {
         };
 
         assert_eq!(intent.command_name(), "config.check");
+        let intent = TeamReq03ValidatedIntent::DaemonCheck {
+            config_path: "docs/config/config.toml.example".to_owned(),
+            json: true,
+        };
+        assert_eq!(intent.command_name(), "daemon.check");
         assert_eq!(TeamReq01CliRaw::NODE.number, 1);
         assert_eq!(TeamReq03ValidatedIntent::NODE.number, 3);
     }

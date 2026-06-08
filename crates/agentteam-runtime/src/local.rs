@@ -1,7 +1,7 @@
 use std::path::{Path, PathBuf};
 
 use agentteam_config::{
-    check_config_path, validate_config_path, ConfigCenterError, NormalizedConfig,
+    check_config_path, normalize_config, validate_config_path, ConfigCenterError, NormalizedConfig,
     RemoteDaemonConfig, UserConfig,
 };
 use agentteam_contracts::debug::DebugResp03Bundle;
@@ -28,6 +28,9 @@ pub enum LocalCommandResult {
     ConfigCheck {
         normalized: ConfigCheckResult,
     },
+    DaemonCheck {
+        daemon: DaemonCheckResult,
+    },
     DomainResolve {
         target: ResolvedDomainTargetResult,
         registry_snapshot: DomainRegistrySnapshotResult,
@@ -48,6 +51,19 @@ pub struct ConfigCheckResult {
     pub member_count: usize,
     pub zterm_endpoint: String,
     pub remote_domain_count: usize,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
+pub struct DaemonCheckResult {
+    pub project_slug: String,
+    pub runtime_home: String,
+    pub local_domain_id: String,
+    pub routeable_endpoint_count: usize,
+    pub config_status: String,
+    pub domain_registry_status: String,
+    pub daemon_process_status: String,
+    pub tmux_status: String,
+    pub zterm_status: String,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize)]
@@ -86,6 +102,9 @@ pub fn execute_local_intent(
         TeamReq03ValidatedIntent::ConfigCheck { config_path, .. } => {
             execute_config_check(config_path)
         }
+        TeamReq03ValidatedIntent::DaemonCheck { config_path, .. } => {
+            execute_daemon_check(config_path)
+        }
         TeamReq03ValidatedIntent::DomainResolve {
             target,
             config_path,
@@ -103,6 +122,15 @@ fn execute_config_check(config_path: String) -> Result<LocalCommandResult, Local
     let normalized = check_config_path(config_path).map_err(config_error)?;
     Ok(LocalCommandResult::ConfigCheck {
         normalized: config_result(normalized),
+    })
+}
+
+fn execute_daemon_check(config_path: String) -> Result<LocalCommandResult, LocalCommandError> {
+    let validated = validate_config_path(config_path).map_err(config_error)?;
+    let normalized = config_result(normalize_config(validated.clone()).map_err(config_error)?);
+    let registry = build_domain_registry(&validated.user_config)?;
+    Ok(LocalCommandResult::DaemonCheck {
+        daemon: daemon_check_result(normalized, registry.snapshot()),
     })
 }
 
@@ -211,6 +239,23 @@ fn domain_snapshot_result(snapshot: DomainRegistrySnapshot) -> DomainRegistrySna
         remote_domain_ids: snapshot.remote_domain_ids,
         endpoint_count: snapshot.endpoint_count,
         token_redaction_status: snapshot.token_redaction_status,
+    }
+}
+
+fn daemon_check_result(
+    normalized: ConfigCheckResult,
+    snapshot: DomainRegistrySnapshot,
+) -> DaemonCheckResult {
+    DaemonCheckResult {
+        project_slug: normalized.project_slug,
+        runtime_home: normalized.runtime_home,
+        local_domain_id: normalized.local_domain_id,
+        routeable_endpoint_count: snapshot.endpoint_count,
+        config_status: "valid".to_owned(),
+        domain_registry_status: "routeable".to_owned(),
+        daemon_process_status: "not_started_by_check".to_owned(),
+        tmux_status: "not_touched_by_check".to_owned(),
+        zterm_status: "not_touched_by_check".to_owned(),
     }
 }
 
