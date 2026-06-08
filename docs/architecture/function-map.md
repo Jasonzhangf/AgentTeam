@@ -84,6 +84,35 @@ Every Rust function or method under `crates/` and `xtask/src/` must be listed he
 | `crates::agentteam-contracts::src::resource::mod::resource_chain_requires_active_lease_before_release` | Resource Lifecycle contract test | `resource.lifecycle` | `crates/agentteam-contracts/src/resource/mod.rs` | cargo test, function map gate |
 | `crates::agentteam-contracts::src::resource::mod::resource_feature_id_is_stable` | Resource Lifecycle contract test | `resource.lifecycle` | `crates/agentteam-contracts/src/resource/mod.rs` | cargo test, function map gate |
 | `crates::agentteamd::src::main::main` | Daemon binary scaffold | `startup.session` | `crates/agentteamd/src/main.rs` | cargo test, function map gate |
+| `crates::agentteam-config::src::error::ConfigCenterError::path` | Config Center | `config.center` | `crates/agentteam-config/src/error.rs` | config unit, function map gate |
+| `crates::agentteam-config::src::error::ConfigCenterError::reason` | Config Center | `config.center` | `crates/agentteam-config/src/error.rs` | config unit, function map gate |
+| `crates::agentteam-config::src::lib::check_config_path` | Config Center | `config.center` | `crates/agentteam-config/src/lib.rs` | config unit, function map gate |
+| `crates::agentteam-config::src::load::load_config_file` | Config Center | `config.center` | `crates/agentteam-config/src/load.rs` | config unit, function map gate |
+| `crates::agentteam-config::src::load::load_default_config_file` | Config Center | `config.center` | `crates/agentteam-config/src/load.rs` | config unit, function map gate |
+| `crates::agentteam-config::src::load::missing_file_is_explicit_load_error` | Config Center test | `config.center` | `crates/agentteam-config/src/load.rs` | cargo test, function map gate |
+| `crates::agentteam-config::src::normalize::normalize_config` | Config Center | `config.center` | `crates/agentteam-config/src/normalize.rs` | config unit, function map gate |
+| `crates::agentteam-config::src::parse::malformed_toml_is_explicit_parse_error` | Config Center test | `config.center` | `crates/agentteam-config/src/parse.rs` | cargo test, function map gate |
+| `crates::agentteam-config::src::parse::parse_config_toml` | Config Center | `config.center` | `crates/agentteam-config/src/parse.rs` | config unit, function map gate |
+| `crates::agentteam-config::src::snapshot::snapshot_config` | Config Center | `config.center` | `crates/agentteam-config/src/snapshot.rs` | config unit, function map gate |
+| `crates::agentteam-config::src::tests::agent_count_mismatch_fails` | Config Center test | `config.center` | `crates/agentteam-config/src/tests.rs` | cargo test, function map gate |
+| `crates::agentteam-config::src::tests::assert_validation_reason` | Config Center test helper | `config.center` | `crates/agentteam-config/src/tests.rs` | cargo test, function map gate |
+| `crates::agentteam-config::src::tests::duplicate_domain_id_fails` | Config Center test | `config.center` | `crates/agentteam-config/src/tests.rs` | cargo test, function map gate |
+| `crates::agentteam-config::src::tests::duplicate_member_name_fails` | Config Center test | `config.center` | `crates/agentteam-config/src/tests.rs` | cargo test, function map gate |
+| `crates::agentteam-config::src::tests::example_config_path` | Config Center test helper | `config.center` | `crates/agentteam-config/src/tests.rs` | cargo test, function map gate |
+| `crates::agentteam-config::src::tests::example_config_normalizes` | Config Center test | `config.center` | `crates/agentteam-config/src/tests.rs` | cargo test, function map gate |
+| `crates::agentteam-config::src::tests::snapshot_redacts_token_state` | Config Center test | `config.center` | `crates/agentteam-config/src/tests.rs` | cargo test, function map gate |
+| `crates::agentteam-config::src::validate::insert_unique` | Config Center | `config.center` | `crates/agentteam-config/src/validate.rs` | config unit, function map gate |
+| `crates::agentteam-config::src::validate::reject_runtime_state_keys` | Config Center | `config.center` | `crates/agentteam-config/src/validate.rs` | config unit, function map gate |
+| `crates::agentteam-config::src::validate::remote_domains` | Config Center | `config.center` | `crates/agentteam-config/src/validate.rs` | config unit, function map gate |
+| `crates::agentteam-config::src::validate::require_non_empty` | Config Center | `config.center` | `crates/agentteam-config/src/validate.rs` | config unit, function map gate |
+| `crates::agentteam-config::src::validate::require_tmux_prefix` | Config Center | `config.center` | `crates/agentteam-config/src/validate.rs` | config unit, function map gate |
+| `crates::agentteam-config::src::validate::require_valid_project_slug` | Config Center | `config.center` | `crates/agentteam-config/src/validate.rs` | config unit, function map gate |
+| `crates::agentteam-config::src::validate::validate_config` | Config Center | `config.center` | `crates/agentteam-config/src/validate.rs` | config unit, function map gate |
+| `crates::agentteam-config::src::validate::validate_domains` | Config Center | `config.center` | `crates/agentteam-config/src/validate.rs` | config unit, function map gate |
+| `crates::agentteam-config::src::validate::validate_remote_domain` | Config Center | `config.center` | `crates/agentteam-config/src/validate.rs` | config unit, function map gate |
+| `crates::agentteam-config::src::validate::validate_team_members` | Config Center | `config.center` | `crates/agentteam-config/src/validate.rs` | config unit, function map gate |
+| `crates::agentteam-config::src::validate::validate_teams` | Config Center | `config.center` | `crates/agentteam-config/src/validate.rs` | config unit, function map gate |
+| `crates::agentteam-config::src::validate::validation_error<T>` | Config Center | `config.center` | `crates/agentteam-config/src/validate.rs` | config unit, function map gate |
 | `xtask::src::function_map::collect_rust_function_symbols` | Architecture Gate | `architecture.gate` | `xtask/src/function_map.rs` | function map gate |
 | `xtask::src::function_map::collect_rust_function_symbols_in` | Architecture Gate | `architecture.gate` | `xtask/src/function_map.rs` | function map gate |
 | `xtask::src::function_map::collect_symbols_from_content` | Architecture Gate | `architecture.gate` | `xtask/src/function_map.rs` | function map gate |
