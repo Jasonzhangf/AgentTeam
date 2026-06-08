@@ -38,6 +38,9 @@ Every Rust function or method under `crates/` and `xtask/src/` must be listed he
 | symbol | owner | feature_id | allowed paths | required gates |
 |---|---|---|---|---|
 | `crates::agentteam-cli::src::main::main` | CLI/Skill | `cli.agent_skill` | `crates/agentteam-cli/src/main.rs` | cargo test, function map gate |
+| `crates::agentteam-cli::src::main::render_gateway_error` | CLI/Skill | `cli.agent_skill` | `crates/agentteam-cli/src/main.rs` | CLI smoke, function map gate |
+| `crates::agentteam-cli::src::main::render_local_error` | CLI/Skill | `cli.agent_skill` | `crates/agentteam-cli/src/main.rs` | CLI smoke, function map gate |
+| `crates::agentteam-cli::src::main::render_local_result` | CLI/Skill | `cli.agent_skill` | `crates/agentteam-cli/src/main.rs` | CLI smoke, function map gate |
 | `crates::agentteam-gateway::src::error::GatewayError::output` | Output Gateway | `gateway.output` | `crates/agentteam-gateway/src/error.rs` | gateway unit, function map gate |
 | `crates::agentteam-gateway::src::error::GatewayError::parse` | Input Gateway | `gateway.input` | `crates/agentteam-gateway/src/error.rs` | gateway unit, function map gate |
 | `crates::agentteam-gateway::src::error::GatewayError::validation` | Input Gateway | `gateway.input` | `crates/agentteam-gateway/src/error.rs` | gateway unit, function map gate |
@@ -56,13 +59,20 @@ Every Rust function or method under `crates/` and `xtask/src/` must be listed he
 | `crates::agentteam-gateway::src::model::TeamReq03ValidatedIntent::command_name` | Input Gateway | `gateway.input` | `crates/agentteam-gateway/src/model.rs` | gateway unit, function map gate |
 | `crates::agentteam-gateway::src::output::encode_error_projection` | Output Gateway | `gateway.output` | `crates/agentteam-gateway/src/output.rs` | gateway unit, function map gate |
 | `crates::agentteam-gateway::src::output::encode_intent_projection` | Output Gateway | `gateway.output` | `crates/agentteam-gateway/src/output.rs` | gateway unit, function map gate |
+| `crates::agentteam-gateway::src::output::encode_local_result_projection` | Output Gateway | `gateway.output` | `crates/agentteam-gateway/src/output.rs` | gateway unit, function map gate |
+| `crates::agentteam-gateway::src::output::local_error_class` | Output Gateway | `gateway.output` | `crates/agentteam-gateway/src/output.rs` | gateway unit, function map gate |
+| `crates::agentteam-gateway::src::output::local_error_reason` | Output Gateway | `gateway.output` | `crates/agentteam-gateway/src/output.rs` | gateway unit, function map gate |
+| `crates::agentteam-gateway::src::output::local_result_command_name` | Output Gateway | `gateway.output` | `crates/agentteam-gateway/src/output.rs` | gateway unit, function map gate |
 | `crates::agentteam-gateway::src::output::render_gateway_error_json` | Output Gateway | `gateway.output` | `crates/agentteam-gateway/src/output.rs` | gateway unit, function map gate |
 | `crates::agentteam-gateway::src::output::render_intent_json` | Output Gateway | `gateway.output` | `crates/agentteam-gateway/src/output.rs` | gateway unit, function map gate |
+| `crates::agentteam-gateway::src::output::render_local_error_json` | Output Gateway | `gateway.output` | `crates/agentteam-gateway/src/output.rs` | gateway unit, function map gate |
+| `crates::agentteam-gateway::src::output::render_local_result_json` | Output Gateway | `gateway.output` | `crates/agentteam-gateway/src/output.rs` | gateway unit, function map gate |
 | `crates::agentteam-gateway::src::tests::missing_json_is_validation_error` | Input Gateway test | `gateway.input` | `crates/agentteam-gateway/src/tests.rs` | cargo test, function map gate |
 | `crates::agentteam-gateway::src::tests::parses_config_check_intent` | Input Gateway test | `gateway.input` | `crates/agentteam-gateway/src/tests.rs` | cargo test, function map gate |
 | `crates::agentteam-gateway::src::tests::parses_debug_snapshot_intent` | Input Gateway test | `gateway.input` | `crates/agentteam-gateway/src/tests.rs` | cargo test, function map gate |
 | `crates::agentteam-gateway::src::tests::parses_domain_resolve_intent` | Input Gateway test | `gateway.input` | `crates/agentteam-gateway/src/tests.rs` | cargo test, function map gate |
 | `crates::agentteam-gateway::src::tests::render_intent_json_marks_parse_only` | Output Gateway test | `gateway.output` | `crates/agentteam-gateway/src/tests.rs` | cargo test, function map gate |
+| `crates::agentteam-gateway::src::tests::render_local_result_json_does_not_mark_parse_only` | Output Gateway test | `gateway.output` | `crates/agentteam-gateway/src/tests.rs` | cargo test, function map gate |
 | `crates::agentteam-gateway::src::tests::strings` | Input Gateway test helper | `gateway.input` | `crates/agentteam-gateway/src/tests.rs` | cargo test, function map gate |
 | `crates::agentteam-gateway::src::tests::unknown_flag_is_parse_error` | Input Gateway test | `gateway.input` | `crates/agentteam-gateway/src/tests.rs` | cargo test, function map gate |
 | `crates::agentteam-contracts::src::config::mod::ConfigErr01Parse::new` | Config Center contracts | `config.center` | `crates/agentteam-contracts/src/config/mod.rs` | contract unit, function map gate |
@@ -175,6 +185,10 @@ Every Rust function or method under `crates/` and `xtask/src/` must be listed he
 | `crates::agentteam-contracts::src::resource::mod::ResourceReq02ValidatedScope::initial_metric` | Resource Lifecycle contracts | `resource.lifecycle` | `crates/agentteam-contracts/src/resource/mod.rs` | contract unit, function map gate |
 | `crates::agentteam-contracts::src::resource::mod::resource_chain_requires_active_lease_before_release` | Resource Lifecycle contract test | `resource.lifecycle` | `crates/agentteam-contracts/src/resource/mod.rs` | cargo test, function map gate |
 | `crates::agentteam-contracts::src::resource::mod::resource_feature_id_is_stable` | Resource Lifecycle contract test | `resource.lifecycle` | `crates/agentteam-contracts/src/resource/mod.rs` | cargo test, function map gate |
+| `crates::agentteam-contracts::src::team::mod::TeamReq01CliRaw::new` | Input Gateway contracts | `gateway.input` | `crates/agentteam-contracts/src/team/mod.rs` | contract unit, function map gate |
+| `crates::agentteam-contracts::src::team::mod::TeamReq03ValidatedIntent::command_name` | Input Gateway contracts | `gateway.input` | `crates/agentteam-contracts/src/team/mod.rs` | contract unit, function map gate |
+| `crates::agentteam-contracts::src::team::mod::team_feature_id_is_gateway_input` | Input Gateway contract test | `gateway.input` | `crates/agentteam-contracts/src/team/mod.rs` | cargo test, function map gate |
+| `crates::agentteam-contracts::src::team::mod::team_request_command_name_is_stable` | Input Gateway contract test | `gateway.input` | `crates/agentteam-contracts/src/team/mod.rs` | cargo test, function map gate |
 | `crates::agentteam-resource::src::error::ResourceError::reason` | Resource Lifecycle Manager | `resource.lifecycle` | `crates/agentteam-resource/src/error.rs` | resource unit, function map gate |
 | `crates::agentteam-resource::src::error::persistence_error` | Resource Lifecycle Manager | `resource.lifecycle` | `crates/agentteam-resource/src/error.rs` | resource unit, function map gate |
 | `crates::agentteam-resource::src::persist::encode_payload<T: Serialize>` | Resource Lifecycle Manager | `resource.lifecycle` | `crates/agentteam-resource/src/persist.rs` | resource unit, function map gate |
@@ -222,9 +236,31 @@ Every Rust function or method under `crates/` and `xtask/src/` must be listed he
 | `crates::agentteam-runtime::src::domain::tests::resolves_role_team_and_all_targets` | Daemon Domain Registry test | `domain.registry` | `crates/agentteam-runtime/src/domain/tests.rs` | cargo test, function map gate |
 | `crates::agentteam-runtime::src::domain::tests::snapshot_does_not_expose_tokens` | Daemon Domain Registry test | `domain.registry` | `crates/agentteam-runtime/src/domain/tests.rs` | cargo test, function map gate |
 | `crates::agentteam-runtime::src::domain::tests::unknown_remote_domain_does_not_fallback_to_local` | Daemon Domain Registry test | `domain.registry` | `crates/agentteam-runtime/src/domain/tests.rs` | cargo test, function map gate |
+| `crates::agentteam-runtime::src::local::build_domain_registry` | Team Orchestrator | `team.orchestration` | `crates/agentteam-runtime/src/local.rs` | runtime unit, function map gate |
+| `crates::agentteam-runtime::src::local::config_error` | Team Orchestrator | `team.orchestration` | `crates/agentteam-runtime/src/local.rs` | runtime unit, function map gate |
+| `crates::agentteam-runtime::src::local::config_result` | Team Orchestrator | `team.orchestration` | `crates/agentteam-runtime/src/local.rs` | runtime unit, function map gate |
+| `crates::agentteam-runtime::src::local::debug_bundle_result` | Team Orchestrator | `team.orchestration` | `crates/agentteam-runtime/src/local.rs` | runtime unit, function map gate |
+| `crates::agentteam-runtime::src::local::debug_error` | Team Orchestrator | `team.orchestration` | `crates/agentteam-runtime/src/local.rs` | runtime unit, function map gate |
+| `crates::agentteam-runtime::src::local::domain_error` | Team Orchestrator | `team.orchestration` | `crates/agentteam-runtime/src/local.rs` | runtime unit, function map gate |
+| `crates::agentteam-runtime::src::local::domain_snapshot_result` | Team Orchestrator | `team.orchestration` | `crates/agentteam-runtime/src/local.rs` | runtime unit, function map gate |
+| `crates::agentteam-runtime::src::local::event_log_path` | Team Orchestrator | `team.orchestration` | `crates/agentteam-runtime/src/local.rs` | runtime unit, function map gate |
+| `crates::agentteam-runtime::src::local::execute_config_check` | Team Orchestrator | `team.orchestration` | `crates/agentteam-runtime/src/local.rs` | runtime unit, function map gate |
+| `crates::agentteam-runtime::src::local::execute_debug_snapshot` | Team Orchestrator | `team.orchestration` | `crates/agentteam-runtime/src/local.rs` | runtime unit, function map gate |
+| `crates::agentteam-runtime::src::local::execute_domain_resolve` | Team Orchestrator | `team.orchestration` | `crates/agentteam-runtime/src/local.rs` | runtime unit, function map gate |
+| `crates::agentteam-runtime::src::local::execute_local_intent` | Team Orchestrator | `team.orchestration` | `crates/agentteam-runtime/src/local.rs` | runtime unit, function map gate |
+| `crates::agentteam-runtime::src::local::register_remote_domain` | Team Orchestrator | `team.orchestration` | `crates/agentteam-runtime/src/local.rs` | runtime unit, function map gate |
+| `crates::agentteam-runtime::src::local::resolved_domain_result` | Team Orchestrator | `team.orchestration` | `crates/agentteam-runtime/src/local.rs` | runtime unit, function map gate |
+| `crates::agentteam-runtime::src::local::route_kind_label` | Team Orchestrator | `team.orchestration` | `crates/agentteam-runtime/src/local.rs` | runtime unit, function map gate |
+| `crates::agentteam-runtime::src::local::target_kind_parts` | Team Orchestrator | `team.orchestration` | `crates/agentteam-runtime/src/local.rs` | runtime unit, function map gate |
+| `crates::agentteam-runtime::src::local_tests::example_config_path` | Team Orchestrator test helper | `team.orchestration` | `crates/agentteam-runtime/src/local_tests.rs` | cargo test, function map gate |
+| `crates::agentteam-runtime::src::local_tests::local_config_check_executes_config_center` | Team Orchestrator test | `team.orchestration` | `crates/agentteam-runtime/src/local_tests.rs` | cargo test, function map gate |
+| `crates::agentteam-runtime::src::local_tests::local_debug_snapshot_persists_event_log` | Team Orchestrator test | `team.orchestration` | `crates/agentteam-runtime/src/local_tests.rs` | cargo test, function map gate |
+| `crates::agentteam-runtime::src::local_tests::local_domain_resolve_executes_domain_registry` | Team Orchestrator test | `team.orchestration` | `crates/agentteam-runtime/src/local_tests.rs` | cargo test, function map gate |
+| `crates::agentteam-runtime::src::local_tests::temp_runtime_home` | Team Orchestrator test helper | `team.orchestration` | `crates/agentteam-runtime/src/local_tests.rs` | cargo test, function map gate |
 | `crates::agentteam-config::src::error::ConfigCenterError::path` | Config Center | `config.center` | `crates/agentteam-config/src/error.rs` | config unit, function map gate |
 | `crates::agentteam-config::src::error::ConfigCenterError::reason` | Config Center | `config.center` | `crates/agentteam-config/src/error.rs` | config unit, function map gate |
 | `crates::agentteam-config::src::lib::check_config_path` | Config Center | `config.center` | `crates/agentteam-config/src/lib.rs` | config unit, function map gate |
+| `crates::agentteam-config::src::lib::validate_config_path` | Config Center | `config.center` | `crates/agentteam-config/src/lib.rs` | config unit, function map gate |
 | `crates::agentteam-config::src::load::load_config_file` | Config Center | `config.center` | `crates/agentteam-config/src/load.rs` | config unit, function map gate |
 | `crates::agentteam-config::src::load::load_default_config_file` | Config Center | `config.center` | `crates/agentteam-config/src/load.rs` | config unit, function map gate |
 | `crates::agentteam-config::src::load::missing_file_is_explicit_load_error` | Config Center test | `config.center` | `crates/agentteam-config/src/load.rs` | cargo test, function map gate |
@@ -239,6 +275,7 @@ Every Rust function or method under `crates/` and `xtask/src/` must be listed he
 | `crates::agentteam-config::src::tests::example_config_path` | Config Center test helper | `config.center` | `crates/agentteam-config/src/tests.rs` | cargo test, function map gate |
 | `crates::agentteam-config::src::tests::example_config_normalizes` | Config Center test | `config.center` | `crates/agentteam-config/src/tests.rs` | cargo test, function map gate |
 | `crates::agentteam-config::src::tests::snapshot_redacts_token_state` | Config Center test | `config.center` | `crates/agentteam-config/src/tests.rs` | cargo test, function map gate |
+| `crates::agentteam-config::src::tests::validate_config_path_returns_verified_user_config` | Config Center test | `config.center` | `crates/agentteam-config/src/tests.rs` | cargo test, function map gate |
 | `crates::agentteam-config::src::validate::insert_unique` | Config Center | `config.center` | `crates/agentteam-config/src/validate.rs` | config unit, function map gate |
 | `crates::agentteam-config::src::validate::reject_runtime_state_keys` | Config Center | `config.center` | `crates/agentteam-config/src/validate.rs` | config unit, function map gate |
 | `crates::agentteam-config::src::validate::remote_domains` | Config Center | `config.center` | `crates/agentteam-config/src/validate.rs` | config unit, function map gate |

@@ -2,7 +2,7 @@ use crate::load::load_config_file;
 use crate::parse::parse_config_toml;
 use crate::snapshot::snapshot_config;
 use crate::validate::validate_config;
-use crate::{check_config_path, ConfigCenterError};
+use crate::{check_config_path, validate_config_path, ConfigCenterError};
 
 #[test]
 fn example_config_normalizes() {
@@ -21,6 +21,22 @@ fn snapshot_redacts_token_state() {
     assert_eq!(snapshot.snapshot_id, "snapshot-1");
     assert!(snapshot.zterm_token_redacted);
     assert!(!format!("{snapshot:?}").contains("auth_token"));
+}
+
+#[test]
+fn validate_config_path_returns_verified_user_config() {
+    let validated = validate_config_path(example_config_path()).unwrap();
+    assert_eq!(validated.user_config.daemon_domain.id, "local");
+    assert_eq!(
+        validated
+            .user_config
+            .daemon_domains
+            .unwrap()
+            .remote
+            .unwrap()[0]
+            .id,
+        "review-daemon"
+    );
 }
 
 #[test]

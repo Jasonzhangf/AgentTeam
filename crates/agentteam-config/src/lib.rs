@@ -17,13 +17,17 @@ pub use model::{
 pub use normalize::normalize_config;
 pub use parse::parse_config_toml;
 pub use snapshot::{snapshot_config, ConfigSnapshot};
-pub use validate::validate_config;
+pub use validate::{validate_config, ValidatedConfig};
 
 pub const FEATURE_ID: &str = "config.center";
 
-pub fn check_config_path(path: impl Into<String>) -> ConfigCenterResult<NormalizedConfig> {
+pub fn validate_config_path(path: impl Into<String>) -> ConfigCenterResult<ValidatedConfig> {
     let raw = load_config_file(path.into())?;
     let parsed = parse_config_toml(raw)?;
-    let validated = validate_config(parsed)?;
+    validate_config(parsed)
+}
+
+pub fn check_config_path(path: impl Into<String>) -> ConfigCenterResult<NormalizedConfig> {
+    let validated = validate_config_path(path)?;
     normalize_config(validated)
 }

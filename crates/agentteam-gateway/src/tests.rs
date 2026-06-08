@@ -1,4 +1,5 @@
 use crate::*;
+use agentteam_runtime::local::{ConfigCheckResult, LocalCommandResult};
 
 fn strings(values: &[&str]) -> Vec<String> {
     values.iter().map(|value| (*value).to_owned()).collect()
@@ -86,4 +87,26 @@ fn render_intent_json_marks_parse_only() {
     let rendered = render_intent_json(&intent).unwrap();
     assert!(rendered.contains("\"local_parse_only\":true"));
     assert!(rendered.contains("\"command_name\":\"config.check\""));
+}
+
+#[test]
+fn render_local_result_json_does_not_mark_parse_only() {
+    let result = LocalCommandResult::ConfigCheck {
+        normalized: ConfigCheckResult {
+            path: "docs/config/config.toml.example".to_owned(),
+            project_slug: "agentteam".to_owned(),
+            project_root: "/tmp/agentteam".to_owned(),
+            runtime_home: "/tmp/runtime".to_owned(),
+            local_domain_id: "local".to_owned(),
+            team_count: 1,
+            member_count: 3,
+            zterm_endpoint: "127.0.0.1:3333".to_owned(),
+            remote_domain_count: 1,
+        },
+    };
+
+    let rendered = render_local_result_json(&result).unwrap();
+    assert!(!rendered.contains("local_parse_only"));
+    assert!(rendered.contains("\"node\":\"TeamResp05DaemonResult\""));
+    assert!(rendered.contains("\"project_slug\":\"agentteam\""));
 }

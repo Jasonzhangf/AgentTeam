@@ -8,6 +8,7 @@ version = "0.1.0"
 dependencies = [
  "agentteam-contracts",
  "agentteam-gateway",
+ "agentteam-runtime",
 ]
 
 [[package]]
@@ -29,6 +30,9 @@ dependencies = [
 [[package]]
 name = "agentteam-contracts"
 version = "0.1.0"
+dependencies = [
+ "serde",
+]
 
 [[package]]
 name = "agentteam-debug"
@@ -56,6 +60,7 @@ name = "agentteam-gateway"
 version = "0.1.0"
 dependencies = [
  "agentteam-contracts",
+ "agentteam-runtime",
  "serde",
  "serde_json",
 ]
@@ -83,7 +88,11 @@ dependencies = [
 name = "agentteam-runtime"
 version = "0.1.0"
 dependencies = [
+ "agentteam-config",
  "agentteam-contracts",
+ "agentteam-debug",
+ "agentteam-resource",
+ "serde",
 ]
 
 [[package]]

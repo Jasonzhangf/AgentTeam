@@ -6,4 +6,8 @@ license.workspace = true
 repository.workspace = true
 
 [dependencies]
+agentteam-config = { path = "../agentteam-config" }
 agentteam-contracts = { path = "../agentteam-contracts" }
+agentteam-debug = { path = "../agentteam-debug" }
+agentteam-resource = { path = "../agentteam-resource" }
+serde = { version = "1.0", features = ["derive"] }
