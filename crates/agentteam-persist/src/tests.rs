@@ -16,6 +16,7 @@ fn draft(kind: &str) -> PersistedEventDraft {
     PersistedEventDraft {
         feature_id: FEATURE_ID.to_owned(),
         event_kind: kind.to_owned(),
+        payload_json: format!(r#"{{"kind":"{kind}"}}"#),
         payload_hash: format!("hash-{kind}"),
     }
 }
@@ -65,7 +66,7 @@ fn sequence_mismatch_fails_explicitly() {
     let path = temp_log_path("sequence-mismatch");
     fs::write(
         &path,
-        r#"{"sequence":2,"event_id":"event-2","feature_id":"persist.event_log","event_kind":"bad","payload_hash":"hash"}"#,
+        r#"{"sequence":2,"event_id":"event-2","feature_id":"persist.event_log","event_kind":"bad","payload_json":"{}","payload_hash":"hash"}"#,
     )
     .unwrap();
     let error = replay_event_log(&path, 0).unwrap_err();
@@ -84,6 +85,7 @@ fn empty_draft_fails_validation() {
         PersistedEventDraft {
             feature_id: String::new(),
             event_kind: "debug_bundle".to_owned(),
+            payload_json: "{}".to_owned(),
             payload_hash: "hash".to_owned(),
         },
     )

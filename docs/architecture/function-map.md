@@ -67,6 +67,33 @@ Every Rust function or method under `crates/` and `xtask/src/` must be listed he
 | `crates::agentteam-contracts::src::error::mod::TeamErr03RuntimeEvent::project` | Error Center contracts | `error.center` | `crates/agentteam-contracts/src/error/mod.rs` | contract unit, function map gate |
 | `crates::agentteam-contracts::src::error::mod::error_chain_keeps_evidence_and_receipt` | Error Center contract test | `error.center` | `crates/agentteam-contracts/src/error/mod.rs` | cargo test, function map gate |
 | `crates::agentteam-contracts::src::error::mod::error_feature_id_is_stable` | Error Center contract test | `error.center` | `crates/agentteam-contracts/src/error/mod.rs` | cargo test, function map gate |
+| `crates::agentteam-error::src::classify::classify_fault` | Error Center | `error.center` | `crates/agentteam-error/src/classify.rs` | error unit, function map gate |
+| `crates::agentteam-error::src::classify::handle_framework_fault` | Error Center | `error.center` | `crates/agentteam-error/src/classify.rs` | error unit, function map gate |
+| `crates::agentteam-error::src::classify::link_error_evidence` | Error Center | `error.center` | `crates/agentteam-error/src/classify.rs` | error unit, function map gate |
+| `crates::agentteam-error::src::classify::project_error` | Error Center | `error.center` | `crates/agentteam-error/src/classify.rs` | error unit, function map gate |
+| `crates::agentteam-error::src::classify::reject_normal_task_error` | Error Center | `error.center` | `crates/agentteam-error/src/classify.rs` | error unit, function map gate |
+| `crates::agentteam-error::src::code::evidence_id_for_code` | Error Center | `error.center` | `crates/agentteam-error/src/code.rs` | error unit, function map gate |
+| `crates::agentteam-error::src::code::generate_error_code` | Error Center | `error.center` | `crates/agentteam-error/src/code.rs` | error unit, function map gate |
+| `crates::agentteam-error::src::code::payload_hash` | Error Center | `error.center` | `crates/agentteam-error/src/code.rs` | error unit, function map gate |
+| `crates::agentteam-error::src::code::severity_label` | Error Center | `error.center` | `crates/agentteam-error/src/code.rs` | error unit, function map gate |
+| `crates::agentteam-error::src::code::validate_segment` | Error Center | `error.center` | `crates/agentteam-error/src/code.rs` | error unit, function map gate |
+| `crates::agentteam-error::src::code::validate_timestamp` | Error Center | `error.center` | `crates/agentteam-error/src/code.rs` | error unit, function map gate |
+| `crates::agentteam-error::src::error::ErrorCenterError::reason` | Error Center | `error.center` | `crates/agentteam-error/src/error.rs` | error unit, function map gate |
+| `crates::agentteam-error::src::error::persistence_error` | Error Center | `error.center` | `crates/agentteam-error/src/error.rs` | error unit, function map gate |
+| `crates::agentteam-error::src::model::ErrorCodeSeed::new` | Error Center | `error.center` | `crates/agentteam-error/src/model.rs` | error unit, function map gate |
+| `crates::agentteam-error::src::persist::encode_payload` | Error Center | `error.center` | `crates/agentteam-error/src/persist.rs` | error unit, function map gate |
+| `crates::agentteam-error::src::persist::payload_for_linked_error` | Error Center | `error.center` | `crates/agentteam-error/src/persist.rs` | error unit, function map gate |
+| `crates::agentteam-error::src::persist::persist_error_event` | Error Center | `error.center` | `crates/agentteam-error/src/persist.rs` | error unit, function map gate |
+| `crates::agentteam-error::src::persist::receipt_id_for_sequence` | Error Center | `error.center` | `crates/agentteam-error/src/persist.rs` | error unit, function map gate |
+| `crates::agentteam-error::src::tests::classifies_with_severity_and_code` | Error Center test | `error.center` | `crates/agentteam-error/src/tests.rs` | cargo test, function map gate |
+| `crates::agentteam-error::src::tests::fault` | Error Center test helper | `error.center` | `crates/agentteam-error/src/tests.rs` | cargo test, function map gate |
+| `crates::agentteam-error::src::tests::links_independent_evidence_id` | Error Center test | `error.center` | `crates/agentteam-error/src/tests.rs` | cargo test, function map gate |
+| `crates::agentteam-error::src::tests::malformed_code_seed_fails_validation` | Error Center test | `error.center` | `crates/agentteam-error/src/tests.rs` | cargo test, function map gate |
+| `crates::agentteam-error::src::tests::normal_agent_task_error_is_rejected` | Error Center test | `error.center` | `crates/agentteam-error/src/tests.rs` | cargo test, function map gate |
+| `crates::agentteam-error::src::tests::persist_failure_does_not_project_success` | Error Center test | `error.center` | `crates/agentteam-error/src/tests.rs` | cargo test, function map gate |
+| `crates::agentteam-error::src::tests::persists_before_projection` | Error Center test | `error.center` | `crates/agentteam-error/src/tests.rs` | cargo test, function map gate |
+| `crates::agentteam-error::src::tests::seed` | Error Center test helper | `error.center` | `crates/agentteam-error/src/tests.rs` | cargo test, function map gate |
+| `crates::agentteam-error::src::tests::temp_log_path` | Error Center test helper | `error.center` | `crates/agentteam-error/src/tests.rs` | cargo test, function map gate |
 | `crates::agentteam-contracts::src::persist::mod::PersistReq01EventDraft::new` | Persistence contracts | `persist.event_log` | `crates/agentteam-contracts/src/persist/mod.rs` | contract unit, function map gate |
 | `crates::agentteam-contracts::src::persist::mod::PersistReq01EventDraft::validate` | Persistence contracts | `persist.event_log` | `crates/agentteam-contracts/src/persist/mod.rs` | contract unit, function map gate |
 | `crates::agentteam-contracts::src::persist::mod::PersistReq02ValidatedEvent::append_receipt` | Persistence contracts | `persist.event_log` | `crates/agentteam-contracts/src/persist/mod.rs` | contract unit, function map gate |

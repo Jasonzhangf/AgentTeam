@@ -15,3 +15,6 @@
 - Phase 4 implemented `agentteam-persist` owner modules for typed JSONL append/replay/materialize. It validates event drafts, returns append receipts, detects corrupt JSONL and sequence mismatch, and materializes latest sequence/snapshot id.
 - `cargo xtask verify` passed for Phase 4 before commit: function-map, fmt, clippy, workspace tests, red-tests, required-files, skill-frontmatter, resource-lifecycle, code-size.
 - Next phase after Phase 4 commit: Phase 5 Error Center (`docs/modules/02-error-center.md`) using Persistence append instead of writing files directly.
+- Commit `b82467d` contains Phase 4.
+- Phase 5 implemented `agentteam-error` owner modules. External API is `handle_framework_fault`; internals classify faults, generate code/evidence id, persist framework_error via `agentteam-persist`, then project. Normal task error facts are rejected from Error Center.
+- `cargo xtask verify` passed during Phase 5 implementation before commit. Next phase after commit: Phase 6 Debug Center and Resource Lifecycle MVP (`docs/modules/10-debug-center.md`, `docs/modules/17-resource-lifecycle-manager.md`).

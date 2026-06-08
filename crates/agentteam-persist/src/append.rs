@@ -28,6 +28,7 @@ pub fn append_event_log(
         event_id: validated.event_id.clone(),
         feature_id: validated.feature_id.clone(),
         event_kind: validated.event_kind.clone(),
+        payload_json: draft.payload_json.clone(),
         payload_hash: validated.payload_hash.clone(),
     };
     let encoded = encode_record(&record)?;
@@ -47,6 +48,7 @@ fn validate_draft(draft: &PersistedEventDraft) -> PersistenceResult<()> {
     for (field, value) in [
         ("feature_id", draft.feature_id.as_str()),
         ("event_kind", draft.event_kind.as_str()),
+        ("payload_json", draft.payload_json.as_str()),
         ("payload_hash", draft.payload_hash.as_str()),
     ] {
         if value.trim().is_empty() {

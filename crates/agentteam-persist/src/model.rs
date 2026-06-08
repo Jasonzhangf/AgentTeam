@@ -6,6 +6,7 @@ pub struct PersistedEventRecord {
     pub event_id: String,
     pub feature_id: String,
     pub event_kind: String,
+    pub payload_json: String,
     pub payload_hash: String,
 }
 
@@ -13,6 +14,7 @@ pub struct PersistedEventRecord {
 pub struct PersistedEventDraft {
     pub feature_id: String,
     pub event_kind: String,
+    pub payload_json: String,
     pub payload_hash: String,
 }
 
