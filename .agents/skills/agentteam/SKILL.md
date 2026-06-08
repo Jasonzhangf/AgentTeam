@@ -11,7 +11,7 @@ For repository module development, architecture gates, Rust implementation, func
 
 ## Current Status
 
-MVP scaffold phase. Rust workspace/gate skeletons may be implemented; business runtime behavior still requires target module docs and red tests first.
+MVP local runtime phase. Config/domain/debug/daemon-check commands execute through owner modules. Task Engine now supports local persistent task commands backed by the AgentTeam event log, without daemon/tmux/zterm startup.
 
 ## Required Reading
 
@@ -45,21 +45,31 @@ MVP scaffold phase. Rust workspace/gate skeletons may be implemented; business r
 - Never use broad process kill commands.
 - Never manually edit `TANote.md`; daemon-generated note ids, sequence, and event receipts are required.
 
-## Future CLI Use
+## Current Local CLI Use
 
 Agents should use CLI commands only, for example:
 
 ```text
+agentteam config check --config docs/config/config.toml.example --json
+agentteam daemon check --config docs/config/config.toml.example --json
+agentteam domain resolve --target Alice@review-daemon --config docs/config/config.toml.example --json
+agentteam debug snapshot --config docs/config/config.toml.example --runtime-home target/agentteam-smoke --json
+agentteam task send --runtime-home target/agentteam-task-smoke --team default --created-by Kevin --target-kind role --target builder --title "Implement approved module" --body "Use owner APIs and gates" --json
+agentteam task list --runtime-home target/agentteam-task-smoke --json
+agentteam task status --runtime-home target/agentteam-task-smoke --task AT-000001 --json
+agentteam task done --runtime-home target/agentteam-task-smoke --task AT-000001 --actor Alice --detail "Completed with tests" --json
+agentteam task error --runtime-home target/agentteam-task-smoke --task AT-000001 --actor Alice --detail "Blocked by missing config" --json
+```
+
+Planned daemon/team communication commands remain:
+
+```text
 agentteam agent list --team default --json
-agentteam task list --team default --agent Kevin --json
-agentteam task send --team default --to Alice --text "Implement approved module"
 agentteam msg send --team default --from Kevin --to Bob --text "Please review task AT-1"
 agentteam msg send --team default --from Kevin@local --to Alice@review-daemon --text "Cross-daemon review request"
 agentteam note post --team default --from Kevin --to agent:Alice --action ask --text "Inspect AT-1 and reply in the thread"
 agentteam note thread --team default --thread TH-20260608T120000Z-000001
 agentteam debug resources --team default --json
-agentteam task done --id AT-1 --summary "Completed with tests"
-agentteam task error --id AT-1 --message "Blocked by missing config"
 ```
 
 Do not depend on hidden daemon wire protocol.

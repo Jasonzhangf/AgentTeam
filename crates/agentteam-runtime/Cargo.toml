@@ -9,5 +9,7 @@ repository.workspace = true
 agentteam-config = { path = "../agentteam-config" }
 agentteam-contracts = { path = "../agentteam-contracts" }
 agentteam-debug = { path = "../agentteam-debug" }
+agentteam-persist = { path = "../agentteam-persist" }
 agentteam-resource = { path = "../agentteam-resource" }
 serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"

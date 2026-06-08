@@ -1,4 +1,5 @@
 use agentteam_contracts::error::ErrorSeverity;
+use agentteam_contracts::event_hash::event_payload_hash;
 
 use crate::error::{ErrorCenterError, ErrorCenterResult};
 use crate::model::ErrorCodeSeed;
@@ -30,7 +31,7 @@ pub fn evidence_id_for_code(code: &str) -> ErrorCenterResult<String> {
             reason: "error code must not be empty before evidence id generation".to_owned(),
         });
     }
-    Ok(format!("evidence-{}", payload_hash(code)))
+    Ok(format!("evidence-{}", event_payload_hash(code)))
 }
 
 pub fn severity_label(severity: ErrorSeverity) -> &'static str {
@@ -40,15 +41,6 @@ pub fn severity_label(severity: ErrorSeverity) -> &'static str {
         ErrorSeverity::Warn => "warn",
         ErrorSeverity::Info => "info",
     }
-}
-
-pub fn payload_hash(payload: &str) -> String {
-    let mut hash = 0xcbf29ce484222325u64;
-    for byte in payload.as_bytes() {
-        hash ^= u64::from(*byte);
-        hash = hash.wrapping_mul(0x100000001b3);
-    }
-    format!("fnv1a64-{hash:016x}")
 }
 
 fn validate_segment(field: &str, value: &str) -> ErrorCenterResult<()> {

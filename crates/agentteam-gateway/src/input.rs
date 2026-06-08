@@ -29,6 +29,13 @@ fn parse_cli_raw(raw: TeamReq01CliRaw) -> GatewayResult<TeamReq02ParsedCommand> 
         [area, action, rest @ ..] if area == "debug" && action == "snapshot" => {
             parse_debug_snapshot(rest)
         }
+        [area, action, rest @ ..] if area == "task" && action == "send" => parse_task_send(rest),
+        [area, action, rest @ ..] if area == "task" && action == "list" => parse_task_list(rest),
+        [area, action, rest @ ..] if area == "task" && action == "status" => {
+            parse_task_status(rest)
+        }
+        [area, action, rest @ ..] if area == "task" && action == "done" => parse_task_done(rest),
+        [area, action, rest @ ..] if area == "task" && action == "error" => parse_task_error(rest),
         [] => Err(GatewayError::parse("command is required")),
         [area, action, ..] => Err(GatewayError::parse(format!(
             "unsupported command {area} {action}"
@@ -69,6 +76,79 @@ fn parse_debug_snapshot(args: &[String]) -> GatewayResult<TeamReq02ParsedCommand
     Ok(TeamReq02ParsedCommand::DebugSnapshot {
         config_path: option_value(&options, "--config"),
         runtime_home: option_value(&options, "--runtime-home"),
+        json: options.json,
+    })
+}
+
+fn parse_task_send(args: &[String]) -> GatewayResult<TeamReq02ParsedCommand> {
+    let options = parse_options(
+        args,
+        &[
+            "--runtime-home",
+            "--team",
+            "--created-by",
+            "--target-kind",
+            "--target",
+            "--title",
+            "--body",
+        ],
+        &["--json"],
+    )?;
+    Ok(TeamReq02ParsedCommand::TaskSend {
+        runtime_home: option_value(&options, "--runtime-home"),
+        team_id: option_value(&options, "--team"),
+        created_by: option_value(&options, "--created-by"),
+        target_kind: option_value(&options, "--target-kind"),
+        target: option_value(&options, "--target"),
+        title: option_value(&options, "--title"),
+        body: option_value(&options, "--body"),
+        json: options.json,
+    })
+}
+
+fn parse_task_list(args: &[String]) -> GatewayResult<TeamReq02ParsedCommand> {
+    let options = parse_options(args, &["--runtime-home"], &["--json"])?;
+    Ok(TeamReq02ParsedCommand::TaskList {
+        runtime_home: option_value(&options, "--runtime-home"),
+        json: options.json,
+    })
+}
+
+fn parse_task_status(args: &[String]) -> GatewayResult<TeamReq02ParsedCommand> {
+    let options = parse_options(args, &["--runtime-home", "--task"], &["--json"])?;
+    Ok(TeamReq02ParsedCommand::TaskStatus {
+        runtime_home: option_value(&options, "--runtime-home"),
+        task_id: option_value(&options, "--task"),
+        json: options.json,
+    })
+}
+
+fn parse_task_done(args: &[String]) -> GatewayResult<TeamReq02ParsedCommand> {
+    let options = parse_options(
+        args,
+        &["--runtime-home", "--task", "--actor", "--detail"],
+        &["--json"],
+    )?;
+    Ok(TeamReq02ParsedCommand::TaskDone {
+        runtime_home: option_value(&options, "--runtime-home"),
+        task_id: option_value(&options, "--task"),
+        actor: option_value(&options, "--actor"),
+        detail: option_value(&options, "--detail"),
+        json: options.json,
+    })
+}
+
+fn parse_task_error(args: &[String]) -> GatewayResult<TeamReq02ParsedCommand> {
+    let options = parse_options(
+        args,
+        &["--runtime-home", "--task", "--actor", "--detail"],
+        &["--json"],
+    )?;
+    Ok(TeamReq02ParsedCommand::TaskError {
+        runtime_home: option_value(&options, "--runtime-home"),
+        task_id: option_value(&options, "--task"),
+        actor: option_value(&options, "--actor"),
+        detail: option_value(&options, "--detail"),
         json: options.json,
     })
 }
@@ -149,6 +229,79 @@ fn validate_intent(parsed: TeamReq02ParsedCommand) -> GatewayResult<TeamReq03Val
             Ok(TeamReq03ValidatedIntent::DebugSnapshot {
                 config_path: require_value(config_path, "--config")?,
                 runtime_home: require_value(runtime_home, "--runtime-home")?,
+                json,
+            })
+        }
+        TeamReq02ParsedCommand::TaskSend {
+            runtime_home,
+            team_id,
+            created_by,
+            target_kind,
+            target,
+            title,
+            body,
+            json,
+        } => {
+            require_json(json)?;
+            Ok(TeamReq03ValidatedIntent::TaskSend {
+                runtime_home: require_value(runtime_home, "--runtime-home")?,
+                team_id: require_value(team_id, "--team")?,
+                created_by: require_value(created_by, "--created-by")?,
+                target_kind: require_value(target_kind, "--target-kind")?,
+                target: require_value(target, "--target")?,
+                title: require_value(title, "--title")?,
+                body: require_value(body, "--body")?,
+                json,
+            })
+        }
+        TeamReq02ParsedCommand::TaskList { runtime_home, json } => {
+            require_json(json)?;
+            Ok(TeamReq03ValidatedIntent::TaskList {
+                runtime_home: require_value(runtime_home, "--runtime-home")?,
+                json,
+            })
+        }
+        TeamReq02ParsedCommand::TaskStatus {
+            runtime_home,
+            task_id,
+            json,
+        } => {
+            require_json(json)?;
+            Ok(TeamReq03ValidatedIntent::TaskStatus {
+                runtime_home: require_value(runtime_home, "--runtime-home")?,
+                task_id: require_value(task_id, "--task")?,
+                json,
+            })
+        }
+        TeamReq02ParsedCommand::TaskDone {
+            runtime_home,
+            task_id,
+            actor,
+            detail,
+            json,
+        } => {
+            require_json(json)?;
+            Ok(TeamReq03ValidatedIntent::TaskDone {
+                runtime_home: require_value(runtime_home, "--runtime-home")?,
+                task_id: require_value(task_id, "--task")?,
+                actor: require_value(actor, "--actor")?,
+                detail: require_value(detail, "--detail")?,
+                json,
+            })
+        }
+        TeamReq02ParsedCommand::TaskError {
+            runtime_home,
+            task_id,
+            actor,
+            detail,
+            json,
+        } => {
+            require_json(json)?;
+            Ok(TeamReq03ValidatedIntent::TaskError {
+                runtime_home: require_value(runtime_home, "--runtime-home")?,
+                task_id: require_value(task_id, "--task")?,
+                actor: require_value(actor, "--actor")?,
+                detail: require_value(detail, "--detail")?,
                 json,
             })
         }

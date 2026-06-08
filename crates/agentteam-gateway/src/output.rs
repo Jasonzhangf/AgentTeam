@@ -96,6 +96,11 @@ fn local_result_command_name(result: &LocalCommandResult) -> &'static str {
         LocalCommandResult::DaemonCheck { .. } => "daemon.check",
         LocalCommandResult::DomainResolve { .. } => "domain.resolve",
         LocalCommandResult::DebugSnapshot { .. } => "debug.snapshot",
+        LocalCommandResult::TaskSend { .. } => "task.send",
+        LocalCommandResult::TaskList { .. } => "task.list",
+        LocalCommandResult::TaskStatus { .. } => "task.status",
+        LocalCommandResult::TaskDone { .. } => "task.done",
+        LocalCommandResult::TaskError { .. } => "task.error",
     }
 }
 
@@ -104,6 +109,7 @@ fn local_error_class(error: &LocalCommandError) -> &'static str {
         LocalCommandError::Config { .. } => "config",
         LocalCommandError::Domain { .. } => "domain",
         LocalCommandError::Debug { .. } => "debug",
+        LocalCommandError::Task { .. } => "task",
     }
 }
 
@@ -111,6 +117,7 @@ fn local_error_reason(error: &LocalCommandError) -> String {
     match error {
         LocalCommandError::Config { reason }
         | LocalCommandError::Domain { reason }
-        | LocalCommandError::Debug { reason } => reason.clone(),
+        | LocalCommandError::Debug { reason }
+        | LocalCommandError::Task { reason } => reason.clone(),
     }
 }

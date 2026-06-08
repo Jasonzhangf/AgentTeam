@@ -112,6 +112,7 @@ Cover:
 - Keep orchestration pure.
 - Keep module APIs isolated.
 - Put reusable helpers in shared contracts/blocks.
+- Reuse `agentteam-contracts::event_hash::event_payload_hash` for persisted event payload hashes; do not add per-module duplicate hash helpers.
 - Do not duplicate owner logic in adapters, gateways, UI, or runtime.
 - Keep hand-written Rust leaf files at 500 lines or less.
 - Do not implement business behavior for a module whose docs/red tests are incomplete.

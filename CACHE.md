@@ -3,13 +3,10 @@
 2026-06-08:
 - Use `agentteam-dev` for repo development. Required truth docs: `docs/goals/mvp-runtime-vertical-slice-plan.md`, `docs/architecture/function-map.md`, `docs/architecture/verification-map.md`.
 - Hard gates: every Rust function under `crates/` and `xtask/src/` must be in `docs/architecture/function-map.md`; required new files must be tracked before `verify-required-files`; hand-written Rust leaf files stay under 500 lines.
-- Completed commits: `2196768` Phase 0/1 gates/contracts, `d081d1d` Config Center, `17f08f6` Domain Registry, `b82467d` Persistence Event Log, `7a18c69` Error Center, `6a68152` Debug/Resource, `4c76dbf` parse-only CLI.
-- Current completed slice: local owner execution for `config check`, `daemon check`, `domain resolve`, `debug snapshot`.
-- New contract truth: `TeamReq01CliRaw`, `TeamReq02ParsedCommand`, and `TeamReq03ValidatedIntent` moved to `agentteam-contracts::team`; Gateway reuses them and does not own business execution.
-- New runtime truth: `agentteam-runtime::local::execute_local_intent` consumes validated intents and calls owner APIs only: Config Center for config, Config Center + Domain Registry for domain route, Debug/Resource/Persistence for debug snapshot.
-- New CLI truth: `agentteam-cli` is parse -> local runtime execute -> Output Gateway render. CLI does not parse TOML/domain targets or write event files directly.
-- Daemon check truth: `agentteam daemon check --config docs/config/config.toml.example --json` validates local routeability only and explicitly reports daemon/tmux/zterm not started/touched.
-- Verification passed after implementation: `cargo xtask verify`.
-- Smoke passed: daemon check returns routeable endpoint count 2; config check returns normalized config JSON; domain resolve returns remote route plan for `Alice@review-daemon`; debug snapshot writes `target/agentteam-smoke/events/agentteam.jsonl` with 3 events.
-- Still out of scope: no daemon loop, no tmux/zterm launch, no real TUI agent startup, no Task/Comm/TANote MVP.
-- Next main phase: Task/Comm/TANote MVP from Phase 8, unless choosing daemon-check skeleton first.
+- Completed commits through daemon check: `e3b7055 feat(cli): add daemon check`.
+- Current completed slice: Phase 8 Task Engine local MVP. `agentteam-runtime::task` owns task event state; local CLI supports `task send/list/status/done/error` with `--runtime-home`, persists through `agentteam-persist`, and replays `events/agentteam.jsonl` for board/status.
+- Shared event hash truth: persisted event payload hash uses `agentteam-contracts::event_hash::event_payload_hash`; per-module duplicate hash helpers were removed from debug/error/resource.
+- Current CLI task smoke passed: `task send` created `AT-000001`, `task list` replayed it, `task done` wrote sequence 2, `task status` returned done, and invalid `task error AT-404` returned explicit task error.
+- Latest full verification passed: `cargo xtask verify`.
+- Still out of scope: no daemon loop, no tmux/zterm launch, no Communication Center routing, no TANote implementation, no task claim/scheduling/role concurrency yet.
+- Next main phase: Communication Center envelope routing or Task Engine claim/schedule slice, depending on desired vertical path.

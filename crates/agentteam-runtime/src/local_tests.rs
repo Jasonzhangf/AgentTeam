@@ -104,3 +104,59 @@ fn local_debug_snapshot_persists_event_log() {
         other => panic!("unexpected result {other:?}"),
     }
 }
+
+#[test]
+fn local_task_commands_persist_and_replay_state() {
+    let runtime_home = temp_runtime_home("task");
+    let home = runtime_home.display().to_string();
+    let send = execute_local_intent(TeamReq03ValidatedIntent::TaskSend {
+        runtime_home: home.clone(),
+        team_id: "default".to_owned(),
+        created_by: "Kevin".to_owned(),
+        target_kind: "role".to_owned(),
+        target: "builder".to_owned(),
+        title: "Build local task engine".to_owned(),
+        body: "Persist task event truth".to_owned(),
+        json: true,
+    })
+    .unwrap();
+
+    match send {
+        LocalCommandResult::TaskSend { task } => {
+            assert_eq!(task.task_id, "AT-000001");
+            assert_eq!(task.status, "queued");
+        }
+        other => panic!("unexpected result {other:?}"),
+    }
+
+    let done = execute_local_intent(TeamReq03ValidatedIntent::TaskDone {
+        runtime_home: home.clone(),
+        task_id: "AT-000001".to_owned(),
+        actor: "Alice".to_owned(),
+        detail: "completed by explicit CLI signal".to_owned(),
+        json: true,
+    })
+    .unwrap();
+    match done {
+        LocalCommandResult::TaskDone { task } => assert_eq!(task.status, "done"),
+        other => panic!("unexpected result {other:?}"),
+    }
+
+    let status = execute_local_intent(TeamReq03ValidatedIntent::TaskStatus {
+        runtime_home: home,
+        task_id: "AT-000001".to_owned(),
+        json: true,
+    })
+    .unwrap();
+    match status {
+        LocalCommandResult::TaskStatus { board } => {
+            assert_eq!(board.task_count, 1);
+            assert_eq!(board.tasks[0].status, "done");
+            assert_eq!(
+                board.tasks[0].latest_detail,
+                "completed by explicit CLI signal"
+            );
+        }
+        other => panic!("unexpected result {other:?}"),
+    }
+}

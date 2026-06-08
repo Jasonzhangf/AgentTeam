@@ -1,9 +1,10 @@
 use std::path::Path;
 
 use agentteam_contracts::error::{TeamErr02EvidenceLinked, TeamErr03RuntimeEvent};
+use agentteam_contracts::event_hash::event_payload_hash;
 use agentteam_persist::{append_event_log, PersistedEventDraft};
 
-use crate::code::{payload_hash, severity_label};
+use crate::code::severity_label;
 use crate::error::{persistence_error, ErrorCenterError, ErrorCenterResult};
 use crate::model::ErrorEventPayload;
 use crate::FEATURE_ID;
@@ -19,7 +20,7 @@ pub fn persist_error_event(
         PersistedEventDraft {
             feature_id: FEATURE_ID.to_owned(),
             event_kind: "framework_error".to_owned(),
-            payload_hash: payload_hash(&payload_json),
+            payload_hash: event_payload_hash(&payload_json),
             payload_json,
         },
     )

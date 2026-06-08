@@ -73,6 +73,23 @@ Help content must not:
 
 ## Public CLI Surface Draft
 
+Implemented local MVP commands:
+
+```text
+agentteam config check --config <path> --json
+agentteam daemon check --config <path> --json
+agentteam domain resolve --target <target> --config <path> --json
+agentteam debug snapshot --config <path> --runtime-home <runtime_home> --json
+
+agentteam task send --runtime-home <runtime_home> --team <team_id> --created-by <agent> --target-kind <agent|role> --target <name_or_role> --title <title> --body <text> --json
+agentteam task list --runtime-home <runtime_home> --json
+agentteam task status --runtime-home <runtime_home> --task <task_id> --json
+agentteam task done --runtime-home <runtime_home> --task <task_id> --actor <agent> --detail <text> --json
+agentteam task error --runtime-home <runtime_home> --task <task_id> --actor <agent> --detail <text> --json
+```
+
+Planned daemon/team commands:
+
 ```text
 agentteam daemon start
 agentteam daemon status
@@ -87,12 +104,6 @@ agentteam team create --id <team_id>
 agentteam agent list --team <team_id>
 agentteam agent add --team <team_id> --name <name> --role <role> --cmd <cmd> --cwd <path>
 agentteam agent status --team <team_id> --name <name>
-
-agentteam task send --team <team_id> --to <role_or_name> --text <text>
-agentteam task list --team <team_id>
-agentteam task status --id <task_id>
-agentteam task done --id <task_id> --summary <text>
-agentteam task error --id <task_id> --message <text>
 
 agentteam msg send --team <team_id> --from <name> --to <role_or_name> --text <text>
 agentteam msg send --team <team_id> --from Kevin@local --to Alice@review-daemon --text <text>

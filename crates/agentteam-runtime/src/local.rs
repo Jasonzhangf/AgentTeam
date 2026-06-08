@@ -1,99 +1,22 @@
 use std::path::{Path, PathBuf};
 
 use agentteam_config::{
-    check_config_path, normalize_config, validate_config_path, ConfigCenterError, NormalizedConfig,
+    check_config_path, normalize_config, validate_config_path, ConfigCenterError,
     RemoteDaemonConfig, UserConfig,
 };
-use agentteam_contracts::debug::DebugResp03Bundle;
 use agentteam_contracts::team::TeamReq03ValidatedIntent;
 use agentteam_debug::{capture_debug_bundle, DebugBundleInput, DebugError};
 use agentteam_resource::ResourceRegistry;
-use serde::Serialize;
 
-use crate::domain::{
-    registered_domain, DomainEndpoint, DomainRegistry, DomainRegistryError, DomainRegistrySnapshot,
-    DomainRouteKind, DomainTargetKind, ResolvedDomainTarget,
+use crate::domain::{registered_domain, DomainEndpoint, DomainRegistry, DomainRegistryError};
+use crate::local_projection::{
+    config_result, daemon_check_result, debug_bundle_result, domain_snapshot_result,
+    resolved_domain_result, task_board_result, task_changed_result,
 };
-
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum LocalCommandError {
-    Config { reason: String },
-    Domain { reason: String },
-    Debug { reason: String },
-}
-
-#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
-#[serde(tag = "command", rename_all = "snake_case")]
-pub enum LocalCommandResult {
-    ConfigCheck {
-        normalized: ConfigCheckResult,
-    },
-    DaemonCheck {
-        daemon: DaemonCheckResult,
-    },
-    DomainResolve {
-        target: ResolvedDomainTargetResult,
-        registry_snapshot: DomainRegistrySnapshotResult,
-    },
-    DebugSnapshot {
-        bundle: DebugBundleResult,
-    },
-}
-
-#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
-pub struct ConfigCheckResult {
-    pub path: String,
-    pub project_slug: String,
-    pub project_root: String,
-    pub runtime_home: String,
-    pub local_domain_id: String,
-    pub team_count: usize,
-    pub member_count: usize,
-    pub zterm_endpoint: String,
-    pub remote_domain_count: usize,
-}
-
-#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
-pub struct DaemonCheckResult {
-    pub project_slug: String,
-    pub runtime_home: String,
-    pub local_domain_id: String,
-    pub routeable_endpoint_count: usize,
-    pub config_status: String,
-    pub domain_registry_status: String,
-    pub daemon_process_status: String,
-    pub tmux_status: String,
-    pub zterm_status: String,
-}
-
-#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
-pub struct ResolvedDomainTargetResult {
-    pub original_target: String,
-    pub target_kind: String,
-    pub target_value: String,
-    pub domain_id: String,
-    pub route_kind: String,
-    pub endpoint_host: String,
-    pub endpoint_port: u16,
-}
-
-#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
-pub struct DomainRegistrySnapshotResult {
-    pub local_domain_id: String,
-    pub aliases: Vec<String>,
-    pub remote_domain_ids: Vec<String>,
-    pub endpoint_count: usize,
-    pub token_redaction_status: String,
-}
-
-#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
-pub struct DebugBundleResult {
-    pub bundle_id: String,
-    pub persistence_receipt_id: String,
-    pub resource_snapshot_id: String,
-    pub module_count: usize,
-    pub event_log_path: String,
-}
+pub use crate::local_projection::{LocalCommandError, LocalCommandResult};
+use crate::task::{
+    TaskCreateInput, TaskEngine, TaskEngineError, TaskTargetKind, TaskTransitionInput,
+};
 
 pub fn execute_local_intent(
     intent: TeamReq03ValidatedIntent,
@@ -115,6 +38,44 @@ pub fn execute_local_intent(
             runtime_home,
             ..
         } => execute_debug_snapshot(config_path, runtime_home),
+        TeamReq03ValidatedIntent::TaskSend {
+            runtime_home,
+            team_id,
+            created_by,
+            target_kind,
+            target,
+            title,
+            body,
+            ..
+        } => execute_task_send(
+            runtime_home,
+            team_id,
+            created_by,
+            target_kind,
+            target,
+            title,
+            body,
+        ),
+        TeamReq03ValidatedIntent::TaskList { runtime_home, .. } => execute_task_list(runtime_home),
+        TeamReq03ValidatedIntent::TaskStatus {
+            runtime_home,
+            task_id,
+            ..
+        } => execute_task_status(runtime_home, task_id),
+        TeamReq03ValidatedIntent::TaskDone {
+            runtime_home,
+            task_id,
+            actor,
+            detail,
+            ..
+        } => execute_task_done(runtime_home, task_id, actor, detail),
+        TeamReq03ValidatedIntent::TaskError {
+            runtime_home,
+            task_id,
+            actor,
+            detail,
+            ..
+        } => execute_task_error(runtime_home, task_id, actor, detail),
     }
 }
 
@@ -169,6 +130,86 @@ fn execute_debug_snapshot(
     })
 }
 
+fn execute_task_send(
+    runtime_home: String,
+    team_id: String,
+    created_by: String,
+    target_kind: String,
+    target: String,
+    title: String,
+    body: String,
+) -> Result<LocalCommandResult, LocalCommandError> {
+    let engine = TaskEngine::new(event_log_path(runtime_home));
+    let changed = engine
+        .create_task(TaskCreateInput {
+            team_id,
+            created_by,
+            target_kind: parse_task_target_kind(&target_kind)?,
+            target,
+            title,
+            body,
+        })
+        .map_err(task_error)?;
+    Ok(LocalCommandResult::TaskSend {
+        task: task_changed_result(changed),
+    })
+}
+
+fn execute_task_list(runtime_home: String) -> Result<LocalCommandResult, LocalCommandError> {
+    let engine = TaskEngine::new(event_log_path(runtime_home));
+    Ok(LocalCommandResult::TaskList {
+        board: task_board_result(engine.board().map_err(task_error)?),
+    })
+}
+
+fn execute_task_status(
+    runtime_home: String,
+    task_id: String,
+) -> Result<LocalCommandResult, LocalCommandError> {
+    let engine = TaskEngine::new(event_log_path(runtime_home));
+    Ok(LocalCommandResult::TaskStatus {
+        board: task_board_result(engine.status(&task_id).map_err(task_error)?),
+    })
+}
+
+fn execute_task_done(
+    runtime_home: String,
+    task_id: String,
+    actor: String,
+    detail: String,
+) -> Result<LocalCommandResult, LocalCommandError> {
+    let engine = TaskEngine::new(event_log_path(runtime_home));
+    let changed = engine
+        .mark_done(TaskTransitionInput {
+            task_id,
+            actor,
+            detail,
+        })
+        .map_err(task_error)?;
+    Ok(LocalCommandResult::TaskDone {
+        task: task_changed_result(changed),
+    })
+}
+
+fn execute_task_error(
+    runtime_home: String,
+    task_id: String,
+    actor: String,
+    detail: String,
+) -> Result<LocalCommandResult, LocalCommandError> {
+    let engine = TaskEngine::new(event_log_path(runtime_home));
+    let changed = engine
+        .mark_error(TaskTransitionInput {
+            task_id,
+            actor,
+            detail,
+        })
+        .map_err(task_error)?;
+    Ok(LocalCommandResult::TaskError {
+        task: task_changed_result(changed),
+    })
+}
+
 fn build_domain_registry(user_config: &UserConfig) -> Result<DomainRegistry, LocalCommandError> {
     let mut registry = DomainRegistry::new(registered_domain(
         user_config.daemon_domain.id.clone(),
@@ -205,88 +246,18 @@ fn register_remote_domain(
         .map_err(domain_error)
 }
 
-fn config_result(normalized: NormalizedConfig) -> ConfigCheckResult {
-    ConfigCheckResult {
-        path: normalized.path,
-        project_slug: normalized.project_slug,
-        project_root: normalized.project_root,
-        runtime_home: normalized.runtime_home,
-        local_domain_id: normalized.local_domain_id,
-        team_count: normalized.team_count,
-        member_count: normalized.member_count,
-        zterm_endpoint: normalized.zterm_endpoint,
-        remote_domain_count: normalized.remote_domain_count,
-    }
-}
-
-fn resolved_domain_result(resolved: ResolvedDomainTarget) -> ResolvedDomainTargetResult {
-    let (target_kind, target_value) = target_kind_parts(resolved.target_kind);
-    ResolvedDomainTargetResult {
-        original_target: resolved.original_target,
-        target_kind,
-        target_value,
-        domain_id: resolved.domain_id,
-        route_kind: route_kind_label(resolved.route_kind).to_owned(),
-        endpoint_host: resolved.endpoint.host,
-        endpoint_port: resolved.endpoint.port,
-    }
-}
-
-fn domain_snapshot_result(snapshot: DomainRegistrySnapshot) -> DomainRegistrySnapshotResult {
-    DomainRegistrySnapshotResult {
-        local_domain_id: snapshot.local_domain_id,
-        aliases: snapshot.aliases,
-        remote_domain_ids: snapshot.remote_domain_ids,
-        endpoint_count: snapshot.endpoint_count,
-        token_redaction_status: snapshot.token_redaction_status,
-    }
-}
-
-fn daemon_check_result(
-    normalized: ConfigCheckResult,
-    snapshot: DomainRegistrySnapshot,
-) -> DaemonCheckResult {
-    DaemonCheckResult {
-        project_slug: normalized.project_slug,
-        runtime_home: normalized.runtime_home,
-        local_domain_id: normalized.local_domain_id,
-        routeable_endpoint_count: snapshot.endpoint_count,
-        config_status: "valid".to_owned(),
-        domain_registry_status: "routeable".to_owned(),
-        daemon_process_status: "not_started_by_check".to_owned(),
-        tmux_status: "not_touched_by_check".to_owned(),
-        zterm_status: "not_touched_by_check".to_owned(),
-    }
-}
-
-fn debug_bundle_result(bundle: DebugResp03Bundle, event_log: PathBuf) -> DebugBundleResult {
-    DebugBundleResult {
-        bundle_id: bundle.bundle_id,
-        persistence_receipt_id: bundle.persistence_receipt_id,
-        resource_snapshot_id: bundle.resource_snapshot_id,
-        module_count: bundle.module_count,
-        event_log_path: event_log.display().to_string(),
+fn parse_task_target_kind(value: &str) -> Result<TaskTargetKind, LocalCommandError> {
+    match value {
+        "agent" => Ok(TaskTargetKind::Agent),
+        "role" => Ok(TaskTargetKind::Role),
+        other => Err(LocalCommandError::Task {
+            reason: format!("unsupported task target kind {other}; expected agent or role"),
+        }),
     }
 }
 
 fn event_log_path(runtime_home: impl AsRef<Path>) -> PathBuf {
     runtime_home.as_ref().join("events").join("agentteam.jsonl")
-}
-
-fn target_kind_parts(kind: DomainTargetKind) -> (String, String) {
-    match kind {
-        DomainTargetKind::Agent(value) => ("agent".to_owned(), value),
-        DomainTargetKind::Role(value) => ("role".to_owned(), value),
-        DomainTargetKind::Team(value) => ("team".to_owned(), value),
-        DomainTargetKind::All => ("all".to_owned(), "all".to_owned()),
-    }
-}
-
-fn route_kind_label(kind: DomainRouteKind) -> &'static str {
-    match kind {
-        DomainRouteKind::Local => "local",
-        DomainRouteKind::Remote => "remote",
-    }
 }
 
 fn config_error(error: ConfigCenterError) -> LocalCommandError {
@@ -304,5 +275,11 @@ fn domain_error(error: DomainRegistryError) -> LocalCommandError {
 fn debug_error(error: DebugError) -> LocalCommandError {
     LocalCommandError::Debug {
         reason: error.reason().to_owned(),
+    }
+}
+
+fn task_error(error: TaskEngineError) -> LocalCommandError {
+    LocalCommandError::Task {
+        reason: error.reason(),
     }
 }

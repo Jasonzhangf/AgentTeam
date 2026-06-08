@@ -38,6 +38,39 @@ pub enum TeamReq02ParsedCommand {
         runtime_home: Option<String>,
         json: bool,
     },
+    TaskSend {
+        runtime_home: Option<String>,
+        team_id: Option<String>,
+        created_by: Option<String>,
+        target_kind: Option<String>,
+        target: Option<String>,
+        title: Option<String>,
+        body: Option<String>,
+        json: bool,
+    },
+    TaskList {
+        runtime_home: Option<String>,
+        json: bool,
+    },
+    TaskStatus {
+        runtime_home: Option<String>,
+        task_id: Option<String>,
+        json: bool,
+    },
+    TaskDone {
+        runtime_home: Option<String>,
+        task_id: Option<String>,
+        actor: Option<String>,
+        detail: Option<String>,
+        json: bool,
+    },
+    TaskError {
+        runtime_home: Option<String>,
+        task_id: Option<String>,
+        actor: Option<String>,
+        detail: Option<String>,
+        json: bool,
+    },
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize)]
@@ -61,6 +94,39 @@ pub enum TeamReq03ValidatedIntent {
         runtime_home: String,
         json: bool,
     },
+    TaskSend {
+        runtime_home: String,
+        team_id: String,
+        created_by: String,
+        target_kind: String,
+        target: String,
+        title: String,
+        body: String,
+        json: bool,
+    },
+    TaskList {
+        runtime_home: String,
+        json: bool,
+    },
+    TaskStatus {
+        runtime_home: String,
+        task_id: String,
+        json: bool,
+    },
+    TaskDone {
+        runtime_home: String,
+        task_id: String,
+        actor: String,
+        detail: String,
+        json: bool,
+    },
+    TaskError {
+        runtime_home: String,
+        task_id: String,
+        actor: String,
+        detail: String,
+        json: bool,
+    },
 }
 
 impl TeamReq03ValidatedIntent {
@@ -72,6 +138,11 @@ impl TeamReq03ValidatedIntent {
             Self::DaemonCheck { .. } => "daemon.check",
             Self::DomainResolve { .. } => "domain.resolve",
             Self::DebugSnapshot { .. } => "debug.snapshot",
+            Self::TaskSend { .. } => "task.send",
+            Self::TaskList { .. } => "task.list",
+            Self::TaskStatus { .. } => "task.status",
+            Self::TaskDone { .. } => "task.done",
+            Self::TaskError { .. } => "task.error",
         }
     }
 }
@@ -93,6 +164,11 @@ mod tests {
             json: true,
         };
         assert_eq!(intent.command_name(), "daemon.check");
+        let intent = TeamReq03ValidatedIntent::TaskList {
+            runtime_home: "target/agentteam-smoke".to_owned(),
+            json: true,
+        };
+        assert_eq!(intent.command_name(), "task.list");
         assert_eq!(TeamReq01CliRaw::NODE.number, 1);
         assert_eq!(TeamReq03ValidatedIntent::NODE.number, 3);
     }

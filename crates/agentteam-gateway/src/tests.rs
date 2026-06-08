@@ -1,5 +1,6 @@
 use crate::*;
-use agentteam_runtime::local::{ConfigCheckResult, LocalCommandResult};
+use agentteam_runtime::local::LocalCommandResult;
+use agentteam_runtime::local_projection::{ConfigCheckResult, TaskBoardResult};
 
 fn strings(values: &[&str]) -> Vec<String> {
     values.iter().map(|value| (*value).to_owned()).collect()
@@ -59,6 +60,46 @@ fn parses_debug_snapshot_intent() {
     ]))
     .unwrap();
     assert_eq!(intent.command_name(), "debug.snapshot");
+}
+
+#[test]
+fn parses_task_send_intent() {
+    let intent = parse_cli_args(strings(&[
+        "task",
+        "send",
+        "--runtime-home",
+        "target/agentteam-smoke",
+        "--team",
+        "default",
+        "--created-by",
+        "Kevin",
+        "--target-kind",
+        "role",
+        "--target",
+        "builder",
+        "--title",
+        "Build task",
+        "--body",
+        "Implement owner slice",
+        "--json",
+    ]))
+    .unwrap();
+    assert_eq!(intent.command_name(), "task.send");
+}
+
+#[test]
+fn parses_task_status_intent() {
+    let intent = parse_cli_args(strings(&[
+        "task",
+        "status",
+        "--runtime-home",
+        "target/agentteam-smoke",
+        "--task",
+        "AT-000001",
+        "--json",
+    ]))
+    .unwrap();
+    assert_eq!(intent.command_name(), "task.status");
 }
 
 #[test]
@@ -122,4 +163,18 @@ fn render_local_result_json_does_not_mark_parse_only() {
     assert!(!rendered.contains("local_parse_only"));
     assert!(rendered.contains("\"node\":\"TeamResp05DaemonResult\""));
     assert!(rendered.contains("\"project_slug\":\"agentteam\""));
+}
+
+#[test]
+fn render_task_result_json_uses_task_command_name() {
+    let result = LocalCommandResult::TaskList {
+        board: TaskBoardResult {
+            task_count: 0,
+            latest_sequence: 0,
+            tasks: Vec::new(),
+        },
+    };
+
+    let rendered = render_local_result_json(&result).unwrap();
+    assert!(rendered.contains("\"command_name\":\"task.list\""));
 }
