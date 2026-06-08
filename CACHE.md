@@ -9,3 +9,5 @@
 - All full gates passed after staging required new files via `cargo xtask verify`: function-map first, then fmt, clippy, test, red-tests, required-files, skill-frontmatter, resource-lifecycle, code-size.
 - Commit `2196768` contains Phase 0/1.
 - Phase 2 started after commit: Config Center now has owner files `error/load/model/parse/validate/normalize/snapshot/tests`, dependencies `serde` and `toml`, and 7 unit tests. `cargo xtask verify` passed before Phase 2 commit.
+- Commit `d081d1d` contains Phase 2.
+- Phase 3 started after commit: Daemon Domain Registry now lives under `agentteam-runtime/src/domain/` with model/registry/resolve/tests. It resolves local/remote domain targets and rejects unknown remote fallback. `cargo xtask verify` passed before Phase 3 commit.
