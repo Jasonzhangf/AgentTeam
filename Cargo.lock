@@ -34,6 +34,10 @@ name = "agentteam-debug"
 version = "0.1.0"
 dependencies = [
  "agentteam-contracts",
+ "agentteam-persist",
+ "agentteam-resource",
+ "serde",
+ "serde_json",
 ]
 
 [[package]]
@@ -67,6 +71,9 @@ name = "agentteam-resource"
 version = "0.1.0"
 dependencies = [
  "agentteam-contracts",
+ "agentteam-persist",
+ "serde",
+ "serde_json",
 ]
 
 [[package]]

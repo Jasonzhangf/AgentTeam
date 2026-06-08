@@ -53,6 +53,22 @@ Every Rust function or method under `crates/` and `xtask/src/` must be listed he
 | `crates::agentteam-contracts::src::debug::mod::DebugReq02ModuleSnapshotRequest::bundle` | Debug Center contracts | `debug.center` | `crates/agentteam-contracts/src/debug/mod.rs` | contract unit, function map gate |
 | `crates::agentteam-contracts::src::debug::mod::debug_bundle_requires_persistence_receipt` | Debug Center contract test | `debug.center` | `crates/agentteam-contracts/src/debug/mod.rs` | cargo test, function map gate |
 | `crates::agentteam-contracts::src::debug::mod::debug_feature_id_is_stable` | Debug Center contract test | `debug.center` | `crates/agentteam-contracts/src/debug/mod.rs` | cargo test, function map gate |
+| `crates::agentteam-debug::src::bundle::bundle_id` | Debug Center | `debug.center` | `crates/agentteam-debug/src/bundle.rs` | debug unit, function map gate |
+| `crates::agentteam-debug::src::bundle::capture_debug_bundle` | Debug Center | `debug.center` | `crates/agentteam-debug/src/bundle.rs` | debug unit, function map gate |
+| `crates::agentteam-debug::src::bundle::receipt_id_for_sequence` | Debug Center | `debug.center` | `crates/agentteam-debug/src/bundle.rs` | debug unit, function map gate |
+| `crates::agentteam-debug::src::bundle::resource_input` | Debug Center | `debug.center` | `crates/agentteam-debug/src/bundle.rs` | debug unit, function map gate |
+| `crates::agentteam-debug::src::bundle::validate_input` | Debug Center | `debug.center` | `crates/agentteam-debug/src/bundle.rs` | debug unit, function map gate |
+| `crates::agentteam-debug::src::error::DebugError::reason` | Debug Center | `debug.center` | `crates/agentteam-debug/src/error.rs` | debug unit, function map gate |
+| `crates::agentteam-debug::src::error::persistence_error` | Debug Center | `debug.center` | `crates/agentteam-debug/src/error.rs` | debug unit, function map gate |
+| `crates::agentteam-debug::src::error::resource_error` | Debug Center | `debug.center` | `crates/agentteam-debug/src/error.rs` | debug unit, function map gate |
+| `crates::agentteam-debug::src::persist::encode_payload<T: Serialize>` | Debug Center | `debug.center` | `crates/agentteam-debug/src/persist.rs` | debug unit, function map gate |
+| `crates::agentteam-debug::src::persist::payload_hash` | Debug Center | `debug.center` | `crates/agentteam-debug/src/persist.rs` | debug unit, function map gate |
+| `crates::agentteam-debug::src::persist::persist_debug_bundle<T: Serialize>` | Debug Center | `debug.center` | `crates/agentteam-debug/src/persist.rs` | debug unit, function map gate |
+| `crates::agentteam-debug::src::tests::debug_bundle_includes_resource_snapshot` | Debug Center test | `debug.center` | `crates/agentteam-debug/src/tests.rs` | cargo test, function map gate |
+| `crates::agentteam-debug::src::tests::debug_bundle_persists_before_projection` | Debug Center test | `debug.center` | `crates/agentteam-debug/src/tests.rs` | cargo test, function map gate |
+| `crates::agentteam-debug::src::tests::input` | Debug Center test helper | `debug.center` | `crates/agentteam-debug/src/tests.rs` | cargo test, function map gate |
+| `crates::agentteam-debug::src::tests::invalid_debug_input_fails_validation` | Debug Center test | `debug.center` | `crates/agentteam-debug/src/tests.rs` | cargo test, function map gate |
+| `crates::agentteam-debug::src::tests::temp_log_path` | Debug Center test helper | `debug.center` | `crates/agentteam-debug/src/tests.rs` | cargo test, function map gate |
 | `crates::agentteam-contracts::src::domain::mod::DomainAgentAddr03Resolved::plan_route` | Daemon Domain Registry contracts | `domain.registry` | `crates/agentteam-contracts/src/domain/mod.rs` | contract unit, function map gate |
 | `crates::agentteam-contracts::src::domain::mod::DomainReq01RawTarget::new` | Daemon Domain Registry contracts | `domain.registry` | `crates/agentteam-contracts/src/domain/mod.rs` | contract unit, function map gate |
 | `crates::agentteam-contracts::src::domain::mod::DomainReq01RawTarget::validate` | Daemon Domain Registry contracts | `domain.registry` | `crates/agentteam-contracts/src/domain/mod.rs` | contract unit, function map gate |
@@ -132,6 +148,28 @@ Every Rust function or method under `crates/` and `xtask/src/` must be listed he
 | `crates::agentteam-contracts::src::resource::mod::ResourceReq02ValidatedScope::initial_metric` | Resource Lifecycle contracts | `resource.lifecycle` | `crates/agentteam-contracts/src/resource/mod.rs` | contract unit, function map gate |
 | `crates::agentteam-contracts::src::resource::mod::resource_chain_requires_active_lease_before_release` | Resource Lifecycle contract test | `resource.lifecycle` | `crates/agentteam-contracts/src/resource/mod.rs` | cargo test, function map gate |
 | `crates::agentteam-contracts::src::resource::mod::resource_feature_id_is_stable` | Resource Lifecycle contract test | `resource.lifecycle` | `crates/agentteam-contracts/src/resource/mod.rs` | cargo test, function map gate |
+| `crates::agentteam-resource::src::error::ResourceError::reason` | Resource Lifecycle Manager | `resource.lifecycle` | `crates/agentteam-resource/src/error.rs` | resource unit, function map gate |
+| `crates::agentteam-resource::src::error::persistence_error` | Resource Lifecycle Manager | `resource.lifecycle` | `crates/agentteam-resource/src/error.rs` | resource unit, function map gate |
+| `crates::agentteam-resource::src::persist::encode_payload<T: Serialize>` | Resource Lifecycle Manager | `resource.lifecycle` | `crates/agentteam-resource/src/persist.rs` | resource unit, function map gate |
+| `crates::agentteam-resource::src::persist::payload_hash` | Resource Lifecycle Manager | `resource.lifecycle` | `crates/agentteam-resource/src/persist.rs` | resource unit, function map gate |
+| `crates::agentteam-resource::src::persist::persist_resource_event<T: Serialize>` | Resource Lifecycle Manager | `resource.lifecycle` | `crates/agentteam-resource/src/persist.rs` | resource unit, function map gate |
+| `crates::agentteam-resource::src::registry::ResourceRegistry::acquire` | Resource Lifecycle Manager | `resource.lifecycle` | `crates/agentteam-resource/src/registry.rs` | resource unit, function map gate |
+| `crates::agentteam-resource::src::registry::ResourceRegistry::leases` | Resource Lifecycle Manager | `resource.lifecycle` | `crates/agentteam-resource/src/registry.rs` | resource unit, function map gate |
+| `crates::agentteam-resource::src::registry::ResourceRegistry::mark_leak` | Resource Lifecycle Manager | `resource.lifecycle` | `crates/agentteam-resource/src/registry.rs` | resource unit, function map gate |
+| `crates::agentteam-resource::src::registry::ResourceRegistry::new` | Resource Lifecycle Manager | `resource.lifecycle` | `crates/agentteam-resource/src/registry.rs` | resource unit, function map gate |
+| `crates::agentteam-resource::src::registry::ResourceRegistry::release` | Resource Lifecycle Manager | `resource.lifecycle` | `crates/agentteam-resource/src/registry.rs` | resource unit, function map gate |
+| `crates::agentteam-resource::src::registry::ResourceRegistry::snapshot` | Resource Lifecycle Manager | `resource.lifecycle` | `crates/agentteam-resource/src/registry.rs` | resource unit, function map gate |
+| `crates::agentteam-resource::src::registry::receipt_id_for_sequence` | Resource Lifecycle Manager | `resource.lifecycle` | `crates/agentteam-resource/src/registry.rs` | resource unit, function map gate |
+| `crates::agentteam-resource::src::registry::record_from_active` | Resource Lifecycle Manager | `resource.lifecycle` | `crates/agentteam-resource/src/registry.rs` | resource unit, function map gate |
+| `crates::agentteam-resource::src::registry::validate_acquire_input` | Resource Lifecycle Manager | `resource.lifecycle` | `crates/agentteam-resource/src/registry.rs` | resource unit, function map gate |
+| `crates::agentteam-resource::src::snapshot::snapshot_registry` | Resource Lifecycle Manager | `resource.lifecycle` | `crates/agentteam-resource/src/snapshot.rs` | resource unit, function map gate |
+| `crates::agentteam-resource::src::tests::acquire_registers_lease_and_persists_event` | Resource Lifecycle Manager test | `resource.lifecycle` | `crates/agentteam-resource/src/tests.rs` | cargo test, function map gate |
+| `crates::agentteam-resource::src::tests::input` | Resource Lifecycle Manager test helper | `resource.lifecycle` | `crates/agentteam-resource/src/tests.rs` | cargo test, function map gate |
+| `crates::agentteam-resource::src::tests::invalid_acquire_input_fails_validation` | Resource Lifecycle Manager test | `resource.lifecycle` | `crates/agentteam-resource/src/tests.rs` | cargo test, function map gate |
+| `crates::agentteam-resource::src::tests::leak_projection_is_persisted_and_visible_in_snapshot` | Resource Lifecycle Manager test | `resource.lifecycle` | `crates/agentteam-resource/src/tests.rs` | cargo test, function map gate |
+| `crates::agentteam-resource::src::tests::release_by_non_owner_fails` | Resource Lifecycle Manager test | `resource.lifecycle` | `crates/agentteam-resource/src/tests.rs` | cargo test, function map gate |
+| `crates::agentteam-resource::src::tests::release_requires_owner_and_persists_event` | Resource Lifecycle Manager test | `resource.lifecycle` | `crates/agentteam-resource/src/tests.rs` | cargo test, function map gate |
+| `crates::agentteam-resource::src::tests::temp_log_path` | Resource Lifecycle Manager test helper | `resource.lifecycle` | `crates/agentteam-resource/src/tests.rs` | cargo test, function map gate |
 | `crates::agentteamd::src::main::main` | Daemon binary scaffold | `startup.session` | `crates/agentteamd/src/main.rs` | cargo test, function map gate |
 | `crates::agentteam-runtime::src::domain::model::DomainEndpoint::new` | Daemon Domain Registry | `domain.registry` | `crates/agentteam-runtime/src/domain/model.rs` | domain unit, function map gate |
 | `crates::agentteam-runtime::src::domain::model::DomainEndpoint::route_endpoint` | Daemon Domain Registry | `domain.registry` | `crates/agentteam-runtime/src/domain/model.rs` | domain unit, function map gate |

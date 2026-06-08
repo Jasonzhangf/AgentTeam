@@ -18,3 +18,6 @@
 - Commit `b82467d` contains Phase 4.
 - Phase 5 implemented `agentteam-error` owner modules. External API is `handle_framework_fault`; internals classify faults, generate code/evidence id, persist framework_error via `agentteam-persist`, then project. Normal task error facts are rejected from Error Center.
 - `cargo xtask verify` passed during Phase 5 implementation before commit. Next phase after commit: Phase 6 Debug Center and Resource Lifecycle MVP (`docs/modules/10-debug-center.md`, `docs/modules/17-resource-lifecycle-manager.md`).
+- Commit `7a18c69` contains Phase 5.
+- Phase 6 implemented `agentteam-resource` owner lease registry and `agentteam-debug` persisted bundle capture. Debug bundle flow is acquire debug_bundle lease -> resource snapshot through public API -> persist debug_bundle event -> release lease -> return bundle projection with receipt and resource snapshot id.
+- `cargo xtask verify` passed during Phase 6 implementation before commit. Next phase after commit: start CLI/API vertical slice wiring for config/domain/debug commands, unless Task/Comm is chosen first.
