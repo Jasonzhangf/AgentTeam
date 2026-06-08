@@ -75,6 +75,28 @@ Every Rust function or method under `crates/` and `xtask/src/` must be listed he
 | `crates::agentteam-contracts::src::persist::mod::persist_append_chain_uses_adjacent_nodes` | Persistence contract test | `persist.event_log` | `crates/agentteam-contracts/src/persist/mod.rs` | cargo test, function map gate |
 | `crates::agentteam-contracts::src::persist::mod::persist_feature_id_is_stable` | Persistence contract test | `persist.event_log` | `crates/agentteam-contracts/src/persist/mod.rs` | cargo test, function map gate |
 | `crates::agentteam-contracts::src::persist::mod::persist_replay_chain_materializes_state` | Persistence contract test | `persist.event_log` | `crates/agentteam-contracts/src/persist/mod.rs` | cargo test, function map gate |
+| `crates::agentteam-persist::src::append::append_event_log` | Persistence | `persist.event_log` | `crates/agentteam-persist/src/append.rs` | persist unit, function map gate |
+| `crates::agentteam-persist::src::append::encode_record` | Persistence | `persist.event_log` | `crates/agentteam-persist/src/append.rs` | persist unit, function map gate |
+| `crates::agentteam-persist::src::append::ensure_parent_dir` | Persistence | `persist.event_log` | `crates/agentteam-persist/src/append.rs` | persist unit, function map gate |
+| `crates::agentteam-persist::src::append::io_error` | Persistence | `persist.event_log` | `crates/agentteam-persist/src/append.rs` | persist unit, function map gate |
+| `crates::agentteam-persist::src::append::next_sequence` | Persistence | `persist.event_log` | `crates/agentteam-persist/src/append.rs` | persist unit, function map gate |
+| `crates::agentteam-persist::src::append::validate_draft` | Persistence | `persist.event_log` | `crates/agentteam-persist/src/append.rs` | persist unit, function map gate |
+| `crates::agentteam-persist::src::error::PersistenceError::reason` | Persistence | `persist.event_log` | `crates/agentteam-persist/src/error.rs` | persist unit, function map gate |
+| `crates::agentteam-persist::src::materialize::materialize_event_log` | Persistence | `persist.event_log` | `crates/agentteam-persist/src/materialize.rs` | persist unit, function map gate |
+| `crates::agentteam-persist::src::materialize::snapshot_id_for_sequence` | Persistence | `persist.event_log` | `crates/agentteam-persist/src/materialize.rs` | persist unit, function map gate |
+| `crates::agentteam-persist::src::model::event_id_for_sequence` | Persistence | `persist.event_log` | `crates/agentteam-persist/src/model.rs` | persist unit, function map gate |
+| `crates::agentteam-persist::src::replay::parse_record` | Persistence | `persist.event_log` | `crates/agentteam-persist/src/replay.rs` | persist unit, function map gate |
+| `crates::agentteam-persist::src::replay::replay_event_log` | Persistence | `persist.event_log` | `crates/agentteam-persist/src/replay.rs` | persist unit, function map gate |
+| `crates::agentteam-persist::src::replay::validate_record_sequence` | Persistence | `persist.event_log` | `crates/agentteam-persist/src/replay.rs` | persist unit, function map gate |
+| `crates::agentteam-persist::src::tests::append_returns_receipt` | Persistence test | `persist.event_log` | `crates/agentteam-persist/src/tests.rs` | cargo test, function map gate |
+| `crates::agentteam-persist::src::tests::corrupt_record_fails_explicitly` | Persistence test | `persist.event_log` | `crates/agentteam-persist/src/tests.rs` | cargo test, function map gate |
+| `crates::agentteam-persist::src::tests::draft` | Persistence test helper | `persist.event_log` | `crates/agentteam-persist/src/tests.rs` | cargo test, function map gate |
+| `crates::agentteam-persist::src::tests::empty_draft_fails_validation` | Persistence test | `persist.event_log` | `crates/agentteam-persist/src/tests.rs` | cargo test, function map gate |
+| `crates::agentteam-persist::src::tests::materialized_state_uses_latest_sequence` | Persistence test | `persist.event_log` | `crates/agentteam-persist/src/tests.rs` | cargo test, function map gate |
+| `crates::agentteam-persist::src::tests::replay_from_sequence_filters_older_events` | Persistence test | `persist.event_log` | `crates/agentteam-persist/src/tests.rs` | cargo test, function map gate |
+| `crates::agentteam-persist::src::tests::replay_returns_events_in_sequence` | Persistence test | `persist.event_log` | `crates/agentteam-persist/src/tests.rs` | cargo test, function map gate |
+| `crates::agentteam-persist::src::tests::sequence_mismatch_fails_explicitly` | Persistence test | `persist.event_log` | `crates/agentteam-persist/src/tests.rs` | cargo test, function map gate |
+| `crates::agentteam-persist::src::tests::temp_log_path` | Persistence test helper | `persist.event_log` | `crates/agentteam-persist/src/tests.rs` | cargo test, function map gate |
 | `crates::agentteam-contracts::src::pipeline::mod::PipelineNodeName::new` | Contracts Pipeline | `contract.pipeline` | `crates/agentteam-contracts/src/pipeline/mod.rs` | cargo test, function map gate |
 | `crates::agentteam-contracts::src::resource::mod::ResourceLease04Active::release` | Resource Lifecycle contracts | `resource.lifecycle` | `crates/agentteam-contracts/src/resource/mod.rs` | contract unit, function map gate |
 | `crates::agentteam-contracts::src::resource::mod::ResourceMetric03Initial::activate` | Resource Lifecycle contracts | `resource.lifecycle` | `crates/agentteam-contracts/src/resource/mod.rs` | contract unit, function map gate |

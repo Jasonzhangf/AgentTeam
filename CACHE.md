@@ -11,3 +11,7 @@
 - Phase 2 started after commit: Config Center now has owner files `error/load/model/parse/validate/normalize/snapshot/tests`, dependencies `serde` and `toml`, and 7 unit tests. `cargo xtask verify` passed before Phase 2 commit.
 - Commit `d081d1d` contains Phase 2.
 - Phase 3 started after commit: Daemon Domain Registry now lives under `agentteam-runtime/src/domain/` with model/registry/resolve/tests. It resolves local/remote domain targets and rejects unknown remote fallback. `cargo xtask verify` passed before Phase 3 commit.
+- Commit `17f08f6` contains Phase 3.
+- Phase 4 implemented `agentteam-persist` owner modules for typed JSONL append/replay/materialize. It validates event drafts, returns append receipts, detects corrupt JSONL and sequence mismatch, and materializes latest sequence/snapshot id.
+- `cargo xtask verify` passed for Phase 4 before commit: function-map, fmt, clippy, workspace tests, red-tests, required-files, skill-frontmatter, resource-lifecycle, code-size.
+- Next phase after Phase 4 commit: Phase 5 Error Center (`docs/modules/02-error-center.md`) using Persistence append instead of writing files directly.
