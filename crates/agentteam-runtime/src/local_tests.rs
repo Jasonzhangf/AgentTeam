@@ -4,6 +4,7 @@ use std::time::{SystemTime, UNIX_EPOCH};
 
 use agentteam_contracts::team::TeamReq03ValidatedIntent;
 
+use crate::local::LocalCommandError;
 use crate::local::{execute_local_intent, LocalCommandResult};
 
 fn example_config_path() -> String {
@@ -159,4 +160,15 @@ fn local_task_commands_persist_and_replay_state() {
         }
         other => panic!("unexpected result {other:?}"),
     }
+}
+
+#[test]
+fn local_tmux_loopback_rejects_invalid_session_count() {
+    let result = execute_local_intent(TeamReq03ValidatedIntent::TmuxLoopback {
+        runtime_home: "target/agentteam-tmux-test".to_owned(),
+        session_count: "not-a-number".to_owned(),
+        json: true,
+    });
+    let error = result.unwrap_err();
+    assert!(matches!(error, LocalCommandError::Tmux { .. }));
 }

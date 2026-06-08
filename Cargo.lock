@@ -93,6 +93,7 @@ dependencies = [
  "agentteam-debug",
  "agentteam-persist",
  "agentteam-resource",
+ "agentteam-tmux",
  "serde",
  "serde_json",
 ]

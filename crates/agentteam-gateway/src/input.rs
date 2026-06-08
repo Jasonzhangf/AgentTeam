@@ -36,6 +36,9 @@ fn parse_cli_raw(raw: TeamReq01CliRaw) -> GatewayResult<TeamReq02ParsedCommand> 
         }
         [area, action, rest @ ..] if area == "task" && action == "done" => parse_task_done(rest),
         [area, action, rest @ ..] if area == "task" && action == "error" => parse_task_error(rest),
+        [area, action, rest @ ..] if area == "tmux" && action == "loopback" => {
+            parse_tmux_loopback(rest)
+        }
         [] => Err(GatewayError::parse("command is required")),
         [area, action, ..] => Err(GatewayError::parse(format!(
             "unsupported command {area} {action}"
@@ -44,6 +47,15 @@ fn parse_cli_raw(raw: TeamReq01CliRaw) -> GatewayResult<TeamReq02ParsedCommand> 
             "command action is required for {area}"
         ))),
     }
+}
+
+fn parse_tmux_loopback(args: &[String]) -> GatewayResult<TeamReq02ParsedCommand> {
+    let options = parse_options(args, &["--runtime-home", "--session-count"], &["--json"])?;
+    Ok(TeamReq02ParsedCommand::TmuxLoopback {
+        runtime_home: option_value(&options, "--runtime-home"),
+        session_count: option_value(&options, "--session-count"),
+        json: options.json,
+    })
 }
 
 fn parse_config_check(args: &[String]) -> GatewayResult<TeamReq02ParsedCommand> {
@@ -302,6 +314,18 @@ fn validate_intent(parsed: TeamReq02ParsedCommand) -> GatewayResult<TeamReq03Val
                 task_id: require_value(task_id, "--task")?,
                 actor: require_value(actor, "--actor")?,
                 detail: require_value(detail, "--detail")?,
+                json,
+            })
+        }
+        TeamReq02ParsedCommand::TmuxLoopback {
+            runtime_home,
+            session_count,
+            json,
+        } => {
+            require_json(json)?;
+            Ok(TeamReq03ValidatedIntent::TmuxLoopback {
+                runtime_home: require_value(runtime_home, "--runtime-home")?,
+                session_count: require_value(session_count, "--session-count")?,
                 json,
             })
         }

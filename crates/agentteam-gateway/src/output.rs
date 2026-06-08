@@ -101,6 +101,7 @@ fn local_result_command_name(result: &LocalCommandResult) -> &'static str {
         LocalCommandResult::TaskStatus { .. } => "task.status",
         LocalCommandResult::TaskDone { .. } => "task.done",
         LocalCommandResult::TaskError { .. } => "task.error",
+        LocalCommandResult::TmuxLoopback { .. } => "tmux.loopback",
     }
 }
 
@@ -110,6 +111,7 @@ fn local_error_class(error: &LocalCommandError) -> &'static str {
         LocalCommandError::Domain { .. } => "domain",
         LocalCommandError::Debug { .. } => "debug",
         LocalCommandError::Task { .. } => "task",
+        LocalCommandError::Tmux { .. } => "tmux",
     }
 }
 
@@ -118,6 +120,7 @@ fn local_error_reason(error: &LocalCommandError) -> String {
         LocalCommandError::Config { reason }
         | LocalCommandError::Domain { reason }
         | LocalCommandError::Debug { reason }
-        | LocalCommandError::Task { reason } => reason.clone(),
+        | LocalCommandError::Task { reason }
+        | LocalCommandError::Tmux { reason } => reason.clone(),
     }
 }

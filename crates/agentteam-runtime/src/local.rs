@@ -7,11 +7,12 @@ use agentteam_config::{
 use agentteam_contracts::team::TeamReq03ValidatedIntent;
 use agentteam_debug::{capture_debug_bundle, DebugBundleInput, DebugError};
 use agentteam_resource::ResourceRegistry;
+use agentteam_tmux::{run_tmux_loopback, TmuxAdapterError, TmuxLoopbackInput};
 
 use crate::domain::{registered_domain, DomainEndpoint, DomainRegistry, DomainRegistryError};
 use crate::local_projection::{
     config_result, daemon_check_result, debug_bundle_result, domain_snapshot_result,
-    resolved_domain_result, task_board_result, task_changed_result,
+    resolved_domain_result, task_board_result, task_changed_result, tmux_loopback_result,
 };
 pub use crate::local_projection::{LocalCommandError, LocalCommandResult};
 use crate::task::{
@@ -76,6 +77,11 @@ pub fn execute_local_intent(
             detail,
             ..
         } => execute_task_error(runtime_home, task_id, actor, detail),
+        TeamReq03ValidatedIntent::TmuxLoopback {
+            runtime_home,
+            session_count,
+            ..
+        } => execute_tmux_loopback(runtime_home, session_count),
     }
 }
 
@@ -210,6 +216,18 @@ fn execute_task_error(
     })
 }
 
+fn execute_tmux_loopback(
+    runtime_home: String,
+    session_count: String,
+) -> Result<LocalCommandResult, LocalCommandError> {
+    let count = parse_session_count(&session_count)?;
+    let report =
+        run_tmux_loopback(TmuxLoopbackInput::new(runtime_home, count)).map_err(tmux_error)?;
+    Ok(LocalCommandResult::TmuxLoopback {
+        loopback: tmux_loopback_result(report),
+    })
+}
+
 fn build_domain_registry(user_config: &UserConfig) -> Result<DomainRegistry, LocalCommandError> {
     let mut registry = DomainRegistry::new(registered_domain(
         user_config.daemon_domain.id.clone(),
@@ -256,6 +274,14 @@ fn parse_task_target_kind(value: &str) -> Result<TaskTargetKind, LocalCommandErr
     }
 }
 
+fn parse_session_count(value: &str) -> Result<usize, LocalCommandError> {
+    value
+        .parse::<usize>()
+        .map_err(|error| LocalCommandError::Tmux {
+            reason: format!("invalid --session-count {value}: {error}"),
+        })
+}
+
 fn event_log_path(runtime_home: impl AsRef<Path>) -> PathBuf {
     runtime_home.as_ref().join("events").join("agentteam.jsonl")
 }
@@ -280,6 +306,12 @@ fn debug_error(error: DebugError) -> LocalCommandError {
 
 fn task_error(error: TaskEngineError) -> LocalCommandError {
     LocalCommandError::Task {
+        reason: error.reason(),
+    }
+}
+
+fn tmux_error(error: TmuxAdapterError) -> LocalCommandError {
+    LocalCommandError::Tmux {
         reason: error.reason(),
     }
 }

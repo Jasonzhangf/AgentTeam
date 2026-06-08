@@ -9,6 +9,7 @@ pub mod pipeline;
 pub mod resource;
 pub mod task;
 pub mod team;
+pub mod terminal;
 pub mod verification_map;
 
 pub const MVP_START_GATE: &str = "docs/architecture/mvp-start-gate.md";

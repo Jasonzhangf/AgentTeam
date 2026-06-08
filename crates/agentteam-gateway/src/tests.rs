@@ -103,6 +103,21 @@ fn parses_task_status_intent() {
 }
 
 #[test]
+fn parses_tmux_loopback_intent() {
+    let intent = parse_cli_args(strings(&[
+        "tmux",
+        "loopback",
+        "--runtime-home",
+        "target/agentteam-tmux-smoke",
+        "--session-count",
+        "2",
+        "--json",
+    ]))
+    .unwrap();
+    assert_eq!(intent.command_name(), "tmux.loopback");
+}
+
+#[test]
 fn missing_json_is_validation_error() {
     let error = parse_cli_args(strings(&[
         "config",

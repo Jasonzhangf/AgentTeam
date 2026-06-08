@@ -189,6 +189,12 @@ Every Rust function or method under `crates/` and `xtask/src/` must be listed he
 | `crates::agentteam-contracts::src::team::mod::TeamReq03ValidatedIntent::command_name` | Input Gateway contracts | `gateway.input` | `crates/agentteam-contracts/src/team/mod.rs` | contract unit, function map gate |
 | `crates::agentteam-contracts::src::team::mod::team_feature_id_is_gateway_input` | Input Gateway contract test | `gateway.input` | `crates/agentteam-contracts/src/team/mod.rs` | cargo test, function map gate |
 | `crates::agentteam-contracts::src::team::mod::team_request_command_name_is_stable` | Input Gateway contract test | `gateway.input` | `crates/agentteam-contracts/src/team/mod.rs` | cargo test, function map gate |
+| `crates::agentteam-contracts::src::terminal::mod::TerminalReq01AdapterCommand::loopback` | zterm/tmux Adapter contracts | `adapter.zterm_tmux` | `crates/agentteam-contracts/src/terminal/mod.rs` | contract unit, function map gate |
+| `crates::agentteam-contracts::src::terminal::mod::TerminalReq01AdapterCommand::prepare_transport` | zterm/tmux Adapter contracts | `adapter.zterm_tmux` | `crates/agentteam-contracts/src/terminal/mod.rs` | contract unit, function map gate |
+| `crates::agentteam-contracts::src::terminal::mod::TerminalReq02TransportRequest::transport_event` | zterm/tmux Adapter contracts | `adapter.zterm_tmux` | `crates/agentteam-contracts/src/terminal/mod.rs` | contract unit, function map gate |
+| `crates::agentteam-contracts::src::terminal::mod::TerminalResp03TransportEvent::observe` | zterm/tmux Adapter contracts | `adapter.zterm_tmux` | `crates/agentteam-contracts/src/terminal/mod.rs` | contract unit, function map gate |
+| `crates::agentteam-contracts::src::terminal::mod::terminal_chain_uses_adjacent_nodes` | zterm/tmux Adapter contract test | `adapter.zterm_tmux` | `crates/agentteam-contracts/src/terminal/mod.rs` | cargo test, function map gate |
+| `crates::agentteam-contracts::src::terminal::mod::terminal_feature_id_is_stable` | zterm/tmux Adapter contract test | `adapter.zterm_tmux` | `crates/agentteam-contracts/src/terminal/mod.rs` | cargo test, function map gate |
 | `crates::agentteam-resource::src::error::ResourceError::reason` | Resource Lifecycle Manager | `resource.lifecycle` | `crates/agentteam-resource/src/error.rs` | resource unit, function map gate |
 | `crates::agentteam-resource::src::error::persistence_error` | Resource Lifecycle Manager | `resource.lifecycle` | `crates/agentteam-resource/src/error.rs` | resource unit, function map gate |
 | `crates::agentteam-resource::src::persist::encode_payload<T: Serialize>` | Resource Lifecycle Manager | `resource.lifecycle` | `crates/agentteam-resource/src/persist.rs` | resource unit, function map gate |
@@ -249,7 +255,16 @@ Every Rust function or method under `crates/` and `xtask/src/` must be listed he
 | `crates::agentteam-runtime::src::local::execute_debug_snapshot` | Team Orchestrator | `team.orchestration` | `crates/agentteam-runtime/src/local.rs` | runtime unit, function map gate |
 | `crates::agentteam-runtime::src::local::execute_domain_resolve` | Team Orchestrator | `team.orchestration` | `crates/agentteam-runtime/src/local.rs` | runtime unit, function map gate |
 | `crates::agentteam-runtime::src::local::execute_local_intent` | Team Orchestrator | `team.orchestration` | `crates/agentteam-runtime/src/local.rs` | runtime unit, function map gate |
+| `crates::agentteam-runtime::src::local::execute_task_done` | Team Orchestrator | `team.orchestration` | `crates/agentteam-runtime/src/local.rs` | runtime unit, function map gate |
+| `crates::agentteam-runtime::src::local::execute_task_error` | Team Orchestrator | `team.orchestration` | `crates/agentteam-runtime/src/local.rs` | runtime unit, function map gate |
+| `crates::agentteam-runtime::src::local::execute_task_list` | Team Orchestrator | `team.orchestration` | `crates/agentteam-runtime/src/local.rs` | runtime unit, function map gate |
+| `crates::agentteam-runtime::src::local::execute_task_send` | Team Orchestrator | `team.orchestration` | `crates/agentteam-runtime/src/local.rs` | runtime unit, function map gate |
+| `crates::agentteam-runtime::src::local::execute_task_status` | Team Orchestrator | `team.orchestration` | `crates/agentteam-runtime/src/local.rs` | runtime unit, function map gate |
+| `crates::agentteam-runtime::src::local::execute_tmux_loopback` | Team Orchestrator | `team.orchestration` | `crates/agentteam-runtime/src/local.rs` | runtime unit, function map gate |
+| `crates::agentteam-runtime::src::local::parse_session_count` | Team Orchestrator | `team.orchestration` | `crates/agentteam-runtime/src/local.rs` | runtime unit, function map gate |
 | `crates::agentteam-runtime::src::local::register_remote_domain` | Team Orchestrator | `team.orchestration` | `crates/agentteam-runtime/src/local.rs` | runtime unit, function map gate |
+| `crates::agentteam-runtime::src::local::task_error` | Team Orchestrator | `team.orchestration` | `crates/agentteam-runtime/src/local.rs` | runtime unit, function map gate |
+| `crates::agentteam-runtime::src::local::tmux_error` | Team Orchestrator | `team.orchestration` | `crates/agentteam-runtime/src/local.rs` | runtime unit, function map gate |
 | `crates::agentteam-runtime::src::local::resolved_domain_result` | Team Orchestrator | `team.orchestration` | `crates/agentteam-runtime/src/local.rs` | runtime unit, function map gate |
 | `crates::agentteam-runtime::src::local::route_kind_label` | Team Orchestrator | `team.orchestration` | `crates/agentteam-runtime/src/local.rs` | runtime unit, function map gate |
 | `crates::agentteam-runtime::src::local::target_kind_parts` | Team Orchestrator | `team.orchestration` | `crates/agentteam-runtime/src/local.rs` | runtime unit, function map gate |
@@ -258,6 +273,8 @@ Every Rust function or method under `crates/` and `xtask/src/` must be listed he
 | `crates::agentteam-runtime::src::local_tests::local_daemon_check_reports_routeability_without_starting_processes` | Team Orchestrator test | `team.orchestration` | `crates/agentteam-runtime/src/local_tests.rs` | cargo test, function map gate |
 | `crates::agentteam-runtime::src::local_tests::local_debug_snapshot_persists_event_log` | Team Orchestrator test | `team.orchestration` | `crates/agentteam-runtime/src/local_tests.rs` | cargo test, function map gate |
 | `crates::agentteam-runtime::src::local_tests::local_domain_resolve_executes_domain_registry` | Team Orchestrator test | `team.orchestration` | `crates/agentteam-runtime/src/local_tests.rs` | cargo test, function map gate |
+| `crates::agentteam-runtime::src::local_tests::local_task_commands_persist_and_replay_state` | Team Orchestrator test | `team.orchestration` | `crates/agentteam-runtime/src/local_tests.rs` | cargo test, function map gate |
+| `crates::agentteam-runtime::src::local_tests::local_tmux_loopback_rejects_invalid_session_count` | Team Orchestrator test | `team.orchestration` | `crates/agentteam-runtime/src/local_tests.rs` | cargo test, function map gate |
 | `crates::agentteam-runtime::src::local_tests::temp_runtime_home` | Team Orchestrator test helper | `team.orchestration` | `crates/agentteam-runtime/src/local_tests.rs` | cargo test, function map gate |
 | `crates::agentteam-config::src::error::ConfigCenterError::path` | Config Center | `config.center` | `crates/agentteam-config/src/error.rs` | config unit, function map gate |
 | `crates::agentteam-config::src::error::ConfigCenterError::reason` | Config Center | `config.center` | `crates/agentteam-config/src/error.rs` | config unit, function map gate |
@@ -303,8 +320,10 @@ Every Rust function or method under `crates/` and `xtask/src/` must be listed he
 | `crates::agentteam-gateway::src::input::parse_task_list` | Input Gateway | `gateway.input` | `crates/agentteam-gateway/src/input.rs` | gateway unit, function map gate |
 | `crates::agentteam-gateway::src::input::parse_task_send` | Input Gateway | `gateway.input` | `crates/agentteam-gateway/src/input.rs` | gateway unit, function map gate |
 | `crates::agentteam-gateway::src::input::parse_task_status` | Input Gateway | `gateway.input` | `crates/agentteam-gateway/src/input.rs` | gateway unit, function map gate |
+| `crates::agentteam-gateway::src::input::parse_tmux_loopback` | Input Gateway | `gateway.input` | `crates/agentteam-gateway/src/input.rs` | gateway unit, function map gate |
 | `crates::agentteam-gateway::src::tests::parses_task_send_intent` | Input Gateway test | `gateway.input` | `crates/agentteam-gateway/src/tests.rs` | cargo test, function map gate |
 | `crates::agentteam-gateway::src::tests::parses_task_status_intent` | Input Gateway test | `gateway.input` | `crates/agentteam-gateway/src/tests.rs` | cargo test, function map gate |
+| `crates::agentteam-gateway::src::tests::parses_tmux_loopback_intent` | Input Gateway test | `gateway.input` | `crates/agentteam-gateway/src/tests.rs` | cargo test, function map gate |
 | `crates::agentteam-gateway::src::tests::render_task_result_json_uses_task_command_name` | Output Gateway test | `gateway.output` | `crates/agentteam-gateway/src/tests.rs` | cargo test, function map gate |
 | `crates::agentteam-runtime::src::local::execute_task_done` | Team Orchestrator | `team.orchestration` | `crates/agentteam-runtime/src/local.rs` | runtime unit, function map gate |
 | `crates::agentteam-runtime::src::local::execute_task_error` | Team Orchestrator | `team.orchestration` | `crates/agentteam-runtime/src/local.rs` | runtime unit, function map gate |
@@ -318,6 +337,7 @@ Every Rust function or method under `crates/` and `xtask/src/` must be listed he
 | `crates::agentteam-runtime::src::local_projection::debug_bundle_result` | Team Orchestrator projection | `team.orchestration` | `crates/agentteam-runtime/src/local_projection.rs` | runtime unit, function map gate |
 | `crates::agentteam-runtime::src::local_projection::domain_snapshot_result` | Team Orchestrator projection | `team.orchestration` | `crates/agentteam-runtime/src/local_projection.rs` | runtime unit, function map gate |
 | `crates::agentteam-runtime::src::local_projection::resolved_domain_result` | Team Orchestrator projection | `team.orchestration` | `crates/agentteam-runtime/src/local_projection.rs` | runtime unit, function map gate |
+| `crates::agentteam-runtime::src::local_projection::tmux_loopback_result` | Team Orchestrator projection | `team.orchestration` | `crates/agentteam-runtime/src/local_projection.rs` | runtime unit, function map gate |
 | `crates::agentteam-runtime::src::local_projection::route_kind_label` | Team Orchestrator projection | `team.orchestration` | `crates/agentteam-runtime/src/local_projection.rs` | runtime unit, function map gate |
 | `crates::agentteam-runtime::src::local_projection::target_kind_parts` | Team Orchestrator projection | `team.orchestration` | `crates/agentteam-runtime/src/local_projection.rs` | runtime unit, function map gate |
 | `crates::agentteam-runtime::src::local_projection::task_board_result` | Team Orchestrator projection | `team.orchestration` | `crates/agentteam-runtime/src/local_projection.rs` | runtime unit, function map gate |
@@ -355,6 +375,33 @@ Every Rust function or method under `crates/` and `xtask/src/` must be listed he
 | `crates::agentteam-runtime::src::task::tests::terminal_state_requires_explicit_done_or_error` | Task Engine test | `task.engine` | `crates/agentteam-runtime/src/task/tests.rs` | cargo test, function map gate |
 | `crates::agentteam-runtime::src::task::tests::transition` | Task Engine test helper | `task.engine` | `crates/agentteam-runtime/src/task/tests.rs` | cargo test, function map gate |
 | `crates::agentteam-runtime::src::task::tests::unknown_task_status_fails` | Task Engine test | `task.engine` | `crates/agentteam-runtime/src/task/tests.rs` | cargo test, function map gate |
+| `crates::agentteam-contracts::src::terminal::mod::TerminalReq01AdapterCommand::loopback` | zterm/tmux Adapter contracts | `adapter.zterm_tmux` | `crates/agentteam-contracts/src/terminal/mod.rs` | contract unit, function map gate |
+| `crates::agentteam-contracts::src::terminal::mod::TerminalReq01AdapterCommand::prepare_transport` | zterm/tmux Adapter contracts | `adapter.zterm_tmux` | `crates/agentteam-contracts/src/terminal/mod.rs` | contract unit, function map gate |
+| `crates::agentteam-contracts::src::terminal::mod::TerminalReq02TransportRequest::transport_event` | zterm/tmux Adapter contracts | `adapter.zterm_tmux` | `crates/agentteam-contracts/src/terminal/mod.rs` | contract unit, function map gate |
+| `crates::agentteam-contracts::src::terminal::mod::TerminalResp03TransportEvent::observe` | zterm/tmux Adapter contracts | `adapter.zterm_tmux` | `crates/agentteam-contracts/src/terminal/mod.rs` | contract unit, function map gate |
+| `crates::agentteam-contracts::src::terminal::mod::terminal_chain_uses_adjacent_nodes` | zterm/tmux Adapter contract test | `adapter.zterm_tmux` | `crates/agentteam-contracts/src/terminal/mod.rs` | cargo test, function map gate |
+| `crates::agentteam-contracts::src::terminal::mod::terminal_feature_id_is_stable` | zterm/tmux Adapter contract test | `adapter.zterm_tmux` | `crates/agentteam-contracts/src/terminal/mod.rs` | cargo test, function map gate |
+| `crates::agentteam-tmux::src::error::TmuxAdapterError::reason` | zterm/tmux Adapter | `adapter.zterm_tmux` | `crates/agentteam-tmux/src/error.rs` | adapter unit, function map gate |
+| `crates::agentteam-tmux::src::loopback::build_sessions` | zterm/tmux Adapter | `adapter.zterm_tmux` | `crates/agentteam-tmux/src/loopback.rs` | adapter unit, function map gate |
+| `crates::agentteam-tmux::src::loopback::capture_session` | zterm/tmux Adapter | `adapter.zterm_tmux` | `crates/agentteam-tmux/src/loopback.rs` | adapter unit, function map gate |
+| `crates::agentteam-tmux::src::loopback::cleanup_sessions` | zterm/tmux Adapter | `adapter.zterm_tmux` | `crates/agentteam-tmux/src/loopback.rs` | adapter unit, function map gate |
+| `crates::agentteam-tmux::src::loopback::combine_step_and_cleanup` | zterm/tmux Adapter | `adapter.zterm_tmux` | `crates/agentteam-tmux/src/loopback.rs` | adapter unit, function map gate |
+| `crates::agentteam-tmux::src::loopback::launch_session` | zterm/tmux Adapter | `adapter.zterm_tmux` | `crates/agentteam-tmux/src/loopback.rs` | adapter unit, function map gate |
+| `crates::agentteam-tmux::src::loopback::run_loopback_steps` | zterm/tmux Adapter | `adapter.zterm_tmux` | `crates/agentteam-tmux/src/loopback.rs` | adapter unit, function map gate |
+| `crates::agentteam-tmux::src::loopback::run_tmux_loopback` | zterm/tmux Adapter | `adapter.zterm_tmux` | `crates/agentteam-tmux/src/loopback.rs` | adapter unit, function map gate |
+| `crates::agentteam-tmux::src::loopback::runtime_scope` | zterm/tmux Adapter | `adapter.zterm_tmux` | `crates/agentteam-tmux/src/loopback.rs` | adapter unit, function map gate |
+| `crates::agentteam-tmux::src::loopback::sanitized_runtime_scope` | zterm/tmux Adapter | `adapter.zterm_tmux` | `crates/agentteam-tmux/src/loopback.rs` | adapter unit, function map gate |
+| `crates::agentteam-tmux::src::loopback::send_input` | zterm/tmux Adapter | `adapter.zterm_tmux` | `crates/agentteam-tmux/src/loopback.rs` | adapter unit, function map gate |
+| `crates::agentteam-tmux::src::loopback::session_prefix` | zterm/tmux Adapter | `adapter.zterm_tmux` | `crates/agentteam-tmux/src/loopback.rs` | adapter unit, function map gate |
+| `crates::agentteam-tmux::src::loopback::session_shell_command` | zterm/tmux Adapter | `adapter.zterm_tmux` | `crates/agentteam-tmux/src/loopback.rs` | adapter unit, function map gate |
+| `crates::agentteam-tmux::src::loopback::validate_loopback_input` | zterm/tmux Adapter | `adapter.zterm_tmux` | `crates/agentteam-tmux/src/loopback.rs` | adapter unit, function map gate |
+| `crates::agentteam-tmux::src::loopback::wait_for_marker` | zterm/tmux Adapter | `adapter.zterm_tmux` | `crates/agentteam-tmux/src/loopback.rs` | adapter unit, function map gate |
+| `crates::agentteam-tmux::src::model::TmuxLoopbackInput::new` | zterm/tmux Adapter | `adapter.zterm_tmux` | `crates/agentteam-tmux/src/model.rs` | adapter unit, function map gate |
+| `crates::agentteam-tmux::src::model::TmuxLoopbackReport::all_observed` | zterm/tmux Adapter | `adapter.zterm_tmux` | `crates/agentteam-tmux/src/model.rs` | adapter unit, function map gate |
+| `crates::agentteam-tmux::src::tests::managed_sessions_use_ta_prefix_and_logical_ids` | zterm/tmux Adapter test | `adapter.zterm_tmux` | `crates/agentteam-tmux/src/tests.rs` | cargo test, function map gate |
+| `crates::agentteam-tmux::src::tests::rejects_zero_session_count` | zterm/tmux Adapter test | `adapter.zterm_tmux` | `crates/agentteam-tmux/src/tests.rs` | cargo test, function map gate |
+| `crates::agentteam-tmux::src::tests::runtime_scope_requires_directory_name` | zterm/tmux Adapter test | `adapter.zterm_tmux` | `crates/agentteam-tmux/src/tests.rs` | cargo test, function map gate |
+| `crates::agentteam-tmux::src::tests::scope_sanitizer_keeps_ta_safe_names` | zterm/tmux Adapter test | `adapter.zterm_tmux` | `crates/agentteam-tmux/src/tests.rs` | cargo test, function map gate |
 | `xtask::src::function_map::collect_rust_function_symbols` | Architecture Gate | `architecture.gate` | `xtask/src/function_map.rs` | function map gate |
 | `xtask::src::function_map::collect_rust_function_symbols_in` | Architecture Gate | `architecture.gate` | `xtask/src/function_map.rs` | function map gate |
 | `xtask::src::function_map::collect_symbols_from_content` | Architecture Gate | `architecture.gate` | `xtask/src/function_map.rs` | function map gate |

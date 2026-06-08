@@ -71,6 +71,11 @@ pub enum TeamReq02ParsedCommand {
         detail: Option<String>,
         json: bool,
     },
+    TmuxLoopback {
+        runtime_home: Option<String>,
+        session_count: Option<String>,
+        json: bool,
+    },
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize)]
@@ -127,6 +132,11 @@ pub enum TeamReq03ValidatedIntent {
         detail: String,
         json: bool,
     },
+    TmuxLoopback {
+        runtime_home: String,
+        session_count: String,
+        json: bool,
+    },
 }
 
 impl TeamReq03ValidatedIntent {
@@ -143,6 +153,7 @@ impl TeamReq03ValidatedIntent {
             Self::TaskStatus { .. } => "task.status",
             Self::TaskDone { .. } => "task.done",
             Self::TaskError { .. } => "task.error",
+            Self::TmuxLoopback { .. } => "tmux.loopback",
         }
     }
 }
@@ -169,6 +180,12 @@ mod tests {
             json: true,
         };
         assert_eq!(intent.command_name(), "task.list");
+        let intent = TeamReq03ValidatedIntent::TmuxLoopback {
+            runtime_home: "target/agentteam-smoke".to_owned(),
+            session_count: "2".to_owned(),
+            json: true,
+        };
+        assert_eq!(intent.command_name(), "tmux.loopback");
         assert_eq!(TeamReq01CliRaw::NODE.number, 1);
         assert_eq!(TeamReq03ValidatedIntent::NODE.number, 3);
     }

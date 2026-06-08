@@ -54,6 +54,7 @@ agentteam help tmux input
 agentteam help tmux output
 agentteam help tmux render
 agentteam help tmux domains
+agentteam help tmux loopback
 agentteam help tmux red-tests
 ```
 
@@ -63,6 +64,7 @@ Help content must explain:
 - multiple zterm daemons are addressed only through resolved daemon domain endpoint facts
 - only managed TA sessions are in scope
 - stdout/buffer output is evidence, not final task/status truth
+- loopback smoke proves multiple managed TA sessions can exchange input/output before higher-level task or communication work depends on the adapter
 - tmux session names, pane ids, and zterm internals are hidden from agents
 - cleanup uses exact tracked handles only
 

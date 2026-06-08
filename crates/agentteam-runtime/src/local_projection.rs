@@ -2,6 +2,7 @@ use std::path::PathBuf;
 
 use agentteam_config::NormalizedConfig;
 use agentteam_contracts::debug::DebugResp03Bundle;
+use agentteam_tmux::TmuxLoopbackReport;
 use serde::Serialize;
 
 use crate::domain::{
@@ -15,6 +16,7 @@ pub enum LocalCommandError {
     Domain { reason: String },
     Debug { reason: String },
     Task { reason: String },
+    Tmux { reason: String },
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize)]
@@ -47,6 +49,9 @@ pub enum LocalCommandResult {
     },
     TaskError {
         task: TaskStateChangedResult,
+    },
+    TmuxLoopback {
+        loopback: TmuxLoopbackResult,
     },
 }
 
@@ -134,6 +139,24 @@ pub struct TaskRecordResult {
     pub latest_detail: String,
     pub latest_event_id: String,
     pub latest_sequence: u64,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
+pub struct TmuxLoopbackResult {
+    pub requested_count: usize,
+    pub observed_count: usize,
+    pub cleaned_handle_count: usize,
+    pub cleanup_status: String,
+    pub observations: Vec<TmuxLoopbackObservationResult>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
+pub struct TmuxLoopbackObservationResult {
+    pub logical_agent_id: String,
+    pub input_delivered: bool,
+    pub output_observed: bool,
+    pub ready_observed: bool,
+    pub observed_text_bytes: usize,
 }
 
 pub fn config_result(normalized: NormalizedConfig) -> ConfigCheckResult {
@@ -229,6 +252,36 @@ pub fn task_board_result(board: TaskBoard) -> TaskBoardResult {
                 latest_detail: task.latest_detail,
                 latest_event_id: task.latest_event_id,
                 latest_sequence: task.latest_sequence,
+            })
+            .collect(),
+    }
+}
+
+pub fn tmux_loopback_result(report: TmuxLoopbackReport) -> TmuxLoopbackResult {
+    TmuxLoopbackResult {
+        requested_count: report.requested_count,
+        observed_count: report.observed_count,
+        cleaned_handle_count: report.cleaned_handle_count,
+        cleanup_status: if report.all_observed() {
+            "cleaned_exact_handles".to_owned()
+        } else {
+            "incomplete".to_owned()
+        },
+        observations: report
+            .observations
+            .into_iter()
+            .map(|observation| TmuxLoopbackObservationResult {
+                logical_agent_id: observation.logical_id,
+                input_delivered: observation
+                    .observed_text
+                    .contains(&observation.input_marker),
+                output_observed: observation
+                    .observed_text
+                    .contains(&observation.output_marker),
+                ready_observed: observation
+                    .observed_text
+                    .contains("AGENTTEAM_LOOPBACK_READY:"),
+                observed_text_bytes: observation.observed_text.len(),
             })
             .collect(),
     }
