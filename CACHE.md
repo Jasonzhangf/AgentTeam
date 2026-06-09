@@ -1,6 +1,20 @@
 # CACHE
 
 2026-06-09 current focus:
+- Latest slice rewrote `README.md` as the user-facing quickstart and manual-test guide.
+- README now focuses on copyable operation tests:
+  - build `agentteam-cli`
+  - local team workflow
+  - tmux loopback
+  - optional Codex headless agent
+  - optional minimal agent-driven workflow
+- README avoids destructive cleanup commands by using timestamped runtime/session names.
+- Verification after README update:
+  - no broad kill/delete patterns found in README
+  - `git diff --check`
+  - `cargo xtask verify`
+
+Previous implemented feature:
 - Implemented `report.flow`: `agentteam report flow --runtime-home <runtime_home> --json`.
 - Truth boundary: report is read-only and uses only `<runtime_home>/events/agentteam.jsonl`; it does not read live task/session/agent state, write files, start tmux, or mutate resources.
 - Output includes `event_count`, `latest_sequence`, `unknown_event_count`, ordered `steps`, `ascii_flow`, and `mermaid_flow`.

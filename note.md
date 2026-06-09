@@ -204,3 +204,9 @@
 - Chosen truth boundary: report generation is a read-only projection from `events/agentteam.jsonl`; it must not read live task/session/agent state, write files, start tmux, or mutate resources.
 - Real workflow log `/Users/fanzhang/code/playground/agentteam-workflow-20260609-03/events/agentteam.jsonl` contains enough sender/target/task/status payload fields to render ready/message/task edges from event log only.
 - Historical E2E log `/Users/fanzhang/code/playground/agentteam-e2e-tui-20260609-01/runtime/events/agentteam.jsonl` still contains duplicate sequence evidence from the old persistence bug; report flow must surface replay corruption explicitly through Persistence instead of drawing a best-effort diagram.
+
+2026-06-09 README user entry update:
+- User requested a README from the user perspective with the simplest operation tests, hiding framework internals.
+- Rewrote README around build + four copyable tests: local team workflow, tmux loopback, optional Codex headless agent, optional minimal agent-driven workflow.
+- Avoided destructive cleanup commands in the README by using timestamped runtime/session names.
+- Verified no broad kill/delete patterns in README and `cargo xtask verify` passed after the documentation update.
