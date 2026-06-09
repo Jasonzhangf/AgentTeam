@@ -5,136 +5,88 @@ use agentteam_control::{
 use crate::local_projection::control_result;
 use crate::local_projection::{LocalCommandError, LocalCommandResult};
 
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ControlExecutionInput {
+    pub action: String,
+    pub agent_name: String,
+    pub team_id: String,
+    pub session_name: String,
+    pub cwd: Option<String>,
+    pub project_slug: Option<String>,
+    pub input: Option<String>,
+    pub task_id: Option<String>,
+    pub error_fact_id: Option<String>,
+}
+
 pub fn execute_control(
-    action: String,
-    agent_name: String,
-    team_id: String,
-    session_name: String,
-    input: Option<String>,
-    task_id: Option<String>,
-    error_fact_id: Option<String>,
+    input: ControlExecutionInput,
 ) -> Result<LocalCommandResult, LocalCommandError> {
     let control = AgentControlCenter::new();
-    let projection = match action.as_str() {
+    let session = || {
+        let mut session = ControlSessionInput::new(
+            input.agent_name.clone(),
+            input.team_id.clone(),
+            input.session_name.clone(),
+        );
+        if let (Some(cwd), Some(project_slug)) = (input.cwd.clone(), input.project_slug.clone()) {
+            session = session.with_scope(cwd, project_slug);
+        }
+        session
+    };
+    let projection = match input.action.as_str() {
         "attach" => control
             .attach_tui(agentteam_contracts::control::AgentCtlReq01ModeIntent::new(
-                agent_name.clone(),
-                team_id.clone(),
+                input.agent_name.clone(),
+                input.team_id.clone(),
                 agentteam_contracts::control::AgentControlMode::AttachTui,
-                session_name.clone(),
+                input.session_name.clone(),
             ))
             .map_err(control_error)?,
         "headless" => control
             .headless(agentteam_contracts::control::AgentCtlReq01ModeIntent::new(
-                agent_name.clone(),
-                team_id.clone(),
+                input.agent_name.clone(),
+                input.team_id.clone(),
                 agentteam_contracts::control::AgentControlMode::Headless,
-                session_name.clone(),
+                input.session_name.clone(),
             ))
             .map_err(control_error)?,
         "headless-run" => {
-            let input = input.ok_or_else(|| LocalCommandError::Control {
+            let prompt = input.input.ok_or_else(|| LocalCommandError::Control {
                 reason: "--input is required for control headless-run".to_owned(),
             })?;
             control
-                .headless_run(ControlSendInput::new(
-                    ControlSessionInput::new(
-                        agent_name.clone(),
-                        team_id.clone(),
-                        session_name.clone(),
-                    ),
-                    input,
-                ))
+                .headless_run(ControlSendInput::new(session(), prompt))
                 .map_err(control_error)?
         }
-        "headless-status" => control
-            .headless_status(ControlSessionInput::new(
-                agent_name.clone(),
-                team_id.clone(),
-                session_name.clone(),
-            ))
-            .map_err(control_error)?,
+        "headless-status" => control.headless_status(session()).map_err(control_error)?,
         "headless-interrupt" => control
-            .headless_interrupt(ControlSessionInput::new(
-                agent_name.clone(),
-                team_id.clone(),
-                session_name.clone(),
-            ))
+            .headless_interrupt(session())
             .map_err(control_error)?,
-        "headless-stop" => control
-            .headless_stop(ControlSessionInput::new(
-                agent_name.clone(),
-                team_id.clone(),
-                session_name.clone(),
-            ))
-            .map_err(control_error)?,
+        "headless-stop" => control.headless_stop(session()).map_err(control_error)?,
         "send" => {
-            let input = input.ok_or_else(|| LocalCommandError::Control {
+            let prompt = input.input.ok_or_else(|| LocalCommandError::Control {
                 reason: "--input is required for control send".to_owned(),
             })?;
             control
-                .send_input(ControlSendInput::new(
-                    ControlSessionInput::new(
-                        agent_name.clone(),
-                        team_id.clone(),
-                        session_name.clone(),
-                    ),
-                    input,
-                ))
+                .send_input(ControlSendInput::new(session(), prompt))
                 .map_err(control_error)?
         }
-        "observe" => control
-            .observe_output(ControlSessionInput::new(
-                agent_name.clone(),
-                team_id.clone(),
-                session_name.clone(),
-            ))
-            .map_err(control_error)?,
-        "pause" => control
-            .pause(ControlSessionInput::new(
-                agent_name.clone(),
-                team_id.clone(),
-                session_name.clone(),
-            ))
-            .map_err(control_error)?,
-        "stop" => control
-            .stop(ControlSessionInput::new(
-                agent_name.clone(),
-                team_id.clone(),
-                session_name.clone(),
-            ))
-            .map_err(control_error)?,
-        "wait" => control
-            .wait(ControlSessionInput::new(
-                agent_name.clone(),
-                team_id.clone(),
-                session_name.clone(),
-            ))
-            .map_err(control_error)?,
-        "status" => control
-            .status(ControlSessionInput::new(
-                agent_name.clone(),
-                team_id.clone(),
-                session_name.clone(),
-            ))
-            .map_err(control_error)?,
+        "observe" => control.observe_output(session()).map_err(control_error)?,
+        "pause" => control.pause(session()).map_err(control_error)?,
+        "stop" => control.stop(session()).map_err(control_error)?,
+        "wait" => control.wait(session()).map_err(control_error)?,
+        "status" => control.status(session()).map_err(control_error)?,
         "retry" => {
-            let task_id = task_id.ok_or_else(|| LocalCommandError::Control {
+            let task_id = input.task_id.ok_or_else(|| LocalCommandError::Control {
                 reason: "--task is required for control retry".to_owned(),
             })?;
-            let error_fact_id = error_fact_id.ok_or_else(|| LocalCommandError::Control {
-                reason: "--error-fact is required for control retry".to_owned(),
-            })?;
+            let error_fact_id = input
+                .error_fact_id
+                .ok_or_else(|| LocalCommandError::Control {
+                    reason: "--error-fact is required for control retry".to_owned(),
+                })?;
             control
-                .retry_dispatch(ControlRetryInput::new(
-                    ControlSessionInput::new(
-                        agent_name.clone(),
-                        team_id.clone(),
-                        session_name.clone(),
-                    ),
-                    task_id,
-                    error_fact_id,
-                ))
+                .retry_dispatch(ControlRetryInput::new(session(), task_id, error_fact_id))
                 .map_err(control_error)?
         }
         other => {

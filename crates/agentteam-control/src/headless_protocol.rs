@@ -57,6 +57,7 @@ pub struct HeadlessBridgeState {
     pub bridge_port: Option<u16>,
     pub bridge_pid: Option<u32>,
     pub bridge_status: Option<String>,
+    pub thread_id: Option<String>,
 }
 
 impl HeadlessBridgePaths {

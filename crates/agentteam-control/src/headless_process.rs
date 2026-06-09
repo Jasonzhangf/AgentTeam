@@ -23,9 +23,30 @@ pub fn seed_agent_session(
     run_bridge("seed", input, Some(prompt))
 }
 
-#[allow(dead_code)]
 pub fn session_status(input: &ControlSessionInput) -> ControlResult<HeadlessBridgeResponse> {
     run_bridge("status", input, None)
+}
+
+pub fn bound_session_status(input: &ControlSessionInput) -> ControlResult<HeadlessBridgeResponse> {
+    let paths = HeadlessBridgePaths::resolve(input)?;
+    let state = paths.read_state()?;
+    if state.thread_id.as_deref().unwrap_or_default().is_empty() {
+        return Err(ControlError::HeadlessBridge {
+            reason: format!(
+                "missing Codex thread binding for attach_tui session {}",
+                input.session_name
+            ),
+        });
+    }
+    ensure_bridge_running(&paths)?;
+    let request = paths.request("status", None);
+    let response = send_request(&request)?;
+    if !response.ok {
+        return Err(ControlError::HeadlessBridge {
+            reason: response.details.clone(),
+        });
+    }
+    Ok(response)
 }
 
 #[allow(dead_code)]

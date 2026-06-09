@@ -68,6 +68,8 @@ Help content must explain:
 - workers know their assigned names through skill/context injection
 - the manager uses CLI/framework tools for task board, task publish, query, and worker management
 - startup parameters assign manager name, role, team, and project scope on first launch
+- startup installs the local AgentTeam skill into the target cwd before seeding any manager or worker prompt
+- startup injects the absolute AgentTeam CLI path through `AGENTTEAM_CLI` so agents do not depend on shell PATH
 - the manager waits for worker `ready report` through comm projections before assigning work
 - Startup Manager builds bootstrap plans and hands the live agent off to Agent Control Center
 - startup uses standard tmux as the transparent operator carrier for the configured manager
@@ -220,6 +222,8 @@ The manager cannot:
 The configured manager must receive/read skill guidance that teaches:
 
 - own identity from startup params
+- absolute installed skill path under the target cwd
+- absolute framework CLI path through `AGENTTEAM_CLI`
 - role: single super manager
 - framework initialization flow
 - startup params assign manager name, role, team, and project scope
@@ -401,6 +405,8 @@ Rules:
 - Session metadata outside `~/.agentteam/sessions/<project_slug>/` fails.
 - Worker launch without TA session name fails.
 - Worker identity injection missing name/role/team fails.
+- Local skill missing from target cwd after startup fails.
+- Absolute CLI path missing from startup env/prompt fails.
 - manager skill missing init/query/task/message/wait guidance fails.
 - Agent-facing docs exposing tmux/session identifiers fail.
 - Agent input raw string bypassing typed operation fails.

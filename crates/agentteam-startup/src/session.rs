@@ -1,22 +1,18 @@
-use agentteam_config::{MemberConfig, NormalizedConfig};
 use agentteam_control::{
     AgentControlCenter, ControlAgentSessionBinding, ControlSendInput, ControlSessionInput,
 };
 use agentteam_resource::{ResourceAcquireInput, ResourceRegistry};
 use agentteam_tmux::{launch_managed_session, session_exists, TmuxLaunchInput};
 
+use crate::context::AgentStartupContext;
 use crate::env::build_agent_env;
 use crate::error::{control_error, resource_error, tmux_error, StartupError, StartupResult};
 use crate::paths::runtime_event_log_path;
 use crate::FEATURE_ID;
 
 pub(crate) struct AgentSessionPlan<'a> {
-    pub normalized: &'a NormalizedConfig,
-    pub runtime_home: &'a str,
-    pub team_id: &'a str,
-    pub cwd: &'a str,
+    pub context: &'a AgentStartupContext<'a>,
     pub session_name: &'a str,
-    pub member: &'a MemberConfig,
     pub bootstrap_prompt: String,
 }
 
@@ -49,8 +45,8 @@ pub(crate) fn ensure_agent_session(
             control_handoff_status: "attach_tui_existing".to_owned(),
             agent_session_id: String::new(),
             seed_turn_id: None,
-            tui_resume_command: plan.member.command.clone(),
-            tui_resume_arg_count: plan.member.args.len(),
+            tui_resume_command: plan.context.member.command.clone(),
+            tui_resume_arg_count: plan.context.member.args.len(),
             resource_lease_id: String::new(),
             resource_snapshot_id: snapshot.snapshot_id,
             tmux_session_observed: true,
@@ -58,15 +54,15 @@ pub(crate) fn ensure_agent_session(
     }
     let lease = resource_registry
         .acquire(
-            runtime_event_log_path(plan.runtime_home),
+            runtime_event_log_path(plan.context.runtime_home),
             ResourceAcquireInput {
                 owner_module: FEATURE_ID.to_owned(),
                 owner_entity_id: format!(
                     "{}@{}",
-                    plan.member.name, plan.normalized.local_domain_id
+                    plan.context.member.name, plan.context.normalized.local_domain_id
                 ),
                 resource_class: "tmux_session".to_owned(),
-                scope: plan.normalized.project_slug.clone(),
+                scope: plan.context.normalized.project_slug.clone(),
                 memory_bytes_estimate: 0,
                 handle_count: 1,
             },
@@ -81,10 +77,10 @@ fn launch_new_agent_session(
     resource_registry: &mut ResourceRegistry,
 ) -> StartupResult<AgentSessionOutcome> {
     let binding = seed_codex_agent_session(plan)?;
-    let resume_args = build_resume_args(&plan.member.args, &binding.agent_session_id);
+    let resume_args = build_resume_args(&plan.context.member.args, &binding.agent_session_id);
     if let Err(error) = stop_seed_bridge(plan) {
         return release_after_launch_failure(
-            plan.runtime_home,
+            plan.context.runtime_home,
             resource_registry,
             lease_id,
             error.reason(),
@@ -92,21 +88,14 @@ fn launch_new_agent_session(
     }
     let launch = launch_managed_session(TmuxLaunchInput {
         session_name: plan.session_name.to_owned(),
-        cwd: plan.cwd.to_owned(),
-        command: plan.member.command.clone(),
+        cwd: plan.context.cwd.to_owned(),
+        command: plan.context.member.command.clone(),
         args: resume_args.clone(),
-        env: build_agent_env(
-            plan.normalized,
-            plan.runtime_home,
-            plan.team_id,
-            plan.cwd,
-            plan.session_name,
-            plan.member,
-        ),
+        env: build_agent_env(plan.context, plan.session_name),
     });
     if let Err(error) = launch {
         return release_after_launch_failure(
-            plan.runtime_home,
+            plan.context.runtime_home,
             resource_registry,
             lease_id,
             error.reason(),
@@ -121,7 +110,7 @@ fn launch_new_agent_session(
         control_handoff_status: "attach_tui_resumed_agent_session".to_owned(),
         agent_session_id: binding.agent_session_id,
         seed_turn_id: binding.seed_turn_id,
-        tui_resume_command: plan.member.command.clone(),
+        tui_resume_command: plan.context.member.command.clone(),
         tui_resume_arg_count: resume_args.len(),
         resource_lease_id: lease_id.to_owned(),
         resource_snapshot_id: snapshot.snapshot_id,
@@ -150,11 +139,14 @@ fn stop_seed_bridge(plan: &AgentSessionPlan<'_>) -> StartupResult<()> {
 
 fn control_session_input(plan: &AgentSessionPlan<'_>) -> ControlSessionInput {
     ControlSessionInput::new(
-        plan.member.name.clone(),
-        plan.team_id.to_owned(),
+        plan.context.member.name.clone(),
+        plan.context.team_id.to_owned(),
         plan.session_name.to_owned(),
     )
-    .with_scope(plan.cwd.to_owned(), plan.normalized.project_slug.clone())
+    .with_scope(
+        plan.context.cwd.to_owned(),
+        plan.context.normalized.project_slug.clone(),
+    )
 }
 
 fn build_resume_args(base_args: &[String], agent_session_id: &str) -> Vec<String> {

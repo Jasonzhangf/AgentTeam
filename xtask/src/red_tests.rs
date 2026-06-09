@@ -28,6 +28,7 @@ pub fn run() -> Result<(), String> {
     scan_non_adjacent_pipeline_conversions()?;
     scan_contract_feature_ids()?;
     scan_configured_agent_name_concepts()?;
+    scan_attach_tui_sdk_status_downgrade()?;
     Ok(())
 }
 
@@ -47,6 +48,7 @@ fn require_plan_entries() -> Result<(), String> {
         "red.gateway.non_adjacent_conversion",
         "red.cli.broad_kill_doc",
         "red.agent.exposes_tmux_session",
+        "red.agent.attach_sdk_status_downgrade",
         "red.adapter.resolves_domain_target",
     ] {
         require_contains("docs/red-tests/red-test-plan.md", &plan, required)?;
@@ -111,6 +113,9 @@ fn scan_state_file_write_owner() -> Result<(), String> {
         }
         for pattern in ["fs::write", "File::create", "OpenOptions::new"] {
             if content.contains(pattern) {
+                if allowed_startup_skill_install(path, content, pattern) {
+                    continue;
+                }
                 violations.push(format!(
                     "{} writes state-like files outside Persistence",
                     path.display()
@@ -119,6 +124,13 @@ fn scan_state_file_write_owner() -> Result<(), String> {
         }
     })?;
     no_violations("state file writes belong to Persistence", violations)
+}
+
+fn allowed_startup_skill_install(path: &Path, content: &str, pattern: &str) -> bool {
+    path == Path::new("crates/agentteam-startup/src/skill.rs")
+        && pattern == "fs::write"
+        && content.contains("INSTALLED_SKILL_PATH")
+        && content.contains(".agents/skills/agentteam/SKILL.md")
 }
 
 fn scan_domain_owner_boundaries() -> Result<(), String> {
@@ -264,6 +276,25 @@ fn scan_configured_agent_name_concepts() -> Result<(), String> {
 
     no_violations(
         "configured sample agent names must not become code concepts",
+        violations,
+    )
+}
+
+fn scan_attach_tui_sdk_status_downgrade() -> Result<(), String> {
+    let mut violations = Vec::new();
+    let unavailable_status_marker = ["sdk_status=", "unavailable"].concat();
+    let removed_status_helper = ["try_session", "_status"].concat();
+    scan_rust_files(&mut |path, content| {
+        if content.contains(&unavailable_status_marker) || content.contains(&removed_status_helper)
+        {
+            violations.push(format!(
+                "{} contains forbidden attach_tui SDK status downgrade",
+                path.display()
+            ));
+        }
+    })?;
+    no_violations(
+        "attach_tui SDK-seeded status must not downgrade to stdout-only status",
         violations,
     )
 }

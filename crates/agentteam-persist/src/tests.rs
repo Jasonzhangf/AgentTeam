@@ -9,7 +9,8 @@ fn temp_log_path(test_name: &str) -> PathBuf {
         .duration_since(UNIX_EPOCH)
         .unwrap()
         .as_nanos();
-    std::env::temp_dir().join(format!("agentteam-{test_name}-{nanos}.jsonl"))
+    let pid = std::process::id();
+    std::env::temp_dir().join(format!("agentteam-{test_name}-{pid}-{nanos}.jsonl"))
 }
 
 fn draft(kind: &str) -> PersistedEventDraft {

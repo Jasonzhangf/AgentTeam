@@ -158,10 +158,14 @@ impl AgentControlCenter {
         &self,
         input: ControlSendInput,
     ) -> ControlResult<AgentCtlResp05ControlProjection> {
-        self.run_session_control(input.session, AgentControlAction::Send, |session_name| {
-            send_input(session_name, &input.input).map_err(tmux_error)?;
-            Ok(("busy".to_owned(), "input delivered".to_owned()))
-        })
+        self.run_session_transport_control(
+            input.session,
+            AgentControlAction::Send,
+            |session_name| {
+                send_input(session_name, &input.input).map_err(tmux_error)?;
+                Ok(("busy".to_owned(), "input delivered".to_owned()))
+            },
+        )
     }
 
     pub fn observe_output(
@@ -178,7 +182,7 @@ impl AgentControlCenter {
         &self,
         input: ControlSessionInput,
     ) -> ControlResult<AgentCtlResp05ControlProjection> {
-        self.run_session_control(input, AgentControlAction::Pause, |session_name| {
+        self.run_session_transport_control(input, AgentControlAction::Pause, |session_name| {
             interrupt_session(session_name).map_err(tmux_error)?;
             Ok(("busy".to_owned(), "interrupt requested".to_owned()))
         })
@@ -188,7 +192,7 @@ impl AgentControlCenter {
         &self,
         input: ControlSessionInput,
     ) -> ControlResult<AgentCtlResp05ControlProjection> {
-        self.run_session_control(input, AgentControlAction::Stop, |session_name| {
+        self.run_session_transport_control(input, AgentControlAction::Stop, |session_name| {
             stop_session(session_name).map_err(tmux_error)?;
             Ok(("offline".to_owned(), "session stopped".to_owned()))
         })
@@ -269,6 +273,24 @@ impl AgentControlCenter {
         F: FnOnce(&str) -> ControlResult<(String, String)>,
     {
         let intent = AgentCtlReq01ModeIntent::new(
+            input.agent_name.clone(),
+            input.team_id.clone(),
+            AgentControlMode::AttachTui,
+            input.session_name.clone(),
+        );
+        self.run_tmux_control_with_status(intent, action, input, control)
+    }
+
+    fn run_session_transport_control<F>(
+        &self,
+        input: ControlSessionInput,
+        action: AgentControlAction,
+        control: F,
+    ) -> ControlResult<AgentCtlResp05ControlProjection>
+    where
+        F: FnOnce(&str) -> ControlResult<(String, String)>,
+    {
+        let intent = AgentCtlReq01ModeIntent::new(
             input.agent_name,
             input.team_id,
             AgentControlMode::AttachTui,
@@ -290,6 +312,25 @@ impl AgentControlCenter {
         let binding = resolved.bind_session();
         let action_label = control_action_label(action);
         let (state, details) = control(&binding.session_name)?;
+        let action = binding.apply_action(action, state, details);
+        Ok(action.project(self.next_receipt_id(action_label)))
+    }
+
+    fn run_tmux_control_with_status<F>(
+        &self,
+        intent: AgentCtlReq01ModeIntent,
+        action: AgentControlAction,
+        session: ControlSessionInput,
+        control: F,
+    ) -> ControlResult<AgentCtlResp05ControlProjection>
+    where
+        F: FnOnce(&str) -> ControlResult<(String, String)>,
+    {
+        let resolved = intent.resolve_mode();
+        let binding = resolved.bind_session();
+        let action_label = control_action_label(action);
+        let (tmux_state, tmux_details) = control(&binding.session_name)?;
+        let (state, details) = merge_attach_tui_status(&session, tmux_state, tmux_details)?;
         let action = binding.apply_action(action, state, details);
         Ok(action.project(self.next_receipt_id(action_label)))
     }
@@ -339,6 +380,32 @@ fn status_from_capture(captured: &str) -> &'static str {
         "busy"
     } else {
         "idle"
+    }
+}
+
+fn merge_attach_tui_status(
+    session: &ControlSessionInput,
+    tmux_state: String,
+    tmux_details: String,
+) -> ControlResult<(String, String)> {
+    match (&session.cwd, &session.project_slug) {
+        (Some(_), Some(_)) => {
+            let status = headless_process::bound_session_status(session)?;
+            Ok((
+                status.state,
+                format!(
+                    "sdk_status={}; sdk_details={}; tmux_observed=true; tmux_state={}",
+                    status.operation, status.details, tmux_state
+                ),
+            ))
+        }
+        (None, None) => Ok((
+            tmux_state,
+            format!("sdk_status=not_requested; tmux_observed=true; tmux_details={tmux_details}"),
+        )),
+        _ => Err(ControlError::Validation {
+            reason: "attach_tui SDK status requires both --cwd and --project".to_owned(),
+        }),
     }
 }
 

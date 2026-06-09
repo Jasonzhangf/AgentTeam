@@ -13,7 +13,7 @@ use agentteam_debug::{capture_debug_bundle, DebugBundleInput, DebugError};
 use agentteam_resource::ResourceRegistry;
 use agentteam_tmux::{run_tmux_loopback, TmuxAdapterError, TmuxLoopbackInput};
 
-use crate::control::execute_control;
+use crate::control::{execute_control, ControlExecutionInput};
 use crate::domain::{registered_domain, DomainEndpoint, DomainRegistry, DomainRegistryError};
 use crate::local_projection::{
     broadcast_send_result, config_result, daemon_check_result, debug_bundle_result,
@@ -82,19 +82,23 @@ pub fn execute_local_intent(
             agent_name,
             team_id,
             session_name,
+            cwd,
+            project_slug,
             input,
             task_id,
             error_fact_id,
             ..
-        } => execute_control(
+        } => execute_control(ControlExecutionInput {
             action,
             agent_name,
             team_id,
             session_name,
+            cwd,
+            project_slug,
             input,
             task_id,
             error_fact_id,
-        ),
+        }),
         TeamReq03ValidatedIntent::TaskSend {
             runtime_home,
             team_id,

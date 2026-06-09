@@ -274,6 +274,8 @@ fn local_control_headless_run_requires_input() {
         agent_name: "Kevin".to_owned(),
         team_id: "default".to_owned(),
         session_name: "TA_headless_Kevin".to_owned(),
+        cwd: Some("/repo/agentteam".to_owned()),
+        project_slug: Some("agentteam".to_owned()),
         input: None,
         task_id: None,
         error_fact_id: None,

@@ -209,10 +209,22 @@ fn parses_control_attach_intent() {
         "default",
         "--session",
         "TA_local_agentteam_Kevin",
+        "--cwd",
+        "/repo/agentteam",
+        "--project",
+        "agentteam",
         "--json",
     ]))
     .unwrap();
-    assert_eq!(intent.command_name(), "control");
+    match intent {
+        agentteam_contracts::team::TeamReq03ValidatedIntent::Control {
+            cwd, project_slug, ..
+        } => {
+            assert_eq!(cwd.as_deref(), Some("/repo/agentteam"));
+            assert_eq!(project_slug.as_deref(), Some("agentteam"));
+        }
+        other => panic!("unexpected intent {other:?}"),
+    }
 }
 
 #[test]
@@ -353,6 +365,12 @@ fn render_local_start_result_uses_start_command_name() {
             launch_status: "launched".to_owned(),
             session_lifecycle: "created".to_owned(),
             bootstrap_prompt_status: "seeded_before_tui_resume".to_owned(),
+            skill_install_status: "installed".to_owned(),
+            skill_path:
+                "/Users/fanzhang/Documents/github/agentteam/.agents/skills/agentteam/SKILL.md"
+                    .to_owned(),
+            cli_path: "/Users/fanzhang/Documents/github/agentteam/target/debug/agentteam"
+                .to_owned(),
             agent_session_status: "idle".to_owned(),
             control_handoff_status: "attach_tui_resumed_agent_session".to_owned(),
             tui_resume_command: "codex".to_owned(),
@@ -365,6 +383,8 @@ fn render_local_start_result_uses_start_command_name() {
 
     let rendered = render_local_result_json(&result).unwrap();
     assert!(rendered.contains("\"command_name\":\"start\""));
+    assert!(rendered.contains("\"skill_install_status\":\"installed\""));
+    assert!(rendered.contains("\"cli_path\""));
     assert!(!rendered.contains("local_parse_only"));
 }
 

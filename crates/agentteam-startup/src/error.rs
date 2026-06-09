@@ -8,6 +8,7 @@ pub enum StartupError {
     Config { reason: String },
     Team { reason: String },
     Control { reason: String },
+    SkillInstall { reason: String },
     Launch { reason: String },
     Tmux { reason: String },
     Resource { reason: String },
@@ -22,6 +23,7 @@ impl StartupError {
             Self::Config { reason }
             | Self::Team { reason }
             | Self::Control { reason }
+            | Self::SkillInstall { reason }
             | Self::Launch { reason }
             | Self::Tmux { reason }
             | Self::Resource { reason } => reason.clone(),

@@ -123,6 +123,10 @@ Only Agent Registry projects final lifecycle status from facts.
 - Support explicit `headless` mode.
 - Use tmux as the transparent carrier for `attach_tui`.
 - Use SDK-style agent control for `headless` through the local persistent Codex SDK bridge, with `AGENTTEAM_CODEX_SDK_SRC` and `AGENTTEAM_CODEX_BIN` set explicitly.
+- When an `attach_tui` session was created from a Codex SDK-seeded agent session, read the same persisted SDK binding for status evidence instead of relying only on TUI stdout.
+- Treat tmux stdout as visible evidence, not the sole status truth, whenever SDK session status is available.
+- If `attach_tui` status is requested with SDK scope, missing SDK binding or SDK status failure is an explicit control error, not a tmux/stdout downgrade.
+- If `attach_tui` status is requested without SDK scope, the projection must say `sdk_status=not_requested` so the caller knows the result is tmux-only evidence.
 - Keep one live bridge process per headless session so the Codex SDK client, loaded thread, and turn notification queue stay in one runtime process.
 - Treat `control headless` as create/bind for the MVP headless agent session.
 - Treat `headless-status` or `headless-run` after scoped `headless-stop` as recovery only when the bridge resumes the same persisted `thread_id`.
@@ -245,6 +249,8 @@ Rules:
 - `headless` recovery must reuse the persisted `thread_id` and show a new bridge process after stop.
 - normal scoped stop projected as `error` fails.
 - headless response parsing failures are explicit bridge errors.
+- `attach_tui` status for SDK-seeded Codex agents must include SDK status provenance; SDK binding/status lookup failure must be explicit error.
+- `attach_tui` status without SDK scope must explicitly report `sdk_status=not_requested`.
 - `attach_tui` without tmux binding fails.
 - Input sent outside the typed control envelope fails.
 - Output read directly from private state fails.

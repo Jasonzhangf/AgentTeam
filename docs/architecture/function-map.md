@@ -543,12 +543,14 @@ Every Rust function or method under `crates/` and `xtask/src/` must be listed he
 | `xtask::src::main::verify_resource_lifecycle` | Architecture Gate | `architecture.gate` | `xtask/src/main.rs` | resource lifecycle gate |
 | `xtask::src::main::verify_skill_frontmatter` | Architecture Gate | `architecture.gate` | `xtask/src/main.rs` | skill-frontmatter gate |
 | `xtask::src::red_tests::allowed_broad_kill_reference` | Architecture Gate | `architecture.gate` | `xtask/src/red_tests.rs` | red-tests gate |
+| `xtask::src::red_tests::allowed_startup_skill_install` | Architecture Gate | `architecture.gate` | `xtask/src/red_tests.rs` | red-tests gate |
 | `xtask::src::red_tests::contains_forbidden_context` | Architecture Gate | `architecture.gate` | `xtask/src/red_tests.rs` | red-tests gate |
 | `xtask::src::red_tests::extract_declared_feature_id` | Architecture Gate | `architecture.gate` | `xtask/src/red_tests.rs` | red-tests gate |
 | `xtask::src::red_tests::ignored_path` | Architecture Gate | `architecture.gate` | `xtask/src/red_tests.rs` | red-tests gate |
 | `xtask::src::red_tests::is_text_candidate` | Architecture Gate | `architecture.gate` | `xtask/src/red_tests.rs` | red-tests gate |
 | `xtask::src::red_tests::no_violations` | Architecture Gate | `architecture.gate` | `xtask/src/red_tests.rs` | red-tests gate |
 | `xtask::src::red_tests::normalize_repo_path` | Architecture Gate | `architecture.gate` | `xtask/src/red_tests.rs` | red-tests gate |
+| `xtask::src::red_tests::scan_attach_tui_sdk_status_downgrade` | Architecture Gate | `architecture.gate` | `xtask/src/red_tests.rs` | red-tests gate |
 | `xtask::src::red_tests::read` | Architecture Gate | `architecture.gate` | `xtask/src/red_tests.rs` | red-tests gate |
 | `xtask::src::red_tests::require_contains` | Architecture Gate | `architecture.gate` | `xtask/src/red_tests.rs` | red-tests gate |
 | `xtask::src::red_tests::require_plan_entries` | Architecture Gate | `architecture.gate` | `xtask/src/red_tests.rs` | red-tests gate |
@@ -599,11 +601,16 @@ Every Rust function or method under `crates/` and `xtask/src/` must be listed he
 | `crates::agentteam-startup::src::session::release_after_launch_failure<T>` | Startup Session Manager | `startup.session` | `crates/agentteam-startup/src/session.rs` | startup unit, function map gate |
 | `crates::agentteam-startup::src::session::seed_codex_agent_session` | Startup Session Manager | `startup.session` | `crates/agentteam-startup/src/session.rs` | startup unit, function map gate |
 | `crates::agentteam-startup::src::session::stop_seed_bridge` | Startup Session Manager | `startup.session` | `crates/agentteam-startup/src/session.rs` | startup unit, function map gate |
+| `crates::agentteam-startup::src::skill::current_cli_path` | Startup Session Manager | `startup.session` | `crates/agentteam-startup/src/skill.rs` | startup unit, function map gate |
+| `crates::agentteam-startup::src::skill::install_agentteam_skill` | Startup Session Manager | `startup.session` | `crates/agentteam-startup/src/skill.rs` | startup unit, function map gate |
+| `crates::agentteam-startup::src::skill::source_skill_path` | Startup Session Manager | `startup.session` | `crates/agentteam-startup/src/skill.rs` | startup unit, function map gate |
 | `crates::agentteam-startup::src::tests::agent_env_contains_identity_and_scope` | Startup Session Manager test | `startup.session` | `crates/agentteam-startup/src/tests.rs` | cargo test, function map gate |
+| `crates::agentteam-startup::src::tests::installed_skill_path_is_agentteam_skill` | Startup Session Manager test | `startup.session` | `crates/agentteam-startup/src/tests.rs` | cargo test, function map gate |
 | `crates::agentteam-startup::src::tests::member` | Startup Session Manager test helper | `startup.session` | `crates/agentteam-startup/src/tests.rs` | cargo test, function map gate |
 | `crates::agentteam-startup::src::tests::normalized` | Startup Session Manager test helper | `startup.session` | `crates/agentteam-startup/src/tests.rs` | cargo test, function map gate |
 | `crates::agentteam-startup::src::tests::root_manager_prompt_teaches_identity_skill_and_worker_start` | Startup Session Manager test | `startup.session` | `crates/agentteam-startup/src/tests.rs` | cargo test, function map gate |
 | `crates::agentteam-startup::src::tests::session_name_uses_domain_project_and_agent` | Startup Session Manager test | `startup.session` | `crates/agentteam-startup/src/tests.rs` | cargo test, function map gate |
+| `crates::agentteam-startup::src::tests::startup_context<'a>` | Startup Session Manager test helper | `startup.session` | `crates/agentteam-startup/src/tests.rs` | cargo test, function map gate |
 | `crates::agentteam-startup::src::tests::team` | Startup Session Manager test helper | `startup.session` | `crates/agentteam-startup/src/tests.rs` | cargo test, function map gate |
 | `crates::agentteam-startup::src::tests::worker_names_includes_only_worker_roles` | Startup Session Manager test | `startup.session` | `crates/agentteam-startup/src/tests.rs` | cargo test, function map gate |
 | `crates::agentteam-startup::src::tests::worker_prompt_teaches_role_and_ready_loop` | Startup Session Manager test | `startup.session` | `crates/agentteam-startup/src/tests.rs` | cargo test, function map gate |
@@ -621,6 +628,7 @@ Every Rust function or method under `crates/` and `xtask/src/` must be listed he
 | `crates::agentteam-control::src::error::ControlError::reason` | Agent Control Center | `agent.control_center` | `crates/agentteam-control/src/error.rs` | control unit, function map gate |
 | `crates::agentteam-control::src::error::tmux_error` | Agent Control Center | `agent.control_center` | `crates/agentteam-control/src/error.rs` | control unit, function map gate |
 | `crates::agentteam-control::src::headless_process::bridge_state_is_running` | Agent Control Center | `agent.control_center` | `crates/agentteam-control/src/headless_process.rs` | control unit, function map gate |
+| `crates::agentteam-control::src::headless_process::bound_session_status` | Agent Control Center | `agent.control_center` | `crates/agentteam-control/src/headless_process.rs` | control unit, function map gate |
 | `crates::agentteam-control::src::headless_process::ensure_bridge_running` | Agent Control Center | `agent.control_center` | `crates/agentteam-control/src/headless_process.rs` | control unit, function map gate |
 | `crates::agentteam-control::src::headless_process::interrupt_turn` | Agent Control Center | `agent.control_center` | `crates/agentteam-control/src/headless_process.rs` | control unit, function map gate |
 | `crates::agentteam-control::src::headless_process::run_bridge` | Agent Control Center | `agent.control_center` | `crates/agentteam-control/src/headless_process.rs` | control unit, function map gate |
@@ -654,7 +662,9 @@ Every Rust function or method under `crates/` and `xtask/src/` must be listed he
 | `crates::agentteam-control::src::lib::AgentControlCenter::project_headless_response` | Agent Control Center | `agent.control_center` | `crates/agentteam-control/src/lib.rs` | control unit, function map gate |
 | `crates::agentteam-control::src::lib::AgentControlCenter::retry_dispatch` | Agent Control Center | `agent.control_center` | `crates/agentteam-control/src/lib.rs` | control unit, function map gate |
 | `crates::agentteam-control::src::lib::AgentControlCenter::run_session_control<F>` | Agent Control Center | `agent.control_center` | `crates/agentteam-control/src/lib.rs` | control unit, function map gate |
+| `crates::agentteam-control::src::lib::AgentControlCenter::run_session_transport_control<F>` | Agent Control Center | `agent.control_center` | `crates/agentteam-control/src/lib.rs` | control unit, function map gate |
 | `crates::agentteam-control::src::lib::AgentControlCenter::run_tmux_control<F>` | Agent Control Center | `agent.control_center` | `crates/agentteam-control/src/lib.rs` | control unit, function map gate |
+| `crates::agentteam-control::src::lib::AgentControlCenter::run_tmux_control_with_status<F>` | Agent Control Center | `agent.control_center` | `crates/agentteam-control/src/lib.rs` | control unit, function map gate |
 | `crates::agentteam-control::src::lib::AgentControlCenter::send_input` | Agent Control Center | `agent.control_center` | `crates/agentteam-control/src/lib.rs` | control unit, function map gate |
 | `crates::agentteam-control::src::lib::AgentControlCenter::next_receipt_id` | Agent Control Center | `agent.control_center` | `crates/agentteam-control/src/lib.rs` | control unit, function map gate |
 | `crates::agentteam-control::src::lib::AgentControlCenter::snapshot` | Agent Control Center | `agent.control_center` | `crates/agentteam-control/src/lib.rs` | control unit, function map gate |
@@ -663,6 +673,7 @@ Every Rust function or method under `crates/` and `xtask/src/` must be listed he
 | `crates::agentteam-control::src::lib::AgentControlCenter::wait` | Agent Control Center | `agent.control_center` | `crates/agentteam-control/src/lib.rs` | control unit, function map gate |
 | `crates::agentteam-control::src::lib::control_action_label` | Agent Control Center | `agent.control_center` | `crates/agentteam-control/src/lib.rs` | control unit, function map gate |
 | `crates::agentteam-control::src::lib::help_text` | Agent Control Center | `agent.control_center` | `crates/agentteam-control/src/lib.rs` | control unit, function map gate |
+| `crates::agentteam-control::src::lib::merge_attach_tui_status` | Agent Control Center | `agent.control_center` | `crates/agentteam-control/src/lib.rs` | control unit, function map gate |
 | `crates::agentteam-control::src::lib::status_from_capture` | Agent Control Center | `agent.control_center` | `crates/agentteam-control/src/lib.rs` | control unit, function map gate |
 | `crates::agentteam-control::src::model::ControlRetryInput::new` | Agent Control Center | `agent.control_center` | `crates/agentteam-control/src/model.rs` | control unit, function map gate |
 | `crates::agentteam-control::src::model::ControlAgentSessionBinding::new` | Agent Control Center | `agent.control_center` | `crates/agentteam-control/src/model.rs` | control unit, function map gate |
@@ -672,6 +683,8 @@ Every Rust function or method under `crates/` and `xtask/src/` must be listed he
 | `crates::agentteam-control::src::model::ControlSnapshot::from_projection` | Agent Control Center | `agent.control_center` | `crates/agentteam-control/src/model.rs` | control unit, function map gate |
 | `crates::agentteam-control::src::tests::attach_help_returns_tmux_contract` | Agent Control Center test | `agent.control_center` | `crates/agentteam-control/src/tests.rs` | cargo test, function map gate |
 | `crates::agentteam-control::src::tests::agent_session_binding_requires_thread_id` | Agent Control Center test | `agent.control_center` | `crates/agentteam-control/src/tests.rs` | cargo test, function map gate |
+| `crates::agentteam-control::src::tests::attach_status_rejects_partial_sdk_scope` | Agent Control Center test | `agent.control_center` | `crates/agentteam-control/src/tests.rs` | cargo test, function map gate |
+| `crates::agentteam-control::src::tests::attach_status_without_sdk_scope_reports_tmux_only` | Agent Control Center test | `agent.control_center` | `crates/agentteam-control/src/tests.rs` | cargo test, function map gate |
 | `crates::agentteam-control::src::tests::control_chain_projects_receipt` | Agent Control Center test | `agent.control_center` | `crates/agentteam-control/src/tests.rs` | cargo test, function map gate |
 | `crates::agentteam-control::src::tests::headless_bridge_response_parses_sdk_payload` | Agent Control Center test | `agent.control_center` | `crates/agentteam-control/src/tests.rs` | cargo test, function map gate |
 | `crates::agentteam-control::src::tests::headless_run_requires_input` | Agent Control Center test | `agent.control_center` | `crates/agentteam-control/src/tests.rs` | cargo test, function map gate |
@@ -682,6 +695,7 @@ Every Rust function or method under `crates/` and `xtask/src/` must be listed he
 | `crates::agentteam-gateway::src::input::parse_start_worker` | Input Gateway | `gateway.input` | `crates/agentteam-gateway/src/input.rs` | gateway unit, function map gate |
 | `crates::agentteam-gateway::src::validate::require_json` | Input Gateway | `gateway.input` | `crates/agentteam-gateway/src/validate.rs` | gateway unit, function map gate |
 | `crates::agentteam-gateway::src::validate::require_value` | Input Gateway | `gateway.input` | `crates/agentteam-gateway/src/validate.rs` | gateway unit, function map gate |
+| `crates::agentteam-gateway::src::validate::validate_control_scope` | Input Gateway | `gateway.input` | `crates/agentteam-gateway/src/validate.rs` | gateway unit, function map gate |
 | `crates::agentteam-gateway::src::validate::validate_intent` | Input Gateway | `gateway.input` | `crates/agentteam-gateway/src/validate.rs` | gateway unit, function map gate |
 | `crates::agentteam-gateway::src::tests::parses_control_attach_intent` | Input Gateway test | `gateway.input` | `crates/agentteam-gateway/src/tests.rs` | cargo test, function map gate |
 | `crates::agentteam-gateway::src::tests::parses_control_headless_run_intent` | Input Gateway test | `gateway.input` | `crates/agentteam-gateway/src/tests.rs` | cargo test, function map gate |

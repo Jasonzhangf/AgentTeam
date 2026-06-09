@@ -169,3 +169,25 @@
 - Startup implementation implication: first launch must seed the SDK-created thread before tmux resume; subsequent launch must reuse persisted `agent_session_id` / Codex thread id and skip bootstrap reinjection when a live tmux carrier already exists.
 2026-06-09 neutral manager naming correction:
 - User clarified that `Kevin` is only the configured default agent name. Code functions, structs, schema fields, feature ids, and red-test ids must use neutral concepts such as root manager, configured manager, bootstrap agent, or manager. Literal `Kevin` may remain only as config/example/test data where the framework is exercising a configured agent name.
+
+2026-06-09 visible TUI input correction:
+- User caught a verification error: text visible in a Codex TUI prompt box is not proof that the agent received the prompt. A submit action requires Enter.
+- Rechecked code truth: `crates/agentteam-tmux/src/control.rs::send_input` sends `tmux send-keys -l <input>` and then `tmux send-keys Enter`, so the adapter implementation is not text-only.
+- Replayed the E2E sessions by sending exact `Enter` to `TA_local_agentteam_e2e_tui_20260609_01_Kevin`, `..._Alice`, and `..._Bob` without cleanup. Subsequent pane captures showed Codex processing/assistant output: Kevin reported the event sequence mismatch, Alice ran skill/CLI checks and reported the same mismatch, Bob produced reviewer checkpoint output.
+- Correct verification rule: `control send` success needs both transport projection and post-submit evidence from `control observe` / `tmux capture-pane` showing the submitted user turn left the prompt buffer and caused a Codex turn/output. Mere prompt-buffer visibility is only input staging evidence.
+
+2026-06-09 startup skill install + SDK status result:
+- Implemented startup-owned local skill installation into target cwd at `.agents/skills/agentteam/SKILL.md` before seeding manager/worker prompts. Startup result now exposes `skill_install_status`, `skill_path`, and `cli_path`.
+- Startup prompt/env now injects absolute `AGENTTEAM_CLI` and `AGENTTEAM_SKILL_PATH`, so workers in `~/code/playground` do not depend on PATH or repo-local skill discovery.
+- Agent Control Center now lets attach_tui status/send/wait merge tmux observation with Codex SDK status when the SDK-created session binding exists. `control status --project <slug> --cwd <cwd>` returned `details="sdk_status=status; sdk_details=thread idle; tmux_observed=true; tmux_state=idle"` for `TA_local_agentteam_e2e_tui_20260609_01_Kevin`.
+- Real smoke: starting with `--cwd /Users/fanzhang/code/playground/agentteam-skill-install-smoke-20260609` installed the skill into that cwd and returned `skill_install_status=installed`, `skill_path=/Volumes/extension/code/playground/agentteam-skill-install-smoke-20260609/.agents/skills/agentteam/SKILL.md`, and `cli_path=/Users/fanzhang/Documents/github/agentteam/target/debug/agentteam`.
+- Gates passed after this slice: `cargo fmt --check`, `cargo clippy --workspace --all-targets -- -D warnings`, `cargo test --workspace`, and `cargo xtask verify`.
+2026-06-09 attach_tui SDK status hardening:
+- Removed the swallowed SDK status probe path. For attach_tui status with `--cwd` + `--project`, Control Center now requires an existing persisted Codex thread binding and fails explicitly if state/status is missing.
+- attach_tui status without SDK scope reports `sdk_status=not_requested`; it is tmux-only evidence by design, not a Codex session-state claim.
+- `send`, `pause`, and `stop` remain transport-action projections and are not overwritten by SDK idle status. Submitted-work evidence still requires post-submit observe/capture.
+- Added red-test scanner for the forbidden SDK-status downgrade markers and updated module/verification docs.
+- Real smoke: `control status --session TA_local_agentteam_e2e_tui_20260609_01_Kevin --cwd /Users/fanzhang/code/playground/agentteam-e2e-tui-20260609-01 --project agentteam_e2e_tui_20260609_01 --json` returned `sdk_status=status; sdk_details=thread idle; tmux_observed=true; tmux_state=idle`.
+- Negative smoke: `control status` with SDK scope for `TA_local_agentteam_Kevin` and no persisted binding returned explicit error reading the missing state file instead of downgrading to tmux-only status.
+- User authorized cleanup of non-reusable test TA sessions. Exact tmux cleanup removed `TA_local_agentteam_Kevin_tui_start_smoke`, `TA_local_agentteam_e2e_tui_20260609_01_{Kevin,Alice,Bob}`, and `TA_sdk_seeded_resume_probe_20260609_01`; only reusable `TA_local_agentteam_Kevin` remains. Scoped `control headless-stop` removed residual bridge processes; process audit found no `headless_bridge.py`.
+- Verification nuance: running `cargo test --workspace` and `cargo xtask verify` concurrently caused `agentteam-persist` test temp-file collision. Added process id to the persistence test temp path; serialized rerun passed.

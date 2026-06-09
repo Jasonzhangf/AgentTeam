@@ -58,6 +58,7 @@ Red tests prove forbidden architecture behavior stays forbidden.
 | `red.tui_adapter.provider_payload_leak` | Provider-specific payload enters runtime business status | tui adapter red test fails |
 | `red.tui_adapter.unknown_as_success` | Unknown provider signal becomes idle/success | tui adapter red test fails |
 | `red.agent.mode_fallback` | Agent Control Center silently falls back between attach_tui and headless | control red test fails |
+| `red.agent.attach_sdk_status_downgrade` | SDK-seeded attach_tui status loses SDK binding/status and silently downgrades to stdout-only state | architecture gate fails |
 | `red.agent.attach_without_tmux_binding` | attach_tui mode is selected without tmux binding | control red test fails |
 | `red.agent.headless_without_sdk_binding` | headless mode is selected without SDK binding | control red test fails |
 | `red.agent.pause_not_propagated` | pause request does not reach active control session | control red test fails |

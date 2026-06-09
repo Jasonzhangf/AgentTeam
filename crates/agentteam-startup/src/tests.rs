@@ -4,10 +4,12 @@ use std::collections::BTreeMap;
 
 use agentteam_config::{MemberConfig, NormalizedConfig, TeamConfig};
 
+use crate::context::AgentStartupContext;
 use crate::env::build_agent_env;
 use crate::paths::build_session_name;
 use crate::prompt::{build_root_manager_bootstrap_prompt, build_worker_bootstrap_prompt};
 use crate::select::worker_names;
+use crate::skill::INSTALLED_SKILL_PATH;
 
 fn normalized() -> NormalizedConfig {
     NormalizedConfig {
@@ -48,23 +50,40 @@ fn team() -> TeamConfig {
     }
 }
 
+fn startup_context<'a>(
+    normalized: &'a NormalizedConfig,
+    member: &'a MemberConfig,
+    config_path: Option<&'a str>,
+) -> AgentStartupContext<'a> {
+    AgentStartupContext {
+        normalized,
+        runtime_home: "/runtime",
+        team_id: "default",
+        cwd: "/repo/agentteam",
+        member,
+        skill_path: "/repo/agentteam/.agents/skills/agentteam/SKILL.md",
+        cli_path: "/repo/agentteam/target/debug/agentteam",
+        config_path,
+    }
+}
+
 #[test]
 fn root_manager_prompt_teaches_identity_skill_and_worker_start() {
     let normalized = normalized();
     let team = team();
     let prompt = build_root_manager_bootstrap_prompt(
-        &normalized,
-        "/runtime",
-        "default",
-        "/repo/agentteam",
-        &team.members[0],
+        &startup_context(
+            &normalized,
+            &team.members[0],
+            Some("docs/config/config.toml.example"),
+        ),
         &team,
-        Some("docs/config/config.toml.example"),
     );
 
     assert!(prompt.contains("You are Kevin"));
-    assert!(prompt.contains(".agents/skills/agentteam/SKILL.md"));
-    assert!(prompt.contains("agentteam start worker --agent <worker>"));
+    assert!(prompt.contains("/repo/agentteam/.agents/skills/agentteam/SKILL.md"));
+    assert!(prompt.contains("$AGENTTEAM_CLI start worker --agent <worker>"));
+    assert!(prompt.contains("AgentTeam CLI path: /repo/agentteam/target/debug/agentteam"));
     assert!(prompt.contains("Alice, Bob"));
     assert!(prompt.contains("Do not call tmux directly"));
 }
@@ -73,20 +92,17 @@ fn root_manager_prompt_teaches_identity_skill_and_worker_start() {
 fn worker_prompt_teaches_role_and_ready_loop() {
     let normalized = normalized();
     let alice = member("Alice", "worker", "builder");
-    let prompt = build_worker_bootstrap_prompt(
+    let prompt = build_worker_bootstrap_prompt(&startup_context(
         &normalized,
-        "/runtime",
-        "default",
-        "/repo/agentteam",
         &alice,
         Some("docs/config/config.toml.example"),
-    );
+    ));
 
     assert!(prompt.contains("You are Alice"));
     assert!(prompt.contains("team_role=worker"));
-    assert!(prompt.contains("agentteam ready report"));
-    assert!(prompt.contains("agentteam task claim"));
-    assert!(prompt.contains("agentteam task done"));
+    assert!(prompt.contains("$AGENTTEAM_CLI ready report"));
+    assert!(prompt.contains("$AGENTTEAM_CLI task claim"));
+    assert!(prompt.contains("$AGENTTEAM_CLI task done"));
 }
 
 #[test]
@@ -102,12 +118,8 @@ fn agent_env_contains_identity_and_scope() {
     let normalized = normalized();
     let alice = member("Alice", "worker", "builder");
     let env = build_agent_env(
-        &normalized,
-        "/runtime",
-        "default",
-        "/repo/agentteam",
+        &startup_context(&normalized, &alice, Some("docs/config/config.toml.example")),
         "TA_local_agentteam_Alice",
-        &alice,
     );
 
     assert_eq!(env.get("AGENTTEAM_NAME"), Some(&"Alice".to_owned()));
@@ -117,6 +129,14 @@ fn agent_env_contains_identity_and_scope() {
         Some(&"TA_local_agentteam_Alice".to_owned())
     );
     assert_eq!(env.get("AGENTTEAM_SKILL"), Some(&"agentteam".to_owned()));
+    assert_eq!(
+        env.get("AGENTTEAM_SKILL_PATH"),
+        Some(&"/repo/agentteam/.agents/skills/agentteam/SKILL.md".to_owned())
+    );
+    assert_eq!(
+        env.get("AGENTTEAM_CLI"),
+        Some(&"/repo/agentteam/target/debug/agentteam".to_owned())
+    );
 }
 
 #[test]
@@ -125,4 +145,9 @@ fn session_name_uses_domain_project_and_agent() {
         build_session_name("local", "agentteam", "Kevin"),
         "TA_local_agentteam_Kevin"
     );
+}
+
+#[test]
+fn installed_skill_path_is_agentteam_skill() {
+    assert_eq!(INSTALLED_SKILL_PATH, ".agents/skills/agentteam/SKILL.md");
 }

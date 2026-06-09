@@ -1,6 +1,9 @@
 use agentteam_contracts::control::{AgentControlAction, AgentControlMode, AgentCtlReq01ModeIntent};
 
-use crate::{AgentControlCenter, ControlRetryInput, ControlSendInput, ControlSessionInput};
+use crate::{
+    merge_attach_tui_status, AgentControlCenter, ControlRetryInput, ControlSendInput,
+    ControlSessionInput,
+};
 
 #[test]
 fn attach_help_returns_tmux_contract() {
@@ -51,6 +54,33 @@ fn send_input_requires_text() {
         err,
         crate::ControlError::Tmux { .. } | crate::ControlError::Validation { .. }
     ));
+}
+
+#[test]
+fn attach_status_without_sdk_scope_reports_tmux_only() {
+    let (state, details) = merge_attach_tui_status(
+        &ControlSessionInput::new("Kevin", "default", "TA_local_agentteam_Kevin"),
+        "busy".to_owned(),
+        "tmux thinking".to_owned(),
+    )
+    .unwrap();
+
+    assert_eq!(state, "busy");
+    assert!(details.contains("sdk_status=not_requested"));
+    assert!(details.contains("tmux_observed=true"));
+}
+
+#[test]
+fn attach_status_rejects_partial_sdk_scope() {
+    let session = ControlSessionInput::new("Kevin", "default", "TA_local_agentteam_Kevin")
+        .with_scope("/repo/agentteam", "");
+    let mut partial = session.clone();
+    partial.project_slug = None;
+    let err =
+        merge_attach_tui_status(&partial, "idle".to_owned(), "tmux idle".to_owned()).unwrap_err();
+
+    assert!(matches!(err, crate::ControlError::Validation { .. }));
+    assert!(err.reason().contains("--cwd and --project"));
 }
 
 #[test]

@@ -222,17 +222,22 @@ pub(crate) fn validate_intent(
             agent_name,
             team_id,
             session_name,
+            cwd,
+            project_slug,
             input,
             task_id,
             error_fact_id,
             json,
         } => {
             require_json(json)?;
+            validate_control_scope(&cwd, &project_slug)?;
             Ok(TeamReq03ValidatedIntent::Control {
                 action: require_value(action, "control action")?,
                 agent_name: require_value(agent_name, "--agent")?,
                 team_id: require_value(team_id, "--team")?,
                 session_name: require_value(session_name, "--session")?,
+                cwd,
+                project_slug,
                 input,
                 task_id,
                 error_fact_id,
@@ -266,4 +271,16 @@ fn require_json(json: bool) -> GatewayResult<()> {
 
 fn require_value(value: Option<String>, flag: &str) -> GatewayResult<String> {
     value.ok_or_else(|| GatewayError::validation(format!("{flag} is required")))
+}
+
+fn validate_control_scope(
+    cwd: &Option<String>,
+    project_slug: &Option<String>,
+) -> GatewayResult<()> {
+    match (cwd, project_slug) {
+        (Some(_), Some(_)) | (None, None) => Ok(()),
+        _ => Err(GatewayError::validation(
+            "control SDK status scope requires both --cwd and --project",
+        )),
+    }
 }

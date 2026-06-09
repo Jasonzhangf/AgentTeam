@@ -62,11 +62,21 @@ When the manager sends a request and the session remains alive, silence is pendi
 
 The configured manager is the root manager for the project agent tree. It does not auto-exit after startup; the user explicitly exits the manager, and the scoped shutdown flow exits the managed workers with it. The manager skill surface must include a CLI feedback path that returns task results to the framework.
 
+Visible TUI input rule:
+
+- Text visible in a Codex TUI prompt box is only staged input.
+- A prompt is submitted only after the control path sends Enter.
+- Delivery proof requires a control/tmux receipt plus observed post-submit evidence from `control observe` or pane capture showing a Codex turn/output.
+- SDK `headless-status` can show the underlying thread state, but it is not by itself proof that a visible TUI prompt was submitted.
+
 ## Current Local CLI Use
 
 Agents should use CLI commands only, for example:
 
 ```text
+Use `$AGENTTEAM_CLI` when it is set by startup; otherwise use `agentteam` only if it is on PATH.
+
+$AGENTTEAM_CLI config check --config docs/config/config.toml.example --json
 agentteam config check --config docs/config/config.toml.example --json
 agentteam daemon check --config docs/config/config.toml.example --json
 agentteam domain resolve --target Alice@review-daemon --config docs/config/config.toml.example --json
