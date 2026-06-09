@@ -21,6 +21,7 @@ use crate::local_projection::{
     task_board_result, task_changed_result, tmux_loopback_result,
 };
 pub use crate::local_projection::{LocalCommandError, LocalCommandResult};
+use crate::report::execute_report_flow;
 use crate::startup::{execute_startup, execute_startup_worker};
 use crate::task::{
     TaskClaimInput, TaskCreateInput, TaskEngine, TaskEngineError, TaskTargetKind,
@@ -156,6 +157,9 @@ pub fn execute_local_intent(
             session_count,
             ..
         } => execute_tmux_loopback(runtime_home, session_count),
+        TeamReq03ValidatedIntent::ReportFlow { runtime_home, .. } => {
+            execute_report_flow(runtime_home)
+        }
     }
 }
 
@@ -427,7 +431,7 @@ fn parse_session_count(value: &str) -> Result<usize, LocalCommandError> {
         })
 }
 
-fn event_log_path(runtime_home: impl AsRef<Path>) -> PathBuf {
+pub(crate) fn event_log_path(runtime_home: impl AsRef<Path>) -> PathBuf {
     runtime_home.as_ref().join("events").join("agentteam.jsonl")
 }
 

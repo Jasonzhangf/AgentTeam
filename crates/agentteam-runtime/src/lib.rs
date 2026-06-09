@@ -2,9 +2,11 @@ mod control;
 pub mod domain;
 pub mod local;
 pub mod local_projection;
+mod local_report_projection;
 mod local_startup_projection;
 #[cfg(test)]
 mod local_tests;
+pub mod report;
 mod startup;
 pub mod task;
 

@@ -90,6 +90,7 @@ agentteam task error --runtime-home target/agentteam-task-smoke --task AT-000001
 agentteam ready report --runtime-home target/agentteam-task-smoke --sender Alice --team default --agent-name Alice --body "ready" --json
 agentteam msg send --runtime-home target/agentteam-task-smoke --from Kevin --to Alice --action message --body "Please review task AT-1" --json
 agentteam msg broadcast --runtime-home target/agentteam-task-smoke --sender Kevin --team default --action broadcast --body "Team sync" --members Alice,Bob --json
+agentteam report flow --runtime-home target/agentteam-task-smoke --json
 AGENTTEAM_CODEX_SDK_SRC=/Users/fanzhang/code/codex/sdk/python/src AGENTTEAM_CODEX_BIN=/opt/homebrew/bin/codex agentteam control headless --agent Kevin --team default --session TA_headless_Kevin --json
 AGENTTEAM_CODEX_SDK_SRC=/Users/fanzhang/code/codex/sdk/python/src AGENTTEAM_CODEX_BIN=/opt/homebrew/bin/codex agentteam control headless-run --agent Kevin --team default --session TA_headless_Kevin --input "reply with exactly: ready" --json
 AGENTTEAM_CODEX_SDK_SRC=/Users/fanzhang/code/codex/sdk/python/src AGENTTEAM_CODEX_BIN=/opt/homebrew/bin/codex agentteam control headless-status --agent Kevin --team default --session TA_headless_Kevin --json
@@ -120,3 +121,14 @@ agentteam debug resources --team default --json
 Do not depend on hidden daemon wire protocol.
 
 Use domain-qualified addresses such as `Alice@review-daemon` for cross-daemon communication. Bare names are local-domain only.
+
+## Report Flow
+
+Use `agentteam report flow --runtime-home <runtime_home> --json` when a manager, worker, or operator needs a workflow report from persisted logs.
+
+Rules:
+
+- The report is read-only and uses `events/agentteam.jsonl` as the only truth source.
+- The output includes ordered `steps`, `ascii_flow`, `mermaid_flow`, `event_count`, and `latest_sequence`.
+- A corrupt log or duplicate event sequence is an explicit report error, not a partial diagram.
+- Use the report after ready/message/task commands to explain the team workflow without reading live tmux/session state.

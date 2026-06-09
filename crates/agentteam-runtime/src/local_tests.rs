@@ -257,6 +257,46 @@ fn local_ready_report_persists_delivery_event() {
 }
 
 #[test]
+fn local_report_flow_projects_event_log_diagram() {
+    let runtime_home = temp_runtime_home("report");
+    let home = runtime_home.display().to_string();
+    execute_local_intent(TeamReq03ValidatedIntent::ReadyReport {
+        runtime_home: home.clone(),
+        sender: "Alice".to_owned(),
+        team_id: "default".to_owned(),
+        agent_name: "Alice".to_owned(),
+        body: "ready".to_owned(),
+        json: true,
+    })
+    .unwrap();
+    execute_local_intent(TeamReq03ValidatedIntent::MsgSend {
+        runtime_home: home.clone(),
+        from: "Kevin".to_owned(),
+        to: "Alice".to_owned(),
+        action: "assign".to_owned(),
+        body: "claim task".to_owned(),
+        json: true,
+    })
+    .unwrap();
+
+    let result = execute_local_intent(TeamReq03ValidatedIntent::ReportFlow {
+        runtime_home: home,
+        json: true,
+    })
+    .unwrap();
+
+    match result {
+        LocalCommandResult::ReportFlow { report } => {
+            assert_eq!(report.event_count, 2);
+            assert_eq!(report.latest_sequence, 2);
+            assert!(report.ascii_flow.contains("[001] Alice -> Team"));
+            assert!(report.mermaid_flow.contains("sequenceDiagram"));
+        }
+        other => panic!("unexpected result {other:?}"),
+    }
+}
+
+#[test]
 fn local_tmux_loopback_rejects_invalid_session_count() {
     let result = execute_local_intent(TeamReq03ValidatedIntent::TmuxLoopback {
         runtime_home: "target/agentteam-tmux-test".to_owned(),

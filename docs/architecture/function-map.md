@@ -23,6 +23,7 @@ The hard gate is `cargo xtask verify-function-map`.
 | `adapter.zterm_tmux` | zterm/tmux Adapter | `TerminalReq*`, `TerminalResp*` | `agentteam-tmux` | runtime shelling out to tmux directly; adapter owning task/status truth | adapter contract tests |
 | `adapter.tui_agent` | TUI Agent Adapter Center | `TuiSignalReq*`, `TuiSignalResp*` | `agentteam-tui-adapter` | stdout-only final status; Codex SDK as universal truth; provider payload in runtime business state | tui adapter red tests |
 | `agent.control_center` | Agent Control Center | `AgentCtlReq*`, `AgentCtlResp*` | `agentteam-control`, `agentteam-tmux`, `agentteam-tui-adapter`, `agentteam-runtime`, `docs/modules/19-*` | tmux adapter owning headless session truth; SDK adapter owning task truth; implicit mode fallback | control unit, attach/headless red tests |
+| `report.flow` | Report Flow | `ReportFlow*` | `agentteam-runtime`, `agentteam-gateway`, `docs/modules/20-*` | live task/session/agent state as report truth; state mutation during report generation; corrupt log partial success | report unit, CLI smoke, function map gate |
 | `startup.session` | Startup Session Manager | `StartupReq*`, `StartupOp*` | `agentteam-startup`, `agentteam-control`, `agentteam-tmux`, `agentteam-resource`, `agentteam-config` | manager as persistence truth; direct tmux execution outside adapter; direct state file write | startup/session red tests |
 | `tanote.board` | TANote Collaboration Board | `TANoteReq*`, `TANoteEvent*`, `TANoteProjection*` | `agentteam-tanote`, `docs/tanote/TANote.md.example` | Task Engine/Comm/agents directly mutating TANote format or treating notes as task truth | TANote format/order/thread red tests |
 | `resource.lifecycle` | Resource Lifecycle Manager | `ResourceReq*`, `ResourceLease*`, `ResourceMetric*`, `ResourceLeak*` | `agentteam-resource`, contracts resource chain | modules creating long-lived resources without leases; broad cleanup; orphan/leak/growth hidden from event log/debug | lifecycle/leak/orphan/growth red tests |
@@ -333,6 +334,7 @@ Every Rust function or method under `crates/` and `xtask/src/` must be listed he
 | `crates::agentteam-gateway::src::input::parse_task_send` | Input Gateway | `gateway.input` | `crates/agentteam-gateway/src/input.rs` | gateway unit, function map gate |
 | `crates::agentteam-gateway::src::input::parse_task_status` | Input Gateway | `gateway.input` | `crates/agentteam-gateway/src/input.rs` | gateway unit, function map gate |
 | `crates::agentteam-gateway::src::input::parse_tmux_loopback` | Input Gateway | `gateway.input` | `crates/agentteam-gateway/src/input.rs` | gateway unit, function map gate |
+| `crates::agentteam-gateway::src::input::parse_report_flow` | Input Gateway | `gateway.input` | `crates/agentteam-gateway/src/input.rs` | gateway unit, function map gate |
 | `crates::agentteam-gateway::src::tests::parses_task_send_intent` | Input Gateway test | `gateway.input` | `crates/agentteam-gateway/src/tests.rs` | cargo test, function map gate |
 | `crates::agentteam-gateway::src::tests::parses_ready_report_intent` | Input Gateway test | `gateway.input` | `crates/agentteam-gateway/src/tests.rs` | cargo test, function map gate |
 | `crates::agentteam-gateway::src::tests::parses_task_claim_intent` | Input Gateway test | `gateway.input` | `crates/agentteam-gateway/src/tests.rs` | cargo test, function map gate |
@@ -340,7 +342,10 @@ Every Rust function or method under `crates/` and `xtask/src/` must be listed he
 | `crates::agentteam-gateway::src::tests::parses_msg_broadcast_intent` | Input Gateway test | `gateway.input` | `crates/agentteam-gateway/src/tests.rs` | cargo test, function map gate |
 | `crates::agentteam-gateway::src::tests::parses_task_status_intent` | Input Gateway test | `gateway.input` | `crates/agentteam-gateway/src/tests.rs` | cargo test, function map gate |
 | `crates::agentteam-gateway::src::tests::parses_tmux_loopback_intent` | Input Gateway test | `gateway.input` | `crates/agentteam-gateway/src/tests.rs` | cargo test, function map gate |
+| `crates::agentteam-gateway::src::report_tests::parses_report_flow_intent` | Input Gateway test | `gateway.input` | `crates/agentteam-gateway/src/report_tests.rs` | cargo test, function map gate |
+| `crates::agentteam-gateway::src::report_tests::strings` | Input Gateway test helper | `gateway.input` | `crates/agentteam-gateway/src/report_tests.rs` | cargo test, function map gate |
 | `crates::agentteam-gateway::src::tests::render_task_result_json_uses_task_command_name` | Output Gateway test | `gateway.output` | `crates/agentteam-gateway/src/tests.rs` | cargo test, function map gate |
+| `crates::agentteam-gateway::src::report_tests::render_report_flow_result_json_uses_report_command_name` | Output Gateway test | `gateway.output` | `crates/agentteam-gateway/src/report_tests.rs` | cargo test, function map gate |
 | `crates::agentteam-gateway::src::tests::render_message_result_json_uses_msg_command_name` | Output Gateway test | `gateway.output` | `crates/agentteam-gateway/src/tests.rs` | cargo test, function map gate |
 | `crates::agentteam-gateway::src::tests::render_broadcast_result_json_uses_msg_command_name` | Output Gateway test | `gateway.output` | `crates/agentteam-gateway/src/tests.rs` | cargo test, function map gate |
 | `crates::agentteam-gateway::src::tests::render_ready_result_json_uses_ready_command_name` | Output Gateway test | `gateway.output` | `crates/agentteam-gateway/src/tests.rs` | cargo test, function map gate |
@@ -710,6 +715,30 @@ Every Rust function or method under `crates/` and `xtask/src/` must be listed he
 | `crates::agentteam-runtime::src::control::execute_control` | Team Orchestrator | `team.orchestration` | `crates/agentteam-runtime/src/control.rs` | runtime unit, function map gate |
 | `crates::agentteam-runtime::src::local_projection::control_result` | Team Orchestrator projection | `team.orchestration` | `crates/agentteam-runtime/src/local_projection.rs` | runtime unit, function map gate |
 | `crates::agentteam-runtime::src::local_tests::local_control_headless_run_requires_input` | Team Orchestrator test | `team.orchestration` | `crates/agentteam-runtime/src/local_tests.rs` | cargo test, function map gate |
+| `crates::agentteam-runtime::src::local_tests::local_report_flow_projects_event_log_diagram` | Report Flow test | `report.flow` | `crates/agentteam-runtime/src/local_tests.rs` | cargo test, function map gate |
+| `crates::agentteam-runtime::src::report::broadcast_step` | Report Flow | `report.flow` | `crates/agentteam-runtime/src/report.rs` | report unit, function map gate |
+| `crates::agentteam-runtime::src::report::build_flow_report` | Report Flow | `report.flow` | `crates/agentteam-runtime/src/report.rs` | report unit, function map gate |
+| `crates::agentteam-runtime::src::report::classify_flow_step` | Report Flow | `report.flow` | `crates/agentteam-runtime/src/report.rs` | report unit, function map gate |
+| `crates::agentteam-runtime::src::report::diagnostic_step` | Report Flow | `report.flow` | `crates/agentteam-runtime/src/report.rs` | report unit, function map gate |
+| `crates::agentteam-runtime::src::report::event` | Report Flow test helper | `report.flow` | `crates/agentteam-runtime/src/report.rs` | cargo test, function map gate |
+| `crates::agentteam-runtime::src::report::execute_report_flow` | Report Flow | `report.flow` | `crates/agentteam-runtime/src/report.rs` | report unit, function map gate |
+| `crates::agentteam-runtime::src::report::flow_step` | Report Flow | `report.flow` | `crates/agentteam-runtime/src/report.rs` | report unit, function map gate |
+| `crates::agentteam-runtime::src::report::generic_step` | Report Flow | `report.flow` | `crates/agentteam-runtime/src/report.rs` | report unit, function map gate |
+| `crates::agentteam-runtime::src::report::invalid_payload_is_report_error` | Report Flow test | `report.flow` | `crates/agentteam-runtime/src/report.rs` | cargo test, function map gate |
+| `crates::agentteam-runtime::src::report::mermaid_actor_id` | Report Flow | `report.flow` | `crates/agentteam-runtime/src/report.rs` | report unit, function map gate |
+| `crates::agentteam-runtime::src::report::mermaid_escape` | Report Flow | `report.flow` | `crates/agentteam-runtime/src/report.rs` | report unit, function map gate |
+| `crates::agentteam-runtime::src::report::message_step` | Report Flow | `report.flow` | `crates/agentteam-runtime/src/report.rs` | report unit, function map gate |
+| `crates::agentteam-runtime::src::report::parse_payload` | Report Flow | `report.flow` | `crates/agentteam-runtime/src/report.rs` | report unit, function map gate |
+| `crates::agentteam-runtime::src::report::payload_value` | Report Flow | `report.flow` | `crates/agentteam-runtime/src/report.rs` | report unit, function map gate |
+| `crates::agentteam-runtime::src::report::ready_step` | Report Flow | `report.flow` | `crates/agentteam-runtime/src/report.rs` | report unit, function map gate |
+| `crates::agentteam-runtime::src::report::render_ascii_flow` | Report Flow | `report.flow` | `crates/agentteam-runtime/src/report.rs` | report unit, function map gate |
+| `crates::agentteam-runtime::src::report::render_mermaid_flow` | Report Flow | `report.flow` | `crates/agentteam-runtime/src/report.rs` | report unit, function map gate |
+| `crates::agentteam-runtime::src::report::report_persistence_error` | Report Flow | `report.flow` | `crates/agentteam-runtime/src/report.rs` | report unit, function map gate |
+| `crates::agentteam-runtime::src::report::report_renders_ready_message_and_task_flow` | Report Flow test | `report.flow` | `crates/agentteam-runtime/src/report.rs` | cargo test, function map gate |
+| `crates::agentteam-runtime::src::report::resource_step` | Report Flow | `report.flow` | `crates/agentteam-runtime/src/report.rs` | report unit, function map gate |
+| `crates::agentteam-runtime::src::report::task_step` | Report Flow | `report.flow` | `crates/agentteam-runtime/src/report.rs` | report unit, function map gate |
+| `crates::agentteam-runtime::src::report::unique_actors` | Report Flow | `report.flow` | `crates/agentteam-runtime/src/report.rs` | report unit, function map gate |
+| `crates::agentteam-runtime::src::report::unknown_event_is_explicit_generic_step` | Report Flow test | `report.flow` | `crates/agentteam-runtime/src/report.rs` | cargo test, function map gate |
 | `crates::agentteam-tmux::src::control::capture_session` | zterm/tmux Adapter | `adapter.zterm_tmux` | `crates/agentteam-tmux/src/control.rs` | adapter unit, function map gate |
 | `crates::agentteam-tmux::src::control::interrupt_session` | zterm/tmux Adapter | `adapter.zterm_tmux` | `crates/agentteam-tmux/src/control.rs` | adapter unit, function map gate |
 | `crates::agentteam-tmux::src::control::send_input` | zterm/tmux Adapter | `adapter.zterm_tmux` | `crates/agentteam-tmux/src/control.rs` | adapter unit, function map gate |

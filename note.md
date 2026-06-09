@@ -198,3 +198,9 @@
 - Added `concurrent_append_preserves_unique_sequence` with 16 concurrent Rust threads and `red.persist.concurrent_append_sequence` docs/gate coverage.
 - Real CLI smoke after rebuilding `target/debug/agentteam`: 20 parallel `ready report` commands wrote `/Users/fanzhang/code/playground/agentteam-persist-concurrent-smoke-20260609162304/events/agentteam.jsonl`; result `line_count=20`, `unique_count=20`, `max_sequence=20`, `error_count=0`, sequences `1..20`.
 - Verification passed: `cargo fmt --check`, `cargo clippy --workspace --all-targets -- -D warnings`, `cargo test -p agentteam-persist`, `cargo test --workspace`, `cargo xtask verify-function-map`, `cargo xtask red-tests`, `cargo xtask verify-code-size`, `cargo xtask verify`.
+
+2026-06-09 report flow slice start:
+- User requirement: persisted logs must be sufficient to draw a workflow diagram/report.
+- Chosen truth boundary: report generation is a read-only projection from `events/agentteam.jsonl`; it must not read live task/session/agent state, write files, start tmux, or mutate resources.
+- Real workflow log `/Users/fanzhang/code/playground/agentteam-workflow-20260609-03/events/agentteam.jsonl` contains enough sender/target/task/status payload fields to render ready/message/task edges from event log only.
+- Historical E2E log `/Users/fanzhang/code/playground/agentteam-e2e-tui-20260609-01/runtime/events/agentteam.jsonl` still contains duplicate sequence evidence from the old persistence bug; report flow must surface replay corruption explicitly through Persistence instead of drawing a best-effort diagram.

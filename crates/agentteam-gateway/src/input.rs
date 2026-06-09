@@ -45,6 +45,9 @@ fn parse_cli_raw(raw: TeamReq01CliRaw) -> GatewayResult<TeamReq02ParsedCommand> 
         [area, action, rest @ ..] if area == "tmux" && action == "loopback" => {
             parse_tmux_loopback(rest)
         }
+        [area, action, rest @ ..] if area == "report" && action == "flow" => {
+            parse_report_flow(rest)
+        }
         [] => Err(GatewayError::parse("command is required")),
         [area, action, ..] => Err(GatewayError::parse(format!(
             "unsupported command {area} {action}"
@@ -60,6 +63,14 @@ fn parse_tmux_loopback(args: &[String]) -> GatewayResult<TeamReq02ParsedCommand>
     Ok(TeamReq02ParsedCommand::TmuxLoopback {
         runtime_home: option_value(&options, "--runtime-home"),
         session_count: option_value(&options, "--session-count"),
+        json: options.json,
+    })
+}
+
+fn parse_report_flow(args: &[String]) -> GatewayResult<TeamReq02ParsedCommand> {
+    let options = parse_options(args, &["--runtime-home"], &["--json"])?;
+    Ok(TeamReq02ParsedCommand::ReportFlow {
+        runtime_home: option_value(&options, "--runtime-home"),
         json: options.json,
     })
 }

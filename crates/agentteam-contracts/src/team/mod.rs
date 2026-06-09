@@ -132,6 +132,10 @@ pub enum TeamReq02ParsedCommand {
         session_count: Option<String>,
         json: bool,
     },
+    ReportFlow {
+        runtime_home: Option<String>,
+        json: bool,
+    },
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize)]
@@ -249,6 +253,10 @@ pub enum TeamReq03ValidatedIntent {
         session_count: String,
         json: bool,
     },
+    ReportFlow {
+        runtime_home: String,
+        json: bool,
+    },
 }
 
 impl TeamReq03ValidatedIntent {
@@ -273,6 +281,7 @@ impl TeamReq03ValidatedIntent {
             Self::MsgBroadcast { .. } => "msg.broadcast",
             Self::Control { .. } => "control",
             Self::TmuxLoopback { .. } => "tmux.loopback",
+            Self::ReportFlow { .. } => "report.flow",
         }
     }
 }
@@ -322,6 +331,11 @@ mod tests {
             json: true,
         };
         assert_eq!(intent.command_name(), "task.claim");
+        let intent = TeamReq03ValidatedIntent::ReportFlow {
+            runtime_home: "target/agentteam-smoke".to_owned(),
+            json: true,
+        };
+        assert_eq!(intent.command_name(), "report.flow");
         let intent = TeamReq03ValidatedIntent::MsgSend {
             runtime_home: "target/agentteam-smoke".to_owned(),
             from: "Kevin".to_owned(),

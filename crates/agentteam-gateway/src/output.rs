@@ -109,6 +109,7 @@ fn local_result_command_name(result: &LocalCommandResult) -> String {
         LocalCommandResult::BroadcastSend { .. } => "msg.broadcast".to_owned(),
         LocalCommandResult::ReadyReport { .. } => "ready.report".to_owned(),
         LocalCommandResult::TmuxLoopback { .. } => "tmux.loopback".to_owned(),
+        LocalCommandResult::ReportFlow { .. } => "report.flow".to_owned(),
     }
 }
 
@@ -122,6 +123,7 @@ fn local_error_class(error: &LocalCommandError) -> &'static str {
         LocalCommandError::Task { .. } => "task",
         LocalCommandError::Comm { .. } => "comm",
         LocalCommandError::Tmux { .. } => "tmux",
+        LocalCommandError::Report { .. } => "report",
     }
 }
 
@@ -134,6 +136,7 @@ fn local_error_reason(error: &LocalCommandError) -> String {
         | LocalCommandError::Control { reason }
         | LocalCommandError::Task { reason }
         | LocalCommandError::Comm { reason }
-        | LocalCommandError::Tmux { reason } => reason.clone(),
+        | LocalCommandError::Tmux { reason }
+        | LocalCommandError::Report { reason } => reason.clone(),
     }
 }

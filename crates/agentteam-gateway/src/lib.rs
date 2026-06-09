@@ -6,6 +6,8 @@ mod model;
 mod options;
 mod output;
 #[cfg(test)]
+mod report_tests;
+#[cfg(test)]
 mod tests;
 mod validate;
 

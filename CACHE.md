@@ -1,32 +1,30 @@
 # CACHE
 
 2026-06-09 current focus:
-- `main` is ahead of `origin/main` by 3 commits:
-  - `9db89c2 feat(control): add agent control startup bridge`
-  - `4797825 feat(startup): install skills and bind sdk status`
-  - `56b37aa fix(persist): serialize event appends`
-- Startup/install truth:
-  - `agentteam start` and `start worker` install `.agents/skills/agentteam/SKILL.md` into target cwd before prompt seeding.
-  - Startup exposes `skill_install_status`, `skill_path`, and absolute `cli_path`.
-  - Prompts/env inject `AGENTTEAM_CLI` and `AGENTTEAM_SKILL_PATH`.
-- Attach TUI status truth:
-  - `control status --cwd <cwd> --project <slug>` requires existing persisted Codex thread binding.
-  - Missing SDK binding/status is explicit error, not stdout/tmux downgrade.
-  - Without SDK scope, status says `sdk_status=not_requested` and is tmux-only evidence.
-  - `send`/`pause`/`stop` remain transport-action projections; submitted-work evidence still needs post-submit observe/capture.
-- Persistence truth:
-  - `agentteam-persist::append_event_log` serializes same-log append with exclusive file lock before sequence assignment.
-  - Real 20-process `ready report` smoke produced contiguous unique sequences 1-20 with no errors.
-- Verified gates after latest slices:
+- Implemented `report.flow`: `agentteam report flow --runtime-home <runtime_home> --json`.
+- Truth boundary: report is read-only and uses only `<runtime_home>/events/agentteam.jsonl`; it does not read live task/session/agent state, write files, start tmux, or mutate resources.
+- Output includes `event_count`, `latest_sequence`, `unknown_event_count`, ordered `steps`, `ascii_flow`, and `mermaid_flow`.
+- Corrupt/duplicate-sequence logs fail explicitly through Persistence replay. Verified old duplicate log returned `class=report`, `reason="event sequence mismatch: expected 7, got 6"`.
+- Real smoke passed on `/Users/fanzhang/code/playground/agentteam-workflow-20260609-03`: 5 events rendered to ASCII/Mermaid, `unknown_event_count=0`.
+- Docs/skills updated:
+  - `docs/modules/20-report-flow.md`
+  - `docs/usage/agentteam-usage.md`
+  - `.agents/skills/agentteam/SKILL.md`
+  - function map, verification map, red-test plan, file structure.
+- Verified gates passed:
   - `cargo fmt --check`
   - `cargo clippy --workspace --all-targets -- -D warnings`
   - `cargo test --workspace`
+  - `cargo xtask red-tests`
+  - `cargo xtask verify-required-files`
+  - `cargo xtask verify-skill-frontmatter`
+  - `cargo xtask verify-resource-lifecycle`
+  - `cargo xtask verify-function-map`
+  - `cargo xtask verify-code-size`
   - `cargo xtask verify`
-  - plus targeted function-map/red-test/code-size and persistence concurrency smokes.
-- Runtime cleanup:
-  - Non-reusable TA smoke/probe/E2E sessions were cleaned by exact `tmux kill-session -t <name>` after user authorization.
-  - Only reusable `TA_local_agentteam_Kevin` remains.
-  - `ps` audit found no `headless_bridge.py` processes.
+- Runtime state:
+  - No tmux/session cleanup was performed in this slice.
+  - Reusable `TA_local_agentteam_Kevin` should remain untouched unless user explicitly exits/authorizes cleanup.
 - Next likely step:
-  - Push ahead commits if requested/continuing release flow.
-  - Then build next E2E around reusable Kevin plus fresh worker sessions using installed skill and SDK-backed status.
+  - Commit and push `report.flow`.
+  - Then use `report flow` as the report artifact in the next multi-agent E2E workflow.

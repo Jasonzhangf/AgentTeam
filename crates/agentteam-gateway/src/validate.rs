@@ -256,6 +256,13 @@ pub(crate) fn validate_intent(
                 json,
             })
         }
+        TeamReq02ParsedCommand::ReportFlow { runtime_home, json } => {
+            require_json(json)?;
+            Ok(TeamReq03ValidatedIntent::ReportFlow {
+                runtime_home: require_value(runtime_home, "--runtime-home")?,
+                json,
+            })
+        }
     }
 }
 

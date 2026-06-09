@@ -10,6 +10,7 @@ use serde::Serialize;
 use crate::domain::{
     DomainRegistrySnapshot, DomainRouteKind, DomainTargetKind, ResolvedDomainTarget,
 };
+pub use crate::local_report_projection::{FlowReportResult, FlowReportStepResult};
 pub use crate::local_startup_projection::{StartupStartResult, StartupWorkerResult};
 use crate::task::{TaskBoard, TaskStateChanged};
 
@@ -23,6 +24,7 @@ pub enum LocalCommandError {
     Task { reason: String },
     Comm { reason: String },
     Tmux { reason: String },
+    Report { reason: String },
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize)]
@@ -79,6 +81,9 @@ pub enum LocalCommandResult {
     },
     TmuxLoopback {
         loopback: TmuxLoopbackResult,
+    },
+    ReportFlow {
+        report: FlowReportResult,
     },
 }
 

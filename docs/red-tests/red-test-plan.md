@@ -66,6 +66,9 @@ Red tests prove forbidden architecture behavior stays forbidden.
 | `red.agent.stop_not_propagated` | stop request does not reach active control session | control red test fails |
 | `red.agent.retry_without_error_fact` | retry dispatch happens without a persisted error fact | control/error red test fails |
 | `red.agent.session_state_leak` | control-plane snapshot exposes private session internals to agent-facing output | control/debug red test fails |
+| `red.report.live_state_source` | Report Flow reads live task/session/agent state instead of persisted event log | report/architecture gate fails |
+| `red.report.mutates_state` | Report Flow appends events or writes files while generating a report | report/persistence-owner gate fails |
+| `red.report.corrupt_log_success` | Report Flow renders a partial diagram from corrupt or duplicate-sequence logs as success | report unit test fails |
 | `red.startup.manager_persistence_truth` | configured root manager writes/owns durable state directly | startup/persistence red test fails |
 | `red.startup.direct_tmux` | Startup Manager calls tmux directly instead of adapter | startup/adapter red test fails |
 | `red.startup.no_reply_forced_error` | A live manager session with no immediate semantic reply is forced to `error` instead of staying `busy`/pending | startup/status red test fails |

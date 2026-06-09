@@ -134,6 +134,7 @@ cargo run --manifest-path <repo>/Cargo.toml -p agentteam-cli -- task send --runt
 cargo run --manifest-path <repo>/Cargo.toml -p agentteam-cli -- task claim --runtime-home ~/code/playground/agentteam-e2e --worker-name Alice --worker-role builder --json
 cargo run --manifest-path <repo>/Cargo.toml -p agentteam-cli -- task done --runtime-home ~/code/playground/agentteam-e2e --task AT-000001 --actor Alice --detail done --json
 cargo run --manifest-path <repo>/Cargo.toml -p agentteam-cli -- task error --runtime-home ~/code/playground/agentteam-e2e --task AT-000002 --actor Alice --detail failed --json
+cargo run --manifest-path <repo>/Cargo.toml -p agentteam-cli -- report flow --runtime-home ~/code/playground/agentteam-e2e --json
 cargo run --manifest-path <repo>/Cargo.toml -p agentteam-cli -- tmux loopback --runtime-home ~/code/playground/agentteam-tmux-e2e --session-count 2 --json
 ```
 
@@ -185,6 +186,7 @@ cargo run --manifest-path <repo>/Cargo.toml -p agentteam-cli -- task send --runt
 cargo run --manifest-path <repo>/Cargo.toml -p agentteam-cli -- task claim --runtime-home ~/code/playground/agentteam-workflow --worker-name Alice --worker-role builder --json
 (cd ~/code/playground && cargo run --manifest-path <repo>/Cargo.toml -p agentteam-cli -- control headless-run --agent Alice --team default --session TA_headless_Alice_workflow --input "You are Alice, role builder. Run this command to finish your claimed task: <repo>/target/debug/agentteam task done --runtime-home ~/code/playground/agentteam-workflow --task AT-000001 --actor Alice --detail done --json. Then reply with a one-line summary." --json)
 cargo run --manifest-path <repo>/Cargo.toml -p agentteam-cli -- task status --runtime-home ~/code/playground/agentteam-workflow --task AT-000001 --json
+cargo run --manifest-path <repo>/Cargo.toml -p agentteam-cli -- report flow --runtime-home ~/code/playground/agentteam-workflow --json
 (cd ~/code/playground && cargo run --manifest-path <repo>/Cargo.toml -p agentteam-cli -- control headless-stop --agent Alice --team default --session TA_headless_Alice_workflow --json)
 ```
 
@@ -195,6 +197,25 @@ Expected evidence:
 - ready/message/task commands return persisted event ids and sequences
 - `control headless-run` returns a control projection with SDK mode and captured details
 - final `task status` returns one task with status `done`
+- `report flow` returns `ascii_flow` and `mermaid_flow` rendered from the persisted event log
+
+## Flow Report
+
+Use this command to generate a report from logs only:
+
+```text
+cargo run --manifest-path <repo>/Cargo.toml -p agentteam-cli -- report flow --runtime-home ~/code/playground/agentteam-workflow --json
+```
+
+The projection contains:
+
+- `event_count`
+- `latest_sequence`
+- ordered `steps`
+- `ascii_flow`
+- `mermaid_flow`
+
+Report Flow never reads live task/session/agent state. If `events/agentteam.jsonl` is corrupt or contains a duplicate sequence, the command returns an explicit `report` error instead of drawing a partial diagram.
 
 ## Manager Workflow
 
@@ -240,9 +261,9 @@ Workers must not:
 
 | Role | Primary docs | Typical commands |
 |---|---|---|
-| Manager, sample name `Kevin` | `agentteam`, `13-cli-agent-skill`, `15-startup-session-manager`, `03-communication-center`, `09-task-engine` | `ready report`, `msg send`, `msg broadcast`, `task send`, `task claim`, `task status`, `debug snapshot` |
+| Manager, sample name `Kevin` | `agentteam`, `13-cli-agent-skill`, `15-startup-session-manager`, `03-communication-center`, `09-task-engine` | `ready report`, `msg send`, `msg broadcast`, `task send`, `task claim`, `task status`, `report flow`, `debug snapshot` |
 | Worker | `agentteam`, `13-cli-agent-skill`, `07-agent-registry-naming-pool`, `09-task-engine`, `16-tanote-collaboration-board` | `ready report`, `task claim`, `task done`, `task error`, `note post`, `task status` |
-| Operator | `agentteam`, `agentteam-dev`, `verification-map`, `red-test-plan` | `cargo xtask verify`, `cargo test --workspace`, `cargo xtask red-tests` |
+| Operator | `agentteam`, `agentteam-dev`, `verification-map`, `red-test-plan` | `report flow`, `cargo xtask verify`, `cargo test --workspace`, `cargo xtask red-tests` |
 
 ## Current E2E Smoke Sequence
 
@@ -257,7 +278,8 @@ This is the current verified local smoke sequence:
 7. `task done`
 8. `task error`
 9. `task status`
-10. `tmux loopback`
+10. `report flow`
+11. `tmux loopback`
 
 Expected evidence:
 

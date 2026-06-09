@@ -51,6 +51,7 @@ agentteam/
       17-resource-lifecycle-manager.md
       18-daemon-domain-registry.md
       19-agent-control-center.md
+      20-report-flow.md
     tanote/
       TANote.md.example
     red-tests/
