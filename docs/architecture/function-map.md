@@ -163,8 +163,12 @@ Every Rust function or method under `crates/` and `xtask/src/` must be listed he
 | `crates::agentteam-persist::src::append::encode_record` | Persistence | `persist.event_log` | `crates/agentteam-persist/src/append.rs` | persist unit, function map gate |
 | `crates::agentteam-persist::src::append::ensure_parent_dir` | Persistence | `persist.event_log` | `crates/agentteam-persist/src/append.rs` | persist unit, function map gate |
 | `crates::agentteam-persist::src::append::io_error` | Persistence | `persist.event_log` | `crates/agentteam-persist/src/append.rs` | persist unit, function map gate |
-| `crates::agentteam-persist::src::append::next_sequence` | Persistence | `persist.event_log` | `crates/agentteam-persist/src/append.rs` | persist unit, function map gate |
+| `crates::agentteam-persist::src::append::locked_next_sequence` | Persistence | `persist.event_log` | `crates/agentteam-persist/src/append.rs` | persist unit, function map gate |
+| `crates::agentteam-persist::src::append::next_sequence_after` | Persistence | `persist.event_log` | `crates/agentteam-persist/src/append.rs` | persist unit, function map gate |
+| `crates::agentteam-persist::src::append::next_sequence_from_locked_content` | Persistence | `persist.event_log` | `crates/agentteam-persist/src/append.rs` | persist unit, function map gate |
+| `crates::agentteam-persist::src::append::open_locked_append_file` | Persistence | `persist.event_log` | `crates/agentteam-persist/src/append.rs` | persist unit, function map gate |
 | `crates::agentteam-persist::src::append::validate_draft` | Persistence | `persist.event_log` | `crates/agentteam-persist/src/append.rs` | persist unit, function map gate |
+| `crates::agentteam-persist::src::append::write_locked_record` | Persistence | `persist.event_log` | `crates/agentteam-persist/src/append.rs` | persist unit, function map gate |
 | `crates::agentteam-persist::src::error::PersistenceError::reason` | Persistence | `persist.event_log` | `crates/agentteam-persist/src/error.rs` | persist unit, function map gate |
 | `crates::agentteam-persist::src::materialize::materialize_event_log` | Persistence | `persist.event_log` | `crates/agentteam-persist/src/materialize.rs` | persist unit, function map gate |
 | `crates::agentteam-persist::src::materialize::snapshot_id_for_sequence` | Persistence | `persist.event_log` | `crates/agentteam-persist/src/materialize.rs` | persist unit, function map gate |
@@ -173,6 +177,7 @@ Every Rust function or method under `crates/` and `xtask/src/` must be listed he
 | `crates::agentteam-persist::src::replay::replay_event_log` | Persistence | `persist.event_log` | `crates/agentteam-persist/src/replay.rs` | persist unit, function map gate |
 | `crates::agentteam-persist::src::replay::validate_record_sequence` | Persistence | `persist.event_log` | `crates/agentteam-persist/src/replay.rs` | persist unit, function map gate |
 | `crates::agentteam-persist::src::tests::append_returns_receipt` | Persistence test | `persist.event_log` | `crates/agentteam-persist/src/tests.rs` | cargo test, function map gate |
+| `crates::agentteam-persist::src::tests::concurrent_append_preserves_unique_sequence` | Persistence test | `persist.event_log` | `crates/agentteam-persist/src/tests.rs` | cargo test, function map gate |
 | `crates::agentteam-persist::src::tests::corrupt_record_fails_explicitly` | Persistence test | `persist.event_log` | `crates/agentteam-persist/src/tests.rs` | cargo test, function map gate |
 | `crates::agentteam-persist::src::tests::draft` | Persistence test helper | `persist.event_log` | `crates/agentteam-persist/src/tests.rs` | cargo test, function map gate |
 | `crates::agentteam-persist::src::tests::empty_draft_fails_validation` | Persistence test | `persist.event_log` | `crates/agentteam-persist/src/tests.rs` | cargo test, function map gate |

@@ -41,7 +41,7 @@ pub fn replay_event_log(
     })
 }
 
-fn validate_record_sequence(
+pub(crate) fn validate_record_sequence(
     path: &Path,
     line_number: usize,
     record: &PersistedEventRecord,
@@ -61,7 +61,7 @@ fn validate_record_sequence(
     }
 }
 
-fn parse_record(
+pub(crate) fn parse_record(
     path: &Path,
     line_number: usize,
     line: &str,

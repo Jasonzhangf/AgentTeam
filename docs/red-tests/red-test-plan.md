@@ -31,6 +31,7 @@ Red tests prove forbidden architecture behavior stays forbidden.
 | `red.debug.not_persisted` | Debug bundle/evidence is rendered without persisted bundle/evidence receipt | debug/persistence red test fails |
 | `red.debug.print_only` | Debug capture supports print-only or no-save mode in v1 | debug red test fails |
 | `red.persist.direct_state_write` | Non-persistence crate writes state file | architecture gate fails |
+| `red.persist.concurrent_append_sequence` | Concurrent append assigns duplicate or non-monotonic event sequence numbers | persistence/concurrency red test fails |
 | `red.comm.payload_crop` | Message/task text cropped or semantically rewritten | comm contract test fails |
 | `red.comm.unauthorized_sender` | Agent performs manager/worker action without capability | comm/registry red test fails |
 | `red.comm.claim_without_task_engine` | Communication Center decides task claim result itself | architecture gate fails |

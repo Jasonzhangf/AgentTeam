@@ -1,5 +1,6 @@
 use std::fs;
 use std::path::PathBuf;
+use std::thread;
 use std::time::{SystemTime, UNIX_EPOCH};
 
 use crate::*;
@@ -49,6 +50,28 @@ fn replay_from_sequence_filters_older_events() {
     let replayed = replay_event_log(&path, 2).unwrap();
     assert_eq!(replayed.events.len(), 1);
     assert_eq!(replayed.events[0].sequence, 2);
+}
+
+#[test]
+fn concurrent_append_preserves_unique_sequence() {
+    let path = temp_log_path("concurrent-append");
+    let handles: Vec<_> = (0..16)
+        .map(|index| {
+            let path = path.clone();
+            thread::spawn(move || append_event_log(path, draft(&format!("event-{index}"))))
+        })
+        .collect();
+
+    let mut sequences = Vec::new();
+    for handle in handles {
+        let receipt = handle.join().unwrap().unwrap();
+        sequences.push(receipt.sequence);
+    }
+    sequences.sort_unstable();
+    assert_eq!(sequences, (1..=16).collect::<Vec<_>>());
+    let replayed = replay_event_log(&path, 0).unwrap();
+    assert_eq!(replayed.events.len(), 16);
+    assert_eq!(replayed.events[15].sequence, 16);
 }
 
 #[test]

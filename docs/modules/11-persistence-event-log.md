@@ -76,6 +76,7 @@ No module writes state files directly.
 ## Required Behavior
 
 - Append event atomically.
+- Serialize concurrent append for the same event log before reading latest sequence and writing the next record.
 - Return append receipt.
 - Replay from zero.
 - Rebuild materialized state.
@@ -128,6 +129,7 @@ Rules:
 - Corrupt event record fails loudly.
 - Replay mismatch fails.
 - Append without receipt fails.
+- Concurrent append that creates duplicate or non-monotonic sequence fails.
 - `TANote.md` projection without prior note event fails.
 - Resource release/leak/orphan projection without prior lifecycle event fails.
 - Debug bundle projection without prior persisted debug event fails.

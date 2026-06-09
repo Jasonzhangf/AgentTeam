@@ -45,6 +45,7 @@ fn require_plan_entries() -> Result<(), String> {
         "red.domain.comm_parses_domain_directly",
         "red.config.parse_outside_config_center",
         "red.persist.direct_state_write",
+        "red.persist.concurrent_append_sequence",
         "red.gateway.non_adjacent_conversion",
         "red.cli.broad_kill_doc",
         "red.agent.exposes_tmux_session",
