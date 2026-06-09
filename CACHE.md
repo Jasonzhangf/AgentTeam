@@ -1,40 +1,32 @@
 # CACHE
 
 2026-06-09 current focus:
-- Agent Control Center has persistent Codex SDK headless bridge wired through CLI:
-  - `control headless`
-  - `control headless-run`
-  - `control headless-status`
-  - `control headless-interrupt`
-  - `control headless-stop`
-- Required env:
-  - `AGENTTEAM_CODEX_SDK_SRC=/Users/fanzhang/code/codex/sdk/python/src`
-  - `AGENTTEAM_CODEX_BIN=/opt/homebrew/bin/codex`
-- Headless create/control/recover verified on `TA_headless_create_recover_offline_20260609`:
-  - `headless-run` returned `details=ready`
-  - scoped `headless-stop` returned `state=offline`
-  - stopped PID 17280 was gone by exact `ps -p`
-  - recovery used new PID 18524 with same persisted `thread_id=019eaaae-9013-76c0-805c-b9ae0c60c8ad`
-- Minimal sample manager/Alice workflow verified under `/Users/fanzhang/code/playground/agentteam-workflow-20260609-03`:
-  - ready report seq 1
-  - configured manager -> Alice message seq 2
-  - task_created seq 3
-  - task_claimed seq 4
-  - Alice headless turn ran CLI completion and returned `workflow-result: AT-000001 done by Alice, status ok.`
-  - task_done seq 5
-  - final `task.status=done`
-  - scoped `headless-stop=offline`
-- Important sandbox rule: if headless worker writes runtime state under `~/code/playground`, run the control command from `~/code/playground`; repo cwd causes Codex SDK workspace-write to reject writes with `Operation not permitted`.
-- Gates passed after this slice:
+- `main` is ahead of `origin/main` by 3 commits:
+  - `9db89c2 feat(control): add agent control startup bridge`
+  - `4797825 feat(startup): install skills and bind sdk status`
+  - `56b37aa fix(persist): serialize event appends`
+- Startup/install truth:
+  - `agentteam start` and `start worker` install `.agents/skills/agentteam/SKILL.md` into target cwd before prompt seeding.
+  - Startup exposes `skill_install_status`, `skill_path`, and absolute `cli_path`.
+  - Prompts/env inject `AGENTTEAM_CLI` and `AGENTTEAM_SKILL_PATH`.
+- Attach TUI status truth:
+  - `control status --cwd <cwd> --project <slug>` requires existing persisted Codex thread binding.
+  - Missing SDK binding/status is explicit error, not stdout/tmux downgrade.
+  - Without SDK scope, status says `sdk_status=not_requested` and is tmux-only evidence.
+  - `send`/`pause`/`stop` remain transport-action projections; submitted-work evidence still needs post-submit observe/capture.
+- Persistence truth:
+  - `agentteam-persist::append_event_log` serializes same-log append with exclusive file lock before sequence assignment.
+  - Real 20-process `ready report` smoke produced contiguous unique sequences 1-20 with no errors.
+- Verified gates after latest slices:
   - `cargo fmt --check`
   - `cargo clippy --workspace --all-targets -- -D warnings`
   - `cargo test --workspace`
-  - `cargo xtask red-tests`
-  - `cargo xtask verify-required-files`
-  - `cargo xtask verify-skill-frontmatter`
-  - `cargo xtask verify-resource-lifecycle`
-  - `cargo xtask verify-function-map`
-  - `cargo xtask verify-code-size`
   - `cargo xtask verify`
-- Exact process audit after smokes found no `headless_bridge.py` processes.
-- Current naming correction: `Kevin` is data only as the sample configured manager name; code/feature/red-test/schema concepts must use neutral manager/root-manager/configured-agent names. `cargo xtask red-tests` now scans this boundary.
+  - plus targeted function-map/red-test/code-size and persistence concurrency smokes.
+- Runtime cleanup:
+  - Non-reusable TA smoke/probe/E2E sessions were cleaned by exact `tmux kill-session -t <name>` after user authorization.
+  - Only reusable `TA_local_agentteam_Kevin` remains.
+  - `ps` audit found no `headless_bridge.py` processes.
+- Next likely step:
+  - Push ahead commits if requested/continuing release flow.
+  - Then build next E2E around reusable Kevin plus fresh worker sessions using installed skill and SDK-backed status.
