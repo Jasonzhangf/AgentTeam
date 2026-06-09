@@ -16,7 +16,9 @@ name = "agentteam-comm"
 version = "0.1.0"
 dependencies = [
  "agentteam-contracts",
+ "agentteam-persist",
  "serde",
+ "serde_json",
 ]
 
 [[package]]
@@ -33,6 +35,16 @@ name = "agentteam-contracts"
 version = "0.1.0"
 dependencies = [
  "serde",
+]
+
+[[package]]
+name = "agentteam-control"
+version = "0.1.0"
+dependencies = [
+ "agentteam-contracts",
+ "agentteam-tmux",
+ "serde",
+ "serde_json",
 ]
 
 [[package]]
@@ -89,11 +101,14 @@ dependencies = [
 name = "agentteam-runtime"
 version = "0.1.0"
 dependencies = [
+ "agentteam-comm",
  "agentteam-config",
  "agentteam-contracts",
+ "agentteam-control",
  "agentteam-debug",
  "agentteam-persist",
  "agentteam-resource",
+ "agentteam-startup",
  "agentteam-tmux",
  "serde",
  "serde_json",
@@ -103,7 +118,12 @@ dependencies = [
 name = "agentteam-startup"
 version = "0.1.0"
 dependencies = [
+ "agentteam-config",
  "agentteam-contracts",
+ "agentteam-control",
+ "agentteam-resource",
+ "agentteam-tmux",
+ "serde",
 ]
 
 [[package]]

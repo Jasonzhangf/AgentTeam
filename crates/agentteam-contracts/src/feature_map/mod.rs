@@ -15,6 +15,7 @@ pub const REQUIRED_FEATURE_IDS: &[&str] = &[
     "persist.event_log",
     "adapter.zterm_tmux",
     "adapter.tui_agent",
+    "agent.control_center",
     "startup.session",
     "tanote.board",
     "resource.lifecycle",

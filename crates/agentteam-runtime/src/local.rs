@@ -1,5 +1,9 @@
 use std::path::{Path, PathBuf};
 
+use agentteam_comm::{
+    send_broadcast, send_message, send_ready_report, CommCenterError, CommReadyReportRequest,
+    CommRouteRequest, CommTeamBroadcastRequest,
+};
 use agentteam_config::{
     check_config_path, normalize_config, validate_config_path, ConfigCenterError,
     RemoteDaemonConfig, UserConfig,
@@ -9,12 +13,15 @@ use agentteam_debug::{capture_debug_bundle, DebugBundleInput, DebugError};
 use agentteam_resource::ResourceRegistry;
 use agentteam_tmux::{run_tmux_loopback, TmuxAdapterError, TmuxLoopbackInput};
 
+use crate::control::execute_control;
 use crate::domain::{registered_domain, DomainEndpoint, DomainRegistry, DomainRegistryError};
 use crate::local_projection::{
-    config_result, daemon_check_result, debug_bundle_result, domain_snapshot_result,
-    resolved_domain_result, task_board_result, task_changed_result, tmux_loopback_result,
+    broadcast_send_result, config_result, daemon_check_result, debug_bundle_result,
+    domain_snapshot_result, message_send_result, ready_report_result, resolved_domain_result,
+    task_board_result, task_changed_result, tmux_loopback_result,
 };
 pub use crate::local_projection::{LocalCommandError, LocalCommandResult};
+use crate::startup::{execute_startup, execute_startup_worker};
 use crate::task::{
     TaskClaimInput, TaskCreateInput, TaskEngine, TaskEngineError, TaskTargetKind,
     TaskTransitionInput,
@@ -40,6 +47,54 @@ pub fn execute_local_intent(
             runtime_home,
             ..
         } => execute_debug_snapshot(config_path, runtime_home),
+        TeamReq03ValidatedIntent::Startup {
+            cwd,
+            config_path,
+            team_id,
+            ..
+        } => execute_startup(cwd, config_path, team_id),
+        TeamReq03ValidatedIntent::StartupWorker {
+            agent_name,
+            cwd,
+            config_path,
+            team_id,
+            ..
+        } => execute_startup_worker(agent_name, cwd, config_path, team_id),
+        TeamReq03ValidatedIntent::ReadyReport {
+            runtime_home,
+            sender,
+            team_id,
+            agent_name,
+            body,
+            ..
+        } => execute_ready_report(runtime_home, sender, team_id, agent_name, body),
+        TeamReq03ValidatedIntent::MsgBroadcast {
+            runtime_home,
+            sender,
+            team_id,
+            action,
+            body,
+            members,
+            ..
+        } => execute_msg_broadcast(runtime_home, sender, team_id, action, body, members),
+        TeamReq03ValidatedIntent::Control {
+            action,
+            agent_name,
+            team_id,
+            session_name,
+            input,
+            task_id,
+            error_fact_id,
+            ..
+        } => execute_control(
+            action,
+            agent_name,
+            team_id,
+            session_name,
+            input,
+            task_id,
+            error_fact_id,
+        ),
         TeamReq03ValidatedIntent::TaskSend {
             runtime_home,
             team_id,
@@ -84,6 +139,14 @@ pub fn execute_local_intent(
             worker_role,
             ..
         } => execute_task_claim(runtime_home, worker_name, worker_role),
+        TeamReq03ValidatedIntent::MsgSend {
+            runtime_home,
+            from,
+            to,
+            action,
+            body,
+            ..
+        } => execute_msg_send(runtime_home, from, to, action, body),
         TeamReq03ValidatedIntent::TmuxLoopback {
             runtime_home,
             session_count,
@@ -242,6 +305,58 @@ fn execute_task_claim(
     })
 }
 
+fn execute_msg_send(
+    runtime_home: String,
+    from: String,
+    to: String,
+    action: String,
+    body: String,
+) -> Result<LocalCommandResult, LocalCommandError> {
+    let delivery = send_message(
+        event_log_path(&runtime_home),
+        CommRouteRequest::new(from, to, action, body),
+    )
+    .map_err(comm_error)?;
+    Ok(LocalCommandResult::MessageSend {
+        delivery: message_send_result(delivery),
+    })
+}
+
+fn execute_msg_broadcast(
+    runtime_home: String,
+    sender: String,
+    team_id: String,
+    action: String,
+    body: String,
+    members: Vec<String>,
+) -> Result<LocalCommandResult, LocalCommandError> {
+    let delivery = send_broadcast(
+        event_log_path(&runtime_home),
+        CommTeamBroadcastRequest::new(sender, team_id, action, body, members),
+    )
+    .map_err(comm_error)?;
+    Ok(LocalCommandResult::BroadcastSend {
+        delivery: broadcast_send_result(delivery),
+    })
+}
+
+fn execute_ready_report(
+    runtime_home: String,
+    sender: String,
+    team_id: String,
+    agent_name: String,
+    body: String,
+) -> Result<LocalCommandResult, LocalCommandError> {
+    let delivery = send_ready_report(
+        event_log_path(&runtime_home),
+        CommReadyReportRequest::new(sender, team_id, agent_name, body),
+    )
+    .map_err(comm_error)?;
+    Ok(LocalCommandResult::ReadyReport {
+        delivery: ready_report_result(delivery),
+    })
+}
+
 fn execute_tmux_loopback(
     runtime_home: String,
     session_count: String,
@@ -333,6 +448,12 @@ fn debug_error(error: DebugError) -> LocalCommandError {
 fn task_error(error: TaskEngineError) -> LocalCommandError {
     LocalCommandError::Task {
         reason: error.reason(),
+    }
+}
+
+fn comm_error(error: CommCenterError) -> LocalCommandError {
+    LocalCommandError::Comm {
+        reason: error.reason().to_owned(),
     }
 }
 

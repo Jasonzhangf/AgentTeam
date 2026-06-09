@@ -44,12 +44,15 @@ It routes commands, task-board queries, task claims, message delivery, ready rep
 | `comm.route_message` | Communication Center | Route agent-to-agent message | `CommReq01RouteIntent` | `CommResp04DeliveryAccepted` | unknown/ambiguous target |
 | `comm.route_cross_domain` | Communication Center + Daemon Domain Registry | Route domain-qualified agent/team/role target through resolved domain plan | `CommReq01RouteIntent` | `CommResp04DeliveryAccepted` | comm parses domain directly |
 | `comm.route_broadcast` | Communication Center | Route message to all members in a team | `CommReq01RouteIntent` | `CommResp04DeliveryAccepted` | partial broadcast without error |
+| `comm.send_message` | Communication Center + Persistence | Route and persist one message delivery | `CommReq01RouteIntent` | `CommMessageSendResult` | delivery persisted without replayable event |
+| `comm.send_broadcast` | Communication Center + Persistence | Route and persist one broadcast delivery | `CommReq11BroadcastIntent` | `CommBroadcastSendResult` | broadcast delivery persisted without replayable event |
 | `comm.route_manager_command` | Communication Center | Route manager command to daemon module owner | `CommReq01RouteIntent` | `CommReq03DeliveryEnvelope` | manager bypasses daemon |
-| `comm.route_ready_report` | Communication Center | Accept agent ready report and route to registry/runtime owner | `CommReq01ReadyReport` | `CommResp04DeliveryAccepted` | ready report mutates registry directly |
+| `comm.route_ready_report` | Communication Center | Accept agent ready report and route to registry/runtime owner | `CommReq05ReadyReport` | `CommResp08ReadyAccepted` | ready report mutates registry directly |
+| `comm.send_ready_report` | Communication Center + Persistence | Route and persist one ready report delivery | `CommReq05ReadyReport` | `CommReadyReportSendResult` | ready delivery persisted without replayable event |
 | `comm.route_task_board_query` | Communication Center | Route task-board read requests to Task Engine projection | `CommReq01TaskBoardQuery` | `CommResp04DeliveryAccepted` | comm owns task board state |
 | `comm.route_task_claim` | Communication Center | Route worker claim request to Task Engine | `CommReq01TaskClaim` | `CommResp04DeliveryAccepted` | claim without owner/priority validation |
 | `comm.enforce_sender_scope` | Communication Center + Agent Registry | Verify sender identity and capability | `CommReq01RouteIntent` | `CommReq02ResolvedTarget` | unauthorized manager/worker operation |
-| `comm.persist_delivery_event` | Communication Center + Persistence | Request delivery event append | `CommReq03DeliveryEnvelope` | `CommResp04DeliveryAccepted` | delivery not persisted |
+| `comm.persist_delivery_event` | Communication Center + Persistence | Persist delivery event JSONL record | `CommReq03DeliveryEnvelope` | `PersistResp03AppendReceipt` | delivery not persisted |
 | `comm.snapshot` | Communication Center | Provide route/delivery snapshot to Debug Center | internal comm state | `CommDebugSnapshot` | private state leak |
 | `comm.help` | Communication Center | Describe message/task-board/claim/ready commands | help topic | rendered help model | hidden wire protocol in help |
 
@@ -62,6 +65,9 @@ agentteam help comm
 agentteam help comm manager
 agentteam help comm worker
 agentteam help comm ready
+agentteam help comm delivery
+agentteam help comm message-send
+agentteam help comm ready-report
 agentteam help comm task-board
 agentteam help comm claim
 agentteam help comm message
@@ -78,7 +84,13 @@ Help content must explain:
 - workers report `ready` after startup
 - task priority is owned by Task Engine, not Communication Center
 - every delivery/claim/ready envelope is persisted as event request
+- delivery persistence requests go through `comm.persist_delivery_event`
+- delivery persistence returns a replayable JSONL event receipt
+- `msg send` goes through `comm.send_message`
+- `msg broadcast` goes through `comm.send_broadcast`
+- `ready report` goes through `comm.send_ready_report`
 - message target supports exact agent, role, team, and all members
+- broadcast delivery targets all resolved team members and returns a replayable receipt
 - cross-daemon targets use domain-qualified addresses resolved by Daemon Domain Registry
 - v1 supports one super manager only
 - agents use CLI/skill commands, not hidden daemon wire protocol
@@ -97,11 +109,15 @@ Help content must not:
 ```text
 CommReq01RouteIntent -> CommReq02ResolvedTarget -> CommReq03DeliveryEnvelope -> CommResp04DeliveryAccepted
 CommReq05ReadyReport -> CommReq06ResolvedAgent -> CommReq07ReadyEnvelope -> CommResp08ReadyAccepted
+CommReq05ReadyReport -> CommReq06ResolvedAgent -> CommReq07ReadyEnvelope -> PersistResp03AppendReceipt -> CommReadyReportSendResult
 CommReq11BroadcastIntent -> CommReq12ResolvedTeamMembers -> CommReq13BroadcastEnvelope -> CommResp14BroadcastAccepted
+CommReq11BroadcastIntent -> CommReq12ResolvedTeamMembers -> CommReq13BroadcastEnvelope -> PersistResp03AppendReceipt -> CommBroadcastSendResult
 CommReq21TaskBoardQuery -> CommReq22AuthorizedQuery -> CommReq23TaskBoardQueryEnvelope -> CommResp24TaskBoardQueryAccepted
 CommReq31TaskClaim -> CommReq32AuthorizedClaim -> CommReq33TaskClaimEnvelope -> CommResp34TaskClaimAccepted
 CommReq01NoteDelivery -> CommReq02ResolvedTarget -> CommReq03AgentVisibleEnvelope -> CommResp04DeliveryAccepted
 CommReq01RouteIntent -> DomainRoute04Plan -> CommReq03DeliveryEnvelope -> CommResp04DeliveryAccepted
+CommReq03DeliveryEnvelope -> PersistResp03AppendReceipt
+CommReq01RouteIntent -> CommMessageSendResult
 ```
 
 Only Communication Center resolves a target role/member for message delivery.
@@ -128,6 +144,7 @@ Only TANote Collaboration Board validates note blocks and projects threads.
   - worker can query board, claim task, report status, complete/error assigned task
   - unauthorized agent cannot claim another owner-only task
 - Persist communication envelopes through Persistence.
+- Persist delivery events through `comm.persist_delivery_event`.
 - Reject unknown role.
 - Reject ambiguous role.
 - Reject ambiguous bare agent name when remote domain context is required.
@@ -226,6 +243,7 @@ Snapshot includes:
 - claim request envelopes
 - domain route plan ids
 - delivery persistence receipts
+- persisted delivery receipts
 - linked TANote note ids/thread ids, without parsing note body
 
 ## Resource Lifecycle
@@ -258,6 +276,7 @@ Rules:
 - Communication Center owning task priority fails architecture gate.
 - Worker claim without Task Engine decision fails.
 - Ready report directly mutating registry state fails architecture gate.
+- Ready report delivery without persistence event request fails.
 - Delivery without persistence event request fails.
 - Payload semantic rewrite fails.
 - Adapter-owned routing fails architecture gate.

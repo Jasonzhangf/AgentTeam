@@ -178,6 +178,85 @@ fn local_task_commands_persist_and_replay_state() {
 }
 
 #[test]
+fn local_msg_send_persists_delivery_event() {
+    let runtime_home = temp_runtime_home("msg");
+    let home = runtime_home.display().to_string();
+    let result = execute_local_intent(TeamReq03ValidatedIntent::MsgSend {
+        runtime_home: home.clone(),
+        from: "Kevin".to_owned(),
+        to: "Alice".to_owned(),
+        action: "message".to_owned(),
+        body: "hello".to_owned(),
+        json: true,
+    })
+    .unwrap();
+
+    match result {
+        LocalCommandResult::MessageSend { delivery } => {
+            assert_eq!(delivery.delivery_id, "delivery:Alice:message");
+            assert_eq!(delivery.target, "Alice");
+            assert_eq!(delivery.action, "message");
+            assert_eq!(delivery.sequence, 1);
+            assert!(fs::metadata(delivery.log_path).unwrap().is_file());
+        }
+        other => panic!("unexpected result {other:?}"),
+    }
+}
+
+#[test]
+fn local_msg_broadcast_persists_delivery_event() {
+    let runtime_home = temp_runtime_home("broadcast");
+    let home = runtime_home.display().to_string();
+    let result = execute_local_intent(TeamReq03ValidatedIntent::MsgBroadcast {
+        runtime_home: home.clone(),
+        sender: "Kevin".to_owned(),
+        team_id: "default".to_owned(),
+        action: "broadcast".to_owned(),
+        body: "hello".to_owned(),
+        members: vec!["Alice".to_owned(), "Bob".to_owned()],
+        json: true,
+    })
+    .unwrap();
+
+    match result {
+        LocalCommandResult::BroadcastSend { delivery } => {
+            assert_eq!(delivery.delivery_id, "delivery:default:broadcast");
+            assert_eq!(delivery.team_id, "default");
+            assert_eq!(delivery.recipient_count, 2);
+            assert_eq!(delivery.sequence, 1);
+            assert!(fs::metadata(delivery.log_path).unwrap().is_file());
+        }
+        other => panic!("unexpected result {other:?}"),
+    }
+}
+
+#[test]
+fn local_ready_report_persists_delivery_event() {
+    let runtime_home = temp_runtime_home("ready");
+    let home = runtime_home.display().to_string();
+    let result = execute_local_intent(TeamReq03ValidatedIntent::ReadyReport {
+        runtime_home: home.clone(),
+        sender: "Alice".to_owned(),
+        team_id: "default".to_owned(),
+        agent_name: "Alice".to_owned(),
+        body: "ready".to_owned(),
+        json: true,
+    })
+    .unwrap();
+
+    match result {
+        LocalCommandResult::ReadyReport { delivery } => {
+            assert_eq!(delivery.delivery_id, "delivery:Alice:ready.report");
+            assert_eq!(delivery.team_id, "default");
+            assert_eq!(delivery.agent_name, "Alice");
+            assert_eq!(delivery.sequence, 1);
+            assert!(fs::metadata(delivery.log_path).unwrap().is_file());
+        }
+        other => panic!("unexpected result {other:?}"),
+    }
+}
+
+#[test]
 fn local_tmux_loopback_rejects_invalid_session_count() {
     let result = execute_local_intent(TeamReq03ValidatedIntent::TmuxLoopback {
         runtime_home: "target/agentteam-tmux-test".to_owned(),
@@ -186,4 +265,20 @@ fn local_tmux_loopback_rejects_invalid_session_count() {
     });
     let error = result.unwrap_err();
     assert!(matches!(error, LocalCommandError::Tmux { .. }));
+}
+
+#[test]
+fn local_control_headless_run_requires_input() {
+    let result = execute_local_intent(TeamReq03ValidatedIntent::Control {
+        action: "headless-run".to_owned(),
+        agent_name: "Kevin".to_owned(),
+        team_id: "default".to_owned(),
+        session_name: "TA_headless_Kevin".to_owned(),
+        input: None,
+        task_id: None,
+        error_fact_id: None,
+        json: true,
+    });
+    let error = result.unwrap_err();
+    assert!(matches!(error, LocalCommandError::Control { .. }));
 }

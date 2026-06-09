@@ -1,8 +1,11 @@
+mod control;
 pub mod domain;
 pub mod local;
 pub mod local_projection;
+mod local_startup_projection;
 #[cfg(test)]
 mod local_tests;
+mod startup;
 pub mod task;
 
 pub const TEAM_ORCHESTRATION_FEATURE_ID: &str = "team.orchestration";

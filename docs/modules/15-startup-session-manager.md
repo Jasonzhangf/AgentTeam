@@ -2,20 +2,21 @@
 
 ## Purpose
 
-Startup and Session Manager owns local project/session bootstrap, daemon startup coordination, Kevin initialization, and managed TUI agent launch orchestration.
+Startup and Session Manager owns local project/session bootstrap, daemon startup coordination, configured root-manager initialization, and managed TUI agent launch orchestration.
 
-Kevin can act as the human-facing bootstrap/operator agent, but Kevin is not persistence truth. Daemon + Persistence remain the durable truth for project/session/task/message/event state.
+The configured root manager can act as the human-facing bootstrap/operator agent, but the manager is not persistence truth. Daemon + Persistence remain the durable truth for project/session/task/message/event state.
 
 ## Owns
 
 - Local project bootstrap flow.
 - Project-scoped session directory initialization.
-- Kevin-first initialization flow.
+- root-manager-first initialization flow.
 - Worker spawn plan generation.
-- Managed tmux launch command envelopes.
+- Managed standard tmux launch command envelopes.
 - Startup event requests to Persistence.
 - Startup/session debug snapshot.
-- Agent input/output operation envelope definitions.
+- Agent bootstrap handoff envelope to Agent Control Center.
+- Transparent tmux bootstrap plan composition for operators.
 - Internal session/tmux detail encapsulation.
 
 ## Does Not Own
@@ -25,6 +26,8 @@ Kevin can act as the human-facing bootstrap/operator agent, but Kevin is not per
 - Direct tmux execution.
 - Task state.
 - Message routing.
+- Single-agent mode selection.
+- SDK-style agent pause/stop/retry control.
 - Provider status extraction.
 - WebUI state.
 - Event log append implementation.
@@ -35,13 +38,12 @@ Kevin can act as the human-facing bootstrap/operator agent, but Kevin is not per
 |---|---|---|---|---|---|
 | `startup.init_project` | Startup Session Manager | Initialize project runtime/session directories from Config Center output | `ConfigResp05RuntimeConfig` | startup plan | path outside home |
 | `startup.ensure_daemon` | Startup Session Manager | Ensure daemon lifecycle command is issued through scoped service/PID path | startup request | daemon command envelope | broad kill/start bypass |
-| `startup.init_kevin` | Startup Session Manager | Initialize fixed manager agent Kevin in current TUI/session | team config | Kevin session descriptor | manager not Kevin |
+| `startup.init_root_manager` | Startup Session Manager | Initialize the configured root manager agent in current TUI/session | team config | manager session descriptor | missing or duplicate manager |
 | `startup.spawn_workers` | Startup Session Manager | Build worker launch envelopes for zterm/tmux Adapter | team config + name pool | launch envelope list | direct tmux call |
 | `startup.close_session` | Startup Session Manager + Resource Lifecycle Manager | Close project session and release scoped resources | project/team scope | shutdown plan/result | orphan resources left hidden |
 | `startup.cleanup_temp` | Startup Session Manager + Resource Lifecycle Manager | Remove runtime temporary files through exact tracked handles | scoped temp resources | cleanup receipts | broad file deletion |
 | `startup.write_session_descriptor` | Startup Session Manager + Persistence | Request session descriptor persistence | launch/session facts | persistence event | direct file write |
-| `startup.build_agent_input_op` | Startup Session Manager | Build typed operation for agent stdin/task/message injection | operation intent | input op envelope | raw string bypass |
-| `startup.build_agent_output_op` | Startup Session Manager | Build typed operation for stdout/render/read observation request | observation intent | output op envelope | direct stdout ownership |
+| `startup.handoff_agent_control` | Startup Session Manager + Agent Control Center | Hand bootstrap session facts to the single-agent control plane | bootstrap result | control handoff envelope | control plane omitted |
 | `startup.snapshot` | Startup Session Manager | Provide startup/session snapshot to Debug Center | startup state | startup snapshot | private leak |
 | `startup.help` | Startup Session Manager | Describe bootstrap and session flows | help topic | help model | hidden tmux command requirement |
 
@@ -51,7 +53,7 @@ Required help topics:
 
 ```text
 agentteam help startup
-agentteam help startup kevin
+agentteam help startup manager
 agentteam help startup workers
 agentteam help startup sessions
 agentteam help startup shutdown
@@ -61,21 +63,26 @@ agentteam help startup red-tests
 
 Help content must explain:
 
-- bootstrap starts from Kevin
-- Kevin knows it is Kevin through skill/context injection
+- bootstrap starts from the configured root manager
+- the root manager knows its configured name through skill/context injection
 - workers know their assigned names through skill/context injection
-- Kevin uses CLI/framework tools for task board, task publish, query, and worker management
-- Startup Manager builds typed launch/input/output operation envelopes
+- the manager uses CLI/framework tools for task board, task publish, query, and worker management
+- startup parameters assign manager name, role, team, and project scope on first launch
+- the manager waits for worker `ready report` through comm projections before assigning work
+- Startup Manager builds bootstrap plans and hands the live agent off to Agent Control Center
+- startup uses standard tmux as the transparent operator carrier for the configured manager
+- workers are later launched by the manager with their own startup params and tmux sessions
 - zterm/tmux Adapter executes terminal transport operations
+- Agent Control Center executes the per-agent attach_tui/headless control plane after bootstrap
 - Persistence stores events/session descriptors
 - daemon/session close runs scoped resource cleanup and temporary file cleanup
 - agents use names/roles/tasks/messages only; tmux/session details are hidden
 
 Help content must not:
 
-- say Kevin is persistence truth
-- tell Kevin to write state files directly
-- tell Kevin to call tmux directly
+- say the manager is persistence truth
+- tell the manager to write state files directly
+- tell the manager to call tmux directly
 - expose hidden daemon wire protocol as required agent behavior
 - expose tmux session names, pane ids, zterm endpoints, or session descriptor paths to agents
 - suggest broad process kill commands
@@ -85,8 +92,7 @@ Help content must not:
 ```text
 StartupReq01BootstrapIntent -> StartupReq02ValidatedPlan -> StartupReq03LaunchEnvelope -> StartupResp04SessionProjection
 StartupReq01ShutdownIntent -> StartupReq02ValidatedPlan -> StartupReq03ShutdownEnvelope -> StartupResp04ShutdownProjection
-StartupOp01AgentInputIntent -> StartupOp02InputEnvelope -> StartupOp03AdapterCommand
-StartupOp01AgentOutputIntent -> StartupOp02OutputEnvelope -> StartupOp03ObservationRequest
+StartupReq01BootstrapIntent -> StartupReq02ValidatedPlan -> StartupReq03LaunchEnvelope -> AgentCtlReq01ModeIntent
 ```
 
 Only Startup Manager builds bootstrap/session plans.
@@ -137,30 +143,59 @@ Temporary files may include staging buffers, render captures, debug assembly scr
 ```text
 Human current TUI
   |
-  | agentteam startup init
+  | standard tmux launch with manager startup params
   v
 Startup Manager
   |
   +--> Config Center: load user config
-  +--> Agent Registry: allocate Kevin + workers
+  +--> Agent Registry: allocate configured manager
   +--> Persistence: append ProjectBootstrapRequested
-  +--> zterm/tmux Adapter: ensure Kevin TA session/current session binding
-  +--> CLI/Skill: inject Kevin identity/tool usage guidance
-  +--> Persistence: append KevinReady/SessionDescriptor events
-  +--> zterm/tmux Adapter: spawn worker TA sessions with initial commands
+  +--> zterm/tmux Adapter: ensure manager TA session/current session binding
+  +--> CLI/Skill: inject manager identity/tool usage guidance
+  +--> Persistence: append ManagerReady/SessionDescriptor events
+  +--> Agent Control Center: bind manager to attach_tui or headless mode
+  +--> Manager: initialize worker startup params through skills/CLI
+  +--> zterm/tmux Adapter: spawn worker TA sessions with worker startup params
   +--> CLI/Skill: inject worker identity/tool usage guidance
   +--> TUI Agent Adapter Center: observe provider status signals
   +--> Agent Registry/Runtime: project statuses
 ```
 
-## Kevin Role
+## Real Startup Procedure Today
 
-Kevin is the single super manager in v1.
+`agentteam start` is the executable startup entrypoint. It starts the configured root manager from the current `cwd` by default, and the `cwd` becomes the manager's project scope unless an explicit scope override is supplied.
 
-Kevin can:
+After the manager is up, Startup Manager hands the live agent to Agent Control Center. The manager uses skills/CLI to initialize worker agents with worker startup params and then runs the current CLI smoke sequence:
+
+```text
+cargo run --manifest-path /Users/fanzhang/Documents/github/agentteam/Cargo.toml -p agentteam-cli -- config check --config /Users/fanzhang/Documents/github/agentteam/docs/config/config.toml.example --json
+cargo run --manifest-path /Users/fanzhang/Documents/github/agentteam/Cargo.toml -p agentteam-cli -- daemon check --config /Users/fanzhang/Documents/github/agentteam/docs/config/config.toml.example --json
+cargo run --manifest-path /Users/fanzhang/Documents/github/agentteam/Cargo.toml -p agentteam-cli -- ready report --runtime-home ~/code/playground/agentteam-smoke --sender Kevin --team default --agent-name Kevin --body ready --json
+cargo run --manifest-path /Users/fanzhang/Documents/github/agentteam/Cargo.toml -p agentteam-cli -- msg send --runtime-home ~/code/playground/agentteam-smoke --from Kevin --to Alice --action message --body hello --json
+cargo run --manifest-path /Users/fanzhang/Documents/github/agentteam/Cargo.toml -p agentteam-cli -- msg broadcast --runtime-home ~/code/playground/agentteam-smoke --sender Kevin --team default --action broadcast --body hello --members Alice,Bob --json
+cargo run --manifest-path /Users/fanzhang/Documents/github/agentteam/Cargo.toml -p agentteam-cli -- task send --runtime-home ~/code/playground/agentteam-smoke --team default --created-by Kevin --target-kind role --target builder --title smoke --body task-body --json
+cargo run --manifest-path /Users/fanzhang/Documents/github/agentteam/Cargo.toml -p agentteam-cli -- task list --runtime-home ~/code/playground/agentteam-smoke --json
+cargo run --manifest-path /Users/fanzhang/Documents/github/agentteam/Cargo.toml -p agentteam-cli -- task claim --runtime-home ~/code/playground/agentteam-smoke --worker-name Alice --worker-role builder --json
+cargo run --manifest-path /Users/fanzhang/Documents/github/agentteam/Cargo.toml -p agentteam-cli -- task done --runtime-home ~/code/playground/agentteam-smoke --task AT-000001 --actor Alice --detail done --json
+cargo run --manifest-path /Users/fanzhang/Documents/github/agentteam/Cargo.toml -p agentteam-cli -- task status --runtime-home ~/code/playground/agentteam-smoke --task AT-000001 --json
+cargo run --manifest-path /Users/fanzhang/Documents/github/agentteam/Cargo.toml -p agentteam-cli -- tmux loopback --runtime-home ~/code/playground/agentteam-tmux-smoke --session-count 2 --json
+```
+
+Expected output shape:
+
+- every command returns JSON
+- delivery commands return `event_id`, `sequence`, and `log_path`
+- task commands return `task_id`, `status`, and persisted sequence data
+- tmux loopback returns exact-handle cleanup evidence
+
+## Root Manager Role
+
+The configured root manager is the single super manager in v1. The default sample config names this agent `Kevin`.
+
+The manager can:
 
 - read the AgentTeam skill to learn framework operations
-- initialize the framework through `agentteam startup init`
+- initialize the framework through the standard tmux bootstrap flow, then initialize workers
 - query task board through CLI
 - publish tasks through CLI
 - assign task owners through CLI
@@ -171,7 +206,7 @@ Kevin can:
 - request debug snapshots through CLI
 - request worker spawn/restart through daemon command envelopes
 
-Kevin cannot:
+The manager cannot:
 
 - mutate event log directly
 - write session descriptor files directly
@@ -180,13 +215,15 @@ Kevin cannot:
 - bypass Input Gateway/Communication Center/Task Engine
 - become persistence truth
 
-## Kevin Skill Contract
+## Manager Skill Contract
 
-Kevin must receive/read skill guidance that teaches:
+The configured manager must receive/read skill guidance that teaches:
 
-- own identity: `Kevin`
+- own identity from startup params
 - role: single super manager
-- framework initialization command
+- framework initialization flow
+- startup params assign manager name, role, team, and project scope
+- the manager uses skills/CLI to initialize workers after its own launch
 - task-board query command
 - task publish/assign command
 - message/broadcast command
@@ -194,8 +231,9 @@ Kevin must receive/read skill guidance that teaches:
 - wait-for-result loop through task status/projections
 - debug snapshot command
 - rule that tmux/session details are hidden internals
+- rule that roles are injected through startup params and executed through skills
 
-Kevin waits for results by querying task/message/status projections, not by reading child tmux/session internals.
+The manager waits for results by querying task/message/status projections, not by reading child tmux/session internals.
 
 ## Worker Startup Flow
 
@@ -204,12 +242,14 @@ Workers are launched in managed TA tmux sessions.
 Worker initial command must inject:
 
 - agent name
+- role
 - work role
 - team role `worker`
+- startup params for name, role, team, and project scope, issued by the manager after its own launch
 - project slug
 - team id
 - CLI usage/help reference
-- task claim/check/update/done/error instructions
+- ready report and task claim/check/update/done/error instructions
 
 Worker ready rule:
 
@@ -217,6 +257,18 @@ Worker ready rule:
 - TA session exists
 - optional provider adapter signal may add `ready_hint`
 - Runtime/Agent Registry projects `idle` when no active task exists
+
+Manager output status rule:
+
+- startup does not force the manager to reply on demand
+- if the manager receives a request and the TA session remains alive without a transport/session/framework fault, the agent stays `busy` while the request is still in flight
+- `idle` requires a live TA session, no active task, and no outstanding request/response
+- `error` requires a launch/session/transport/framework fault or visible terminal error evidence that the adapter classifies as fault evidence
+- tmux/stdout evidence is input to the projection, not the projection itself
+- The configured manager is the root manager for the project agent tree.
+- When the manager exits, the managed worker agents for that project exit with it through the scoped shutdown flow.
+- The manager must not auto-exit after startup; the user must explicitly exit the manager.
+- The manager skill surface must include a CLI feedback path so the manager can return task results to the framework and close the loop.
 
 ## Session Shutdown Flow
 
@@ -284,11 +336,10 @@ Startup Manager requests Persistence events for:
 
 - project bootstrap requested
 - daemon startup requested/result
-- Kevin init requested/result
+- manager init requested/result
 - worker spawn requested/result
 - session descriptor materialized
-- agent input op requested/result
-- agent output op requested/result
+- agent control handoff requested/result
 
 All errors go through Error Center and are persisted as error events.
 
@@ -300,7 +351,7 @@ Examples:
 
 - config load failure
 - session dir invalid
-- Kevin init failure
+- manager init failure
 - worker spawn envelope failure
 - adapter launch failure
 - session descriptor materialization failure
@@ -314,7 +365,7 @@ Snapshot includes:
 - bootstrap phase
 - project slug
 - session directory
-- Kevin session descriptor
+- manager session descriptor
 - worker spawn plan
 - latest launch receipts
 - latest input/output operation receipts
@@ -345,12 +396,12 @@ Rules:
 
 ## Red Tests
 
-- Kevin treated as persistence truth fails.
+- manager treated as persistence truth fails.
 - Startup Manager calling tmux directly fails.
 - Session metadata outside `~/.agentteam/sessions/<project_slug>/` fails.
 - Worker launch without TA session name fails.
 - Worker identity injection missing name/role/team fails.
-- Kevin skill missing init/query/task/message/wait guidance fails.
+- manager skill missing init/query/task/message/wait guidance fails.
 - Agent-facing docs exposing tmux/session identifiers fail.
 - Agent input raw string bypassing typed operation fails.
 - Agent output direct stdout ownership by Startup Manager fails.
@@ -363,6 +414,5 @@ Rules:
 
 ## Open Decisions
 
-- Whether `agentteam startup init` binds current TUI as Kevin or always creates a new Kevin tmux session.
 - Exact identity/skill injection text shape.
 - Exact session descriptor JSON schema.

@@ -1,3 +1,4 @@
+use agentteam_contracts::comm::CommReq03DeliveryEnvelope;
 use serde::Serialize;
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize)]
@@ -30,6 +31,17 @@ pub struct CommRouteTarget {
     pub target: String,
     pub action: String,
     pub body: String,
+}
+
+impl CommRouteTarget {
+    pub fn delivery_envelope(self) -> CommReq03DeliveryEnvelope {
+        CommReq03DeliveryEnvelope {
+            sender: self.sender,
+            target: self.target,
+            action: self.action,
+            body: self.body,
+        }
+    }
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize)]
@@ -112,6 +124,16 @@ impl CommReadyReportEnvelope {
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize)]
+pub struct CommReadyReportSendResult {
+    pub delivery_id: String,
+    pub team_id: String,
+    pub agent_name: String,
+    pub event_id: String,
+    pub sequence: u64,
+    pub log_path: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
 pub struct CommBroadcastTarget {
     pub sender: String,
     pub team_id: String,
@@ -125,6 +147,16 @@ pub struct CommMessageResult {
     pub delivery_id: String,
     pub target: String,
     pub action: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
+pub struct CommMessageSendResult {
+    pub delivery_id: String,
+    pub target: String,
+    pub action: String,
+    pub event_id: String,
+    pub sequence: u64,
+    pub log_path: String,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize)]
@@ -159,6 +191,16 @@ pub struct CommBroadcastResult {
     pub delivery_id: String,
     pub team_id: String,
     pub recipient_count: usize,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
+pub struct CommBroadcastSendResult {
+    pub delivery_id: String,
+    pub team_id: String,
+    pub recipient_count: usize,
+    pub event_id: String,
+    pub sequence: u64,
+    pub log_path: String,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize)]

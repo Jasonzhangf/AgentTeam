@@ -16,6 +16,7 @@ The adapter is the only module that talks to tmux and zterm-compatible terminal 
 - TUI launch result observation.
 - TA session existence observation.
 - stdout/buffer observation from tmux/zterm.
+- It does not select attach_tui/headless control mode.
 
 ## Does Not Own
 
@@ -62,6 +63,7 @@ Help content must explain:
 
 - zterm/tmux Adapter is the only tmux/zterm transport owner
 - multiple zterm daemons are addressed only through resolved daemon domain endpoint facts
+- Agent Control Center selects attach_tui/headless mode before this adapter runs
 - only managed TA sessions are in scope
 - stdout/buffer output is evidence, not final task/status truth
 - loopback smoke proves multiple managed TA sessions can exchange input/output before higher-level task or communication work depends on the adapter
@@ -103,6 +105,7 @@ Daemon Domain Registry resolves daemon endpoints before adapter use.
 - Surface zterm/tmux transport failures explicitly.
 - Keep tmux session names, pane ids, and bridge internals out of agent-facing projections unless Debug Center explicitly redacts/authorizes debug output for a human operator.
 - Never parse `agent@domain` business targets.
+- Never own headless SDK control or control-mode selection.
 
 ## Status Observation Rule
 
@@ -119,6 +122,7 @@ The adapter does not decide final agent status alone.
 Agent Registry/Runtime projects status with Task Engine and Error Center facts.
 
 stdout/buffer observation may identify visible TUI error text as evidence. It is not the only status truth.
+If a request yields no semantic reply but the session remains alive and transport is healthy, that is not automatically an error; the higher-level projector keeps the agent `busy` or pending until an idle/fault projection arrives.
 
 Provider-specific status logic belongs in TUI Agent Adapter Center, not this adapter.
 

@@ -6,6 +6,7 @@ members = [
   "crates/agentteam-comm",
   "crates/agentteam-debug",
   "crates/agentteam-persist",
+  "crates/agentteam-control",
   "crates/agentteam-runtime",
   "crates/agentteam-startup",
   "crates/agentteam-tanote",

@@ -1,8 +1,40 @@
 # CACHE
 
-2026-06-08:
-- Current verified slice: Task Engine claim routing and local CLI claim command.
-- `TaskEngine::claim_task` now owns assigned-first / blocked-first / priority-then-age selection and persists `task_claimed`.
-- `agentteam-gateway` parses `task claim --runtime-home ... --worker-name ... --worker-role ... --json`.
-- `agentteam-runtime::local` executes claim through the task engine and projects it as `LocalCommandResult::TaskClaim`.
-- Verified: `cargo fmt --check`, `cargo clippy --workspace --all-targets -- -D warnings`, `cargo test --workspace`, `cargo xtask verify-code-size`, `cargo xtask verify-function-map`, `cargo xtask verify`.
+2026-06-09 current focus:
+- Agent Control Center has persistent Codex SDK headless bridge wired through CLI:
+  - `control headless`
+  - `control headless-run`
+  - `control headless-status`
+  - `control headless-interrupt`
+  - `control headless-stop`
+- Required env:
+  - `AGENTTEAM_CODEX_SDK_SRC=/Users/fanzhang/code/codex/sdk/python/src`
+  - `AGENTTEAM_CODEX_BIN=/opt/homebrew/bin/codex`
+- Headless create/control/recover verified on `TA_headless_create_recover_offline_20260609`:
+  - `headless-run` returned `details=ready`
+  - scoped `headless-stop` returned `state=offline`
+  - stopped PID 17280 was gone by exact `ps -p`
+  - recovery used new PID 18524 with same persisted `thread_id=019eaaae-9013-76c0-805c-b9ae0c60c8ad`
+- Minimal sample manager/Alice workflow verified under `/Users/fanzhang/code/playground/agentteam-workflow-20260609-03`:
+  - ready report seq 1
+  - configured manager -> Alice message seq 2
+  - task_created seq 3
+  - task_claimed seq 4
+  - Alice headless turn ran CLI completion and returned `workflow-result: AT-000001 done by Alice, status ok.`
+  - task_done seq 5
+  - final `task.status=done`
+  - scoped `headless-stop=offline`
+- Important sandbox rule: if headless worker writes runtime state under `~/code/playground`, run the control command from `~/code/playground`; repo cwd causes Codex SDK workspace-write to reject writes with `Operation not permitted`.
+- Gates passed after this slice:
+  - `cargo fmt --check`
+  - `cargo clippy --workspace --all-targets -- -D warnings`
+  - `cargo test --workspace`
+  - `cargo xtask red-tests`
+  - `cargo xtask verify-required-files`
+  - `cargo xtask verify-skill-frontmatter`
+  - `cargo xtask verify-resource-lifecycle`
+  - `cargo xtask verify-function-map`
+  - `cargo xtask verify-code-size`
+  - `cargo xtask verify`
+- Exact process audit after smokes found no `headless_bridge.py` processes.
+- Current naming correction: `Kevin` is data only as the sample configured manager name; code/feature/red-test/schema concepts must use neutral manager/root-manager/configured-agent names. `cargo xtask red-tests` now scans this boundary.

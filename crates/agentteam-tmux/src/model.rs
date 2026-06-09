@@ -1,3 +1,5 @@
+use std::collections::BTreeMap;
+
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct TmuxLoopbackInput {
     pub runtime_home: String,
@@ -43,4 +45,22 @@ pub(crate) struct ManagedTmuxSession {
     pub ready_marker: String,
     pub input_marker: String,
     pub output_marker: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct TmuxLaunchInput {
+    pub session_name: String,
+    pub cwd: String,
+    pub command: String,
+    pub args: Vec<String>,
+    pub env: BTreeMap<String, String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct TmuxLaunchReport {
+    pub session_name: String,
+    pub cwd: String,
+    pub command_line: String,
+    pub env_count: usize,
+    pub arg_count: usize,
 }

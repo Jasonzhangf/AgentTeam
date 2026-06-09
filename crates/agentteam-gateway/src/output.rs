@@ -27,7 +27,7 @@ struct LocalResultProjection<'a> {
     status: &'static str,
     feature_id: &'static str,
     node: &'static str,
-    command_name: &'static str,
+    command_name: String,
     result: &'a LocalCommandResult,
 }
 
@@ -90,19 +90,25 @@ fn encode_error_projection(projection: &ErrorProjection<'_>) -> GatewayResult<St
         .map_err(|error| GatewayError::output(format!("failed to render error JSON: {error}")))
 }
 
-fn local_result_command_name(result: &LocalCommandResult) -> &'static str {
+fn local_result_command_name(result: &LocalCommandResult) -> String {
     match result {
-        LocalCommandResult::ConfigCheck { .. } => "config.check",
-        LocalCommandResult::DaemonCheck { .. } => "daemon.check",
-        LocalCommandResult::DomainResolve { .. } => "domain.resolve",
-        LocalCommandResult::DebugSnapshot { .. } => "debug.snapshot",
-        LocalCommandResult::TaskSend { .. } => "task.send",
-        LocalCommandResult::TaskList { .. } => "task.list",
-        LocalCommandResult::TaskStatus { .. } => "task.status",
-        LocalCommandResult::TaskDone { .. } => "task.done",
-        LocalCommandResult::TaskError { .. } => "task.error",
-        LocalCommandResult::TaskClaim { .. } => "task.claim",
-        LocalCommandResult::TmuxLoopback { .. } => "tmux.loopback",
+        LocalCommandResult::ConfigCheck { .. } => "config.check".to_owned(),
+        LocalCommandResult::DaemonCheck { .. } => "daemon.check".to_owned(),
+        LocalCommandResult::DomainResolve { .. } => "domain.resolve".to_owned(),
+        LocalCommandResult::DebugSnapshot { .. } => "debug.snapshot".to_owned(),
+        LocalCommandResult::StartupStart { .. } => "start".to_owned(),
+        LocalCommandResult::StartupWorker { .. } => "start.worker".to_owned(),
+        LocalCommandResult::Control { control } => format!("control.{}", control.action),
+        LocalCommandResult::TaskSend { .. } => "task.send".to_owned(),
+        LocalCommandResult::TaskList { .. } => "task.list".to_owned(),
+        LocalCommandResult::TaskStatus { .. } => "task.status".to_owned(),
+        LocalCommandResult::TaskDone { .. } => "task.done".to_owned(),
+        LocalCommandResult::TaskError { .. } => "task.error".to_owned(),
+        LocalCommandResult::TaskClaim { .. } => "task.claim".to_owned(),
+        LocalCommandResult::MessageSend { .. } => "msg.send".to_owned(),
+        LocalCommandResult::BroadcastSend { .. } => "msg.broadcast".to_owned(),
+        LocalCommandResult::ReadyReport { .. } => "ready.report".to_owned(),
+        LocalCommandResult::TmuxLoopback { .. } => "tmux.loopback".to_owned(),
     }
 }
 
@@ -111,7 +117,10 @@ fn local_error_class(error: &LocalCommandError) -> &'static str {
         LocalCommandError::Config { .. } => "config",
         LocalCommandError::Domain { .. } => "domain",
         LocalCommandError::Debug { .. } => "debug",
+        LocalCommandError::Startup { .. } => "startup",
+        LocalCommandError::Control { .. } => "control",
         LocalCommandError::Task { .. } => "task",
+        LocalCommandError::Comm { .. } => "comm",
         LocalCommandError::Tmux { .. } => "tmux",
     }
 }
@@ -121,7 +130,10 @@ fn local_error_reason(error: &LocalCommandError) -> String {
         LocalCommandError::Config { reason }
         | LocalCommandError::Domain { reason }
         | LocalCommandError::Debug { reason }
+        | LocalCommandError::Startup { reason }
+        | LocalCommandError::Control { reason }
         | LocalCommandError::Task { reason }
+        | LocalCommandError::Comm { reason }
         | LocalCommandError::Tmux { reason } => reason.clone(),
     }
 }

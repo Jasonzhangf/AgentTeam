@@ -27,6 +27,7 @@ pub fn run() -> Result<(), String> {
     scan_domain_owner_boundaries()?;
     scan_non_adjacent_pipeline_conversions()?;
     scan_contract_feature_ids()?;
+    scan_configured_agent_name_concepts()?;
     Ok(())
 }
 
@@ -36,8 +37,9 @@ fn require_plan_entries() -> Result<(), String> {
         "red.debug.not_persisted",
         "red.resource.no_lease",
         "red.resource.temp_left_after_shutdown",
-        "red.kevin.skill_missing_ops",
+        "red.manager.skill_missing_ops",
         "red.required_file_untracked",
+        "red.registry.sample_agent_name_as_code_concept",
         "red.domain.remote_fallback_to_local",
         "red.domain.comm_parses_domain_directly",
         "red.config.parse_outside_config_center",
@@ -184,6 +186,86 @@ fn scan_contract_feature_ids() -> Result<(), String> {
         },
     )?;
     no_violations("contract feature ids must be in feature map", violations)
+}
+
+fn scan_configured_agent_name_concepts() -> Result<(), String> {
+    let mut violations = Vec::new();
+    let declaration_prefixes = [
+        "fn ",
+        "pub fn ",
+        "pub(crate) fn ",
+        "pub(super) fn ",
+        "struct ",
+        "pub struct ",
+        "enum ",
+        "pub enum ",
+        "trait ",
+        "pub trait ",
+        "type ",
+        "pub type ",
+        "const ",
+        "pub const ",
+        "static ",
+        "pub static ",
+        "mod ",
+        "pub mod ",
+    ];
+    scan_rust_files(&mut |path, content| {
+        for (line_index, line) in content.lines().enumerate() {
+            let trimmed = line.trim_start();
+            if !trimmed.to_ascii_lowercase().contains("kevin") {
+                continue;
+            }
+            let field_candidate = trimmed.strip_prefix("pub ").unwrap_or(trimmed);
+            let field_name = field_candidate.split(':').next().unwrap_or_default().trim();
+            let is_field_name = !field_name.is_empty()
+                && field_name
+                    .chars()
+                    .all(|char| char == '_' || char.is_ascii_alphanumeric());
+            if declaration_prefixes
+                .iter()
+                .any(|prefix| trimmed.starts_with(prefix))
+                || (is_field_name && field_name.to_ascii_lowercase().contains("kevin"))
+            {
+                violations.push(format!(
+                    "{}:{} declares sample agent name as a Rust concept",
+                    path.display(),
+                    line_index + 1
+                ));
+            }
+        }
+    })?;
+
+    for path in [
+        "docs/architecture/function-map.md",
+        "docs/red-tests/red-test-plan.md",
+    ] {
+        let content = read(path)?;
+        for (line_index, line) in content.lines().enumerate() {
+            if !line.trim_start().starts_with('|') {
+                continue;
+            }
+            let Some(first_tick) = line.find('`') else {
+                continue;
+            };
+            let rest = &line[first_tick + 1..];
+            let Some(second_tick) = rest.find('`') else {
+                continue;
+            };
+            let id = &rest[..second_tick];
+            if id.to_ascii_lowercase().contains("kevin") {
+                violations.push(format!(
+                    "{path}:{} uses sample agent name in a registry id",
+                    line_index + 1
+                ));
+            }
+        }
+    }
+
+    no_violations(
+        "configured sample agent names must not become code concepts",
+        violations,
+    )
 }
 
 fn extract_declared_feature_id(line: &str) -> Option<&str> {

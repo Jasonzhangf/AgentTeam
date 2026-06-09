@@ -22,6 +22,7 @@ Use this file as the agenda for one-module-at-a-time requirement discussion.
 16. TANote Collaboration Board
 17. Resource Lifecycle Manager
 18. Daemon Domain Registry
+19. Agent Control Center
 
 ## Per-Module Discussion Template
 
@@ -53,7 +54,7 @@ Each module doc must answer:
 - UI, Input, and Output gateways are separate.
 - Every feature needs red tests.
 - TUI status is adapter-based. tmux stdout alone is evidence, not final status truth.
-- Kevin can bootstrap/manage through CLI, but daemon + Persistence remain durable truth.
+- The configured manager can bootstrap/manage through CLI, but daemon + Persistence remain durable truth.
 - Agents discuss work in project `TANote.md` through the TANote Collaboration Board; notes are not task/message/event truth.
 - Every module-owned resource must have a lifecycle lease, scoped owner, release path, debug snapshot, orphan/leak red test, and efficiency budget.
 - Daemon domain is the cross-daemon naming boundary; `agent@domain` route resolution belongs to Daemon Domain Registry.

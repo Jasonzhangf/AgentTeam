@@ -22,10 +22,11 @@ The hard gate is `cargo xtask verify-function-map`.
 | `persist.event_log` | Persistence | `PersistEvent*` | `agentteam-persist` | modules writing state files directly | replay tests |
 | `adapter.zterm_tmux` | zterm/tmux Adapter | `TerminalReq*`, `TerminalResp*` | `agentteam-tmux` | runtime shelling out to tmux directly; adapter owning task/status truth | adapter contract tests |
 | `adapter.tui_agent` | TUI Agent Adapter Center | `TuiSignalReq*`, `TuiSignalResp*` | `agentteam-tui-adapter` | stdout-only final status; Codex SDK as universal truth; provider payload in runtime business state | tui adapter red tests |
-| `startup.session` | Startup Session Manager | `StartupReq*`, `StartupOp*` | `agentteam-startup` | Kevin as persistence truth; direct tmux execution; direct state file write | startup/session red tests |
+| `agent.control_center` | Agent Control Center | `AgentCtlReq*`, `AgentCtlResp*` | `agentteam-control`, `agentteam-tmux`, `agentteam-tui-adapter`, `agentteam-runtime`, `docs/modules/19-*` | tmux adapter owning headless session truth; SDK adapter owning task truth; implicit mode fallback | control unit, attach/headless red tests |
+| `startup.session` | Startup Session Manager | `StartupReq*`, `StartupOp*` | `agentteam-startup`, `agentteam-control`, `agentteam-tmux`, `agentteam-resource`, `agentteam-config` | manager as persistence truth; direct tmux execution outside adapter; direct state file write | startup/session red tests |
 | `tanote.board` | TANote Collaboration Board | `TANoteReq*`, `TANoteEvent*`, `TANoteProjection*` | `agentteam-tanote`, `docs/tanote/TANote.md.example` | Task Engine/Comm/agents directly mutating TANote format or treating notes as task truth | TANote format/order/thread red tests |
 | `resource.lifecycle` | Resource Lifecycle Manager | `ResourceReq*`, `ResourceLease*`, `ResourceMetric*`, `ResourceLeak*` | `agentteam-resource`, contracts resource chain | modules creating long-lived resources without leases; broad cleanup; orphan/leak/growth hidden from event log/debug | lifecycle/leak/orphan/growth red tests |
-| `cli.agent_skill` | CLI/Skill | `CliCommand*` | `agentteam-cli`, `.agents/skills` | skill depending on hidden wire protocol; agent-facing tmux/session internals; Kevin missing framework-operation guidance | CLI smoke tests |
+| `cli.agent_skill` | CLI/Skill | `CliCommand*` | `agentteam-cli`, `.agents/skills` | skill depending on hidden wire protocol; agent-facing tmux/session internals; manager missing framework-operation guidance | CLI smoke tests |
 
 ## Owner Rule
 
@@ -44,15 +45,18 @@ Every Rust function or method under `crates/` and `xtask/src/` must be listed he
 | `crates::agentteam-gateway::src::error::GatewayError::output` | Output Gateway | `gateway.output` | `crates/agentteam-gateway/src/error.rs` | gateway unit, function map gate |
 | `crates::agentteam-gateway::src::error::GatewayError::parse` | Input Gateway | `gateway.input` | `crates/agentteam-gateway/src/error.rs` | gateway unit, function map gate |
 | `crates::agentteam-gateway::src::error::GatewayError::validation` | Input Gateway | `gateway.input` | `crates/agentteam-gateway/src/error.rs` | gateway unit, function map gate |
-| `crates::agentteam-gateway::src::input::contains_flag` | Input Gateway | `gateway.input` | `crates/agentteam-gateway/src/input.rs` | gateway unit, function map gate |
+| `crates::agentteam-gateway::src::options::contains_flag` | Input Gateway | `gateway.input` | `crates/agentteam-gateway/src/options.rs` | gateway unit, function map gate |
 | `crates::agentteam-gateway::src::input::option_value` | Input Gateway | `gateway.input` | `crates/agentteam-gateway/src/input.rs` | gateway unit, function map gate |
 | `crates::agentteam-gateway::src::input::parse_cli_args` | Input Gateway | `gateway.input` | `crates/agentteam-gateway/src/input.rs` | gateway unit, function map gate |
 | `crates::agentteam-gateway::src::input::parse_cli_raw` | Input Gateway | `gateway.input` | `crates/agentteam-gateway/src/input.rs` | gateway unit, function map gate |
 | `crates::agentteam-gateway::src::input::parse_config_check` | Input Gateway | `gateway.input` | `crates/agentteam-gateway/src/input.rs` | gateway unit, function map gate |
 | `crates::agentteam-gateway::src::input::parse_daemon_check` | Input Gateway | `gateway.input` | `crates/agentteam-gateway/src/input.rs` | gateway unit, function map gate |
 | `crates::agentteam-gateway::src::input::parse_debug_snapshot` | Input Gateway | `gateway.input` | `crates/agentteam-gateway/src/input.rs` | gateway unit, function map gate |
+| `crates::agentteam-gateway::src::broadcast::parse_msg_broadcast` | Input Gateway | `gateway.input` | `crates/agentteam-gateway/src/broadcast.rs` | gateway unit, function map gate |
+| `crates::agentteam-gateway::src::input::parse_ready_report` | Input Gateway | `gateway.input` | `crates/agentteam-gateway/src/input.rs` | gateway unit, function map gate |
 | `crates::agentteam-gateway::src::input::parse_domain_resolve` | Input Gateway | `gateway.input` | `crates/agentteam-gateway/src/input.rs` | gateway unit, function map gate |
-| `crates::agentteam-gateway::src::input::parse_options` | Input Gateway | `gateway.input` | `crates/agentteam-gateway/src/input.rs` | gateway unit, function map gate |
+| `crates::agentteam-gateway::src::broadcast::parse_members_list` | Input Gateway | `gateway.input` | `crates/agentteam-gateway/src/broadcast.rs` | gateway unit, function map gate |
+| `crates::agentteam-gateway::src::options::parse_options` | Input Gateway | `gateway.input` | `crates/agentteam-gateway/src/options.rs` | gateway unit, function map gate |
 | `crates::agentteam-gateway::src::input::require_json` | Input Gateway | `gateway.input` | `crates/agentteam-gateway/src/input.rs` | gateway unit, function map gate |
 | `crates::agentteam-gateway::src::input::require_value` | Input Gateway | `gateway.input` | `crates/agentteam-gateway/src/input.rs` | gateway unit, function map gate |
 | `crates::agentteam-gateway::src::input::validate_intent` | Input Gateway | `gateway.input` | `crates/agentteam-gateway/src/input.rs` | gateway unit, function map gate |
@@ -241,6 +245,7 @@ Every Rust function or method under `crates/` and `xtask/src/` must be listed he
 | `crates::agentteam-runtime::src::domain::tests::resolves_role_team_and_all_targets` | Daemon Domain Registry test | `domain.registry` | `crates/agentteam-runtime/src/domain/tests.rs` | cargo test, function map gate |
 | `crates::agentteam-runtime::src::domain::tests::snapshot_does_not_expose_tokens` | Daemon Domain Registry test | `domain.registry` | `crates/agentteam-runtime/src/domain/tests.rs` | cargo test, function map gate |
 | `crates::agentteam-runtime::src::domain::tests::unknown_remote_domain_does_not_fallback_to_local` | Daemon Domain Registry test | `domain.registry` | `crates/agentteam-runtime/src/domain/tests.rs` | cargo test, function map gate |
+| `crates::agentteam-runtime::src::control::control_error` | Team Orchestrator | `team.orchestration` | `crates/agentteam-runtime/src/control.rs` | runtime unit, function map gate |
 | `crates::agentteam-runtime::src::local::build_domain_registry` | Team Orchestrator | `team.orchestration` | `crates/agentteam-runtime/src/local.rs` | runtime unit, function map gate |
 | `crates::agentteam-runtime::src::local::config_error` | Team Orchestrator | `team.orchestration` | `crates/agentteam-runtime/src/local.rs` | runtime unit, function map gate |
 | `crates::agentteam-runtime::src::local::config_result` | Team Orchestrator | `team.orchestration` | `crates/agentteam-runtime/src/local.rs` | runtime unit, function map gate |
@@ -319,14 +324,21 @@ Every Rust function or method under `crates/` and `xtask/src/` must be listed he
 | `crates::agentteam-gateway::src::input::parse_task_error` | Input Gateway | `gateway.input` | `crates/agentteam-gateway/src/input.rs` | gateway unit, function map gate |
 | `crates::agentteam-gateway::src::input::parse_task_list` | Input Gateway | `gateway.input` | `crates/agentteam-gateway/src/input.rs` | gateway unit, function map gate |
 | `crates::agentteam-gateway::src::input::parse_task_claim` | Input Gateway | `gateway.input` | `crates/agentteam-gateway/src/input.rs` | gateway unit, function map gate |
+| `crates::agentteam-gateway::src::input::parse_msg_send` | Input Gateway | `gateway.input` | `crates/agentteam-gateway/src/input.rs` | gateway unit, function map gate |
 | `crates::agentteam-gateway::src::input::parse_task_send` | Input Gateway | `gateway.input` | `crates/agentteam-gateway/src/input.rs` | gateway unit, function map gate |
 | `crates::agentteam-gateway::src::input::parse_task_status` | Input Gateway | `gateway.input` | `crates/agentteam-gateway/src/input.rs` | gateway unit, function map gate |
 | `crates::agentteam-gateway::src::input::parse_tmux_loopback` | Input Gateway | `gateway.input` | `crates/agentteam-gateway/src/input.rs` | gateway unit, function map gate |
 | `crates::agentteam-gateway::src::tests::parses_task_send_intent` | Input Gateway test | `gateway.input` | `crates/agentteam-gateway/src/tests.rs` | cargo test, function map gate |
+| `crates::agentteam-gateway::src::tests::parses_ready_report_intent` | Input Gateway test | `gateway.input` | `crates/agentteam-gateway/src/tests.rs` | cargo test, function map gate |
 | `crates::agentteam-gateway::src::tests::parses_task_claim_intent` | Input Gateway test | `gateway.input` | `crates/agentteam-gateway/src/tests.rs` | cargo test, function map gate |
+| `crates::agentteam-gateway::src::tests::parses_msg_send_intent` | Input Gateway test | `gateway.input` | `crates/agentteam-gateway/src/tests.rs` | cargo test, function map gate |
+| `crates::agentteam-gateway::src::tests::parses_msg_broadcast_intent` | Input Gateway test | `gateway.input` | `crates/agentteam-gateway/src/tests.rs` | cargo test, function map gate |
 | `crates::agentteam-gateway::src::tests::parses_task_status_intent` | Input Gateway test | `gateway.input` | `crates/agentteam-gateway/src/tests.rs` | cargo test, function map gate |
 | `crates::agentteam-gateway::src::tests::parses_tmux_loopback_intent` | Input Gateway test | `gateway.input` | `crates/agentteam-gateway/src/tests.rs` | cargo test, function map gate |
 | `crates::agentteam-gateway::src::tests::render_task_result_json_uses_task_command_name` | Output Gateway test | `gateway.output` | `crates/agentteam-gateway/src/tests.rs` | cargo test, function map gate |
+| `crates::agentteam-gateway::src::tests::render_message_result_json_uses_msg_command_name` | Output Gateway test | `gateway.output` | `crates/agentteam-gateway/src/tests.rs` | cargo test, function map gate |
+| `crates::agentteam-gateway::src::tests::render_broadcast_result_json_uses_msg_command_name` | Output Gateway test | `gateway.output` | `crates/agentteam-gateway/src/tests.rs` | cargo test, function map gate |
+| `crates::agentteam-gateway::src::tests::render_ready_result_json_uses_ready_command_name` | Output Gateway test | `gateway.output` | `crates/agentteam-gateway/src/tests.rs` | cargo test, function map gate |
 | `crates::agentteam-contracts::src::comm::mod::CommReq01RouteIntent::new` | Communication Center contracts | `comm.center` | `crates/agentteam-contracts/src/comm/mod.rs` | contract unit, function map gate |
 | `crates::agentteam-contracts::src::comm::mod::CommReq01RouteIntent::resolve_target` | Communication Center contracts | `comm.center` | `crates/agentteam-contracts/src/comm/mod.rs` | contract unit, function map gate |
 | `crates::agentteam-contracts::src::comm::mod::CommReq02ResolvedTarget::delivery_envelope` | Communication Center contracts | `comm.center` | `crates/agentteam-contracts/src/comm/mod.rs` | contract unit, function map gate |
@@ -354,7 +366,9 @@ Every Rust function or method under `crates/` and `xtask/src/` must be listed he
 | `crates::agentteam-contracts::src::comm::tests::comm_task_board_chain_uses_adjacent_nodes` | Communication Center contract test | `comm.center` | `crates/agentteam-contracts/src/comm/tests.rs` | cargo test, function map gate |
 | `crates::agentteam-contracts::src::comm::tests::comm_task_claim_chain_uses_adjacent_nodes` | Communication Center contract test | `comm.center` | `crates/agentteam-contracts/src/comm/tests.rs` | cargo test, function map gate |
 | `crates::agentteam-comm::src::error::CommCenterError::reason` | Communication Center | `comm.center` | `crates/agentteam-comm/src/error.rs` | routing unit, function map gate |
+| `crates::agentteam-comm::src::error::persistence_error` | Communication Center | `comm.center` | `crates/agentteam-comm/src/error.rs` | routing unit, function map gate |
 | `crates::agentteam-comm::src::model::CommRouteRequest::new` | Communication Center | `comm.center` | `crates/agentteam-comm/src/model.rs` | routing unit, function map gate |
+| `crates::agentteam-comm::src::model::CommRouteTarget::delivery_envelope` | Communication Center | `comm.center` | `crates/agentteam-comm/src/model.rs` | routing unit, function map gate |
 | `crates::agentteam-comm::src::model::CommReadyReportEnvelope::accept` | Communication Center | `comm.center` | `crates/agentteam-comm/src/model.rs` | routing unit, function map gate |
 | `crates::agentteam-comm::src::model::CommReadyReportRequest::new` | Communication Center | `comm.center` | `crates/agentteam-comm/src/model.rs` | routing unit, function map gate |
 | `crates::agentteam-comm::src::model::CommReadyReportRequest::resolve_agent` | Communication Center | `comm.center` | `crates/agentteam-comm/src/model.rs` | routing unit, function map gate |
@@ -368,24 +382,40 @@ Every Rust function or method under `crates/` and `xtask/src/` must be listed he
 | `crates::agentteam-comm::src::model::CommTaskClaimRequest::resolve_claim` | Communication Center | `comm.center` | `crates/agentteam-comm/src/model.rs` | routing unit, function map gate |
 | `crates::agentteam-comm::src::model::CommTaskClaimTarget::delivery_envelope` | Communication Center | `comm.center` | `crates/agentteam-comm/src/model.rs` | routing unit, function map gate |
 | `crates::agentteam-comm::src::model::CommTeamBroadcastRequest::new` | Communication Center | `comm.center` | `crates/agentteam-comm/src/model.rs` | routing unit, function map gate |
+| `crates::agentteam-comm::src::persist::persist_delivery_event<T: Serialize>` | Communication Center + Persistence | `comm.center` | `crates/agentteam-comm/src/persist.rs` | routing unit, function map gate |
 | `crates::agentteam-comm::src::route::CommCenter::new` | Communication Center | `comm.center` | `crates/agentteam-comm/src/route.rs` | routing unit, function map gate |
 | `crates::agentteam-comm::src::route::CommCenter::route_broadcast` | Communication Center | `comm.center` | `crates/agentteam-comm/src/route.rs` | routing unit, function map gate |
 | `crates::agentteam-comm::src::route::CommCenter::route_message` | Communication Center | `comm.center` | `crates/agentteam-comm/src/route.rs` | routing unit, function map gate |
 | `crates::agentteam-comm::src::route::CommCenter::route_ready_report` | Communication Center | `comm.center` | `crates/agentteam-comm/src/route.rs` | routing unit, function map gate |
 | `crates::agentteam-comm::src::route::CommCenter::route_task_board_query` | Communication Center | `comm.center` | `crates/agentteam-comm/src/route.rs` | routing unit, function map gate |
 | `crates::agentteam-comm::src::route::CommCenter::route_task_claim` | Communication Center | `comm.center` | `crates/agentteam-comm/src/route.rs` | routing unit, function map gate |
+| `crates::agentteam-comm::src::route::CommCenter::send_message` | Communication Center | `comm.center` | `crates/agentteam-comm/src/route.rs` | routing unit, function map gate |
+| `crates::agentteam-comm::src::route::CommCenter::send_broadcast` | Communication Center | `comm.center` | `crates/agentteam-comm/src/route.rs` | routing unit, function map gate |
+| `crates::agentteam-comm::src::route::CommCenter::send_ready_report` | Communication Center | `comm.center` | `crates/agentteam-comm/src/route.rs` | routing unit, function map gate |
 | `crates::agentteam-comm::src::route::delivery_id_for` | Communication Center | `comm.center` | `crates/agentteam-comm/src/route.rs` | routing unit, function map gate |
+| `crates::agentteam-comm::src::route::message_send_result` | Communication Center | `comm.center` | `crates/agentteam-comm/src/route.rs` | routing unit, function map gate |
+| `crates::agentteam-comm::src::route::broadcast_send_result` | Communication Center | `comm.center` | `crates/agentteam-comm/src/route.rs` | routing unit, function map gate |
+| `crates::agentteam-comm::src::route::ready_report_send_result` | Communication Center | `comm.center` | `crates/agentteam-comm/src/route.rs` | routing unit, function map gate |
 | `crates::agentteam-comm::src::route::route_broadcast` | Communication Center | `comm.center` | `crates/agentteam-comm/src/route.rs` | routing unit, function map gate |
 | `crates::agentteam-comm::src::route::route_message` | Communication Center | `comm.center` | `crates/agentteam-comm/src/route.rs` | routing unit, function map gate |
 | `crates::agentteam-comm::src::route::route_ready_report` | Communication Center | `comm.center` | `crates/agentteam-comm/src/route.rs` | routing unit, function map gate |
 | `crates::agentteam-comm::src::route::route_task_board_query` | Communication Center | `comm.center` | `crates/agentteam-comm/src/route.rs` | routing unit, function map gate |
 | `crates::agentteam-comm::src::route::route_task_claim` | Communication Center | `comm.center` | `crates/agentteam-comm/src/route.rs` | routing unit, function map gate |
+| `crates::agentteam-comm::src::route::send_message` | Communication Center | `comm.center` | `crates/agentteam-comm/src/route.rs` | routing unit, function map gate |
+| `crates::agentteam-comm::src::route::send_broadcast` | Communication Center | `comm.center` | `crates/agentteam-comm/src/route.rs` | routing unit, function map gate |
+| `crates::agentteam-comm::src::route::send_ready_report` | Communication Center | `comm.center` | `crates/agentteam-comm/src/route.rs` | routing unit, function map gate |
 | `crates::agentteam-comm::src::route::validate_broadcast_members` | Communication Center | `comm.center` | `crates/agentteam-comm/src/route.rs` | routing unit, function map gate |
 | `crates::agentteam-comm::src::route::validate_message_target` | Communication Center | `comm.center` | `crates/agentteam-comm/src/route.rs` | routing unit, function map gate |
 | `crates::agentteam-comm::src::route::validate_ready_report` | Communication Center | `comm.center` | `crates/agentteam-comm/src/route.rs` | routing unit, function map gate |
 | `crates::agentteam-comm::src::route::validate_task_board_query` | Communication Center | `comm.center` | `crates/agentteam-comm/src/route.rs` | routing unit, function map gate |
 | `crates::agentteam-comm::src::route::validate_task_claim` | Communication Center | `comm.center` | `crates/agentteam-comm/src/route.rs` | routing unit, function map gate |
 | `crates::agentteam-comm::src::tests::route_broadcast_accepts_exact_member_list` | Communication Center test | `comm.center` | `crates/agentteam-comm/src/tests.rs` | cargo test, function map gate |
+| `crates::agentteam-comm::src::tests::persist_delivery_event_reports_persistence_failure` | Communication Center test | `comm.center` | `crates/agentteam-comm/src/tests.rs` | cargo test, function map gate |
+| `crates::agentteam-comm::src::tests::persist_delivery_event_writes_replayable_jsonl` | Communication Center test | `comm.center` | `crates/agentteam-comm/src/tests.rs` | cargo test, function map gate |
+| `crates::agentteam-comm::src::tests::temp_log_path` | Communication Center test helper | `comm.center` | `crates/agentteam-comm/src/tests.rs` | cargo test, function map gate |
+| `crates::agentteam-comm::src::tests::send_message_persists_delivery_and_returns_receipt` | Communication Center test | `comm.center` | `crates/agentteam-comm/src/tests.rs` | cargo test, function map gate |
+| `crates::agentteam-comm::src::tests::send_broadcast_persists_delivery_and_returns_receipt` | Communication Center test | `comm.center` | `crates/agentteam-comm/src/tests.rs` | cargo test, function map gate |
+| `crates::agentteam-comm::src::tests::send_ready_report_persists_delivery_and_returns_receipt` | Communication Center test | `comm.center` | `crates/agentteam-comm/src/tests.rs` | cargo test, function map gate |
 | `crates::agentteam-comm::src::tests::route_ready_report_accepts_agent_name` | Communication Center test | `comm.center` | `crates/agentteam-comm/src/tests.rs` | cargo test, function map gate |
 | `crates::agentteam-comm::src::tests::route_message_accepts_non_empty_target` | Communication Center test | `comm.center` | `crates/agentteam-comm/src/tests.rs` | cargo test, function map gate |
 | `crates::agentteam-comm::src::tests::route_message_rejects_empty_target` | Communication Center test | `comm.center` | `crates/agentteam-comm/src/tests.rs` | cargo test, function map gate |
@@ -395,20 +425,30 @@ Every Rust function or method under `crates/` and `xtask/src/` must be listed he
 | `crates::agentteam-runtime::src::local::execute_task_claim` | Team Orchestrator | `team.orchestration` | `crates/agentteam-runtime/src/local.rs` | runtime unit, function map gate |
 | `crates::agentteam-runtime::src::local::execute_task_error` | Team Orchestrator | `team.orchestration` | `crates/agentteam-runtime/src/local.rs` | runtime unit, function map gate |
 | `crates::agentteam-runtime::src::local::execute_task_list` | Team Orchestrator | `team.orchestration` | `crates/agentteam-runtime/src/local.rs` | runtime unit, function map gate |
+| `crates::agentteam-runtime::src::local::execute_msg_send` | Team Orchestrator | `team.orchestration` | `crates/agentteam-runtime/src/local.rs` | runtime unit, function map gate |
+| `crates::agentteam-runtime::src::local::execute_msg_broadcast` | Team Orchestrator | `team.orchestration` | `crates/agentteam-runtime/src/local.rs` | runtime unit, function map gate |
+| `crates::agentteam-runtime::src::local::execute_ready_report` | Team Orchestrator | `team.orchestration` | `crates/agentteam-runtime/src/local.rs` | runtime unit, function map gate |
 | `crates::agentteam-runtime::src::local::execute_task_send` | Team Orchestrator | `team.orchestration` | `crates/agentteam-runtime/src/local.rs` | runtime unit, function map gate |
 | `crates::agentteam-runtime::src::local::execute_task_status` | Team Orchestrator | `team.orchestration` | `crates/agentteam-runtime/src/local.rs` | runtime unit, function map gate |
+| `crates::agentteam-runtime::src::local::comm_error` | Team Orchestrator | `team.orchestration` | `crates/agentteam-runtime/src/local.rs` | runtime unit, function map gate |
 | `crates::agentteam-runtime::src::local::parse_task_target_kind` | Team Orchestrator | `team.orchestration` | `crates/agentteam-runtime/src/local.rs` | runtime unit, function map gate |
 | `crates::agentteam-runtime::src::local::task_error` | Team Orchestrator | `team.orchestration` | `crates/agentteam-runtime/src/local.rs` | runtime unit, function map gate |
 | `crates::agentteam-runtime::src::local_projection::config_result` | Team Orchestrator projection | `team.orchestration` | `crates/agentteam-runtime/src/local_projection.rs` | runtime unit, function map gate |
 | `crates::agentteam-runtime::src::local_projection::daemon_check_result` | Team Orchestrator projection | `team.orchestration` | `crates/agentteam-runtime/src/local_projection.rs` | runtime unit, function map gate |
 | `crates::agentteam-runtime::src::local_projection::debug_bundle_result` | Team Orchestrator projection | `team.orchestration` | `crates/agentteam-runtime/src/local_projection.rs` | runtime unit, function map gate |
 | `crates::agentteam-runtime::src::local_projection::domain_snapshot_result` | Team Orchestrator projection | `team.orchestration` | `crates/agentteam-runtime/src/local_projection.rs` | runtime unit, function map gate |
+| `crates::agentteam-runtime::src::local_projection::message_send_result` | Team Orchestrator projection | `team.orchestration` | `crates/agentteam-runtime/src/local_projection.rs` | runtime unit, function map gate |
+| `crates::agentteam-runtime::src::local_projection::broadcast_send_result` | Team Orchestrator projection | `team.orchestration` | `crates/agentteam-runtime/src/local_projection.rs` | runtime unit, function map gate |
+| `crates::agentteam-runtime::src::local_projection::ready_report_result` | Team Orchestrator projection | `team.orchestration` | `crates/agentteam-runtime/src/local_projection.rs` | runtime unit, function map gate |
 | `crates::agentteam-runtime::src::local_projection::resolved_domain_result` | Team Orchestrator projection | `team.orchestration` | `crates/agentteam-runtime/src/local_projection.rs` | runtime unit, function map gate |
 | `crates::agentteam-runtime::src::local_projection::tmux_loopback_result` | Team Orchestrator projection | `team.orchestration` | `crates/agentteam-runtime/src/local_projection.rs` | runtime unit, function map gate |
+| `crates::agentteam-runtime::src::local_tests::local_msg_broadcast_persists_delivery_event` | Team Orchestrator test | `team.orchestration` | `crates/agentteam-runtime/src/local_tests.rs` | cargo test, function map gate |
 | `crates::agentteam-runtime::src::local_projection::route_kind_label` | Team Orchestrator projection | `team.orchestration` | `crates/agentteam-runtime/src/local_projection.rs` | runtime unit, function map gate |
 | `crates::agentteam-runtime::src::local_projection::target_kind_parts` | Team Orchestrator projection | `team.orchestration` | `crates/agentteam-runtime/src/local_projection.rs` | runtime unit, function map gate |
 | `crates::agentteam-runtime::src::local_projection::task_board_result` | Team Orchestrator projection | `team.orchestration` | `crates/agentteam-runtime/src/local_projection.rs` | runtime unit, function map gate |
 | `crates::agentteam-runtime::src::local_projection::task_changed_result` | Team Orchestrator projection | `team.orchestration` | `crates/agentteam-runtime/src/local_projection.rs` | runtime unit, function map gate |
+| `crates::agentteam-runtime::src::local_tests::local_msg_send_persists_delivery_event` | Team Orchestrator test | `team.orchestration` | `crates/agentteam-runtime/src/local_tests.rs` | cargo test, function map gate |
+| `crates::agentteam-runtime::src::local_tests::local_ready_report_persists_delivery_event` | Team Orchestrator test | `team.orchestration` | `crates/agentteam-runtime/src/local_tests.rs` | cargo test, function map gate |
 | `crates::agentteam-runtime::src::local_tests::local_task_commands_persist_and_replay_state` | Team Orchestrator test | `team.orchestration` | `crates/agentteam-runtime/src/local_tests.rs` | cargo test, function map gate |
 | `crates::agentteam-runtime::src::task::engine::TaskEngine::board` | Task Engine | `task.engine` | `crates/agentteam-runtime/src/task/engine.rs` | task unit, function map gate |
 | `crates::agentteam-runtime::src::task::engine::TaskEngine::create_task` | Task Engine | `task.engine` | `crates/agentteam-runtime/src/task/engine.rs` | task unit, function map gate |
@@ -516,12 +556,147 @@ Every Rust function or method under `crates/` and `xtask/src/` must be listed he
 | `xtask::src::red_tests::scan_agent_facing_internal_leaks` | Architecture Gate | `architecture.gate` | `xtask/src/red_tests.rs` | red-tests gate |
 | `xtask::src::red_tests::scan_broad_kill_patterns` | Architecture Gate | `architecture.gate` | `xtask/src/red_tests.rs` | red-tests gate |
 | `xtask::src::red_tests::scan_contract_feature_ids` | Architecture Gate | `architecture.gate` | `xtask/src/red_tests.rs` | red-tests gate |
+| `xtask::src::red_tests::scan_configured_agent_name_concepts` | Architecture Gate | `architecture.gate` | `xtask/src/red_tests.rs` | red-tests gate |
 | `xtask::src::red_tests::scan_domain_owner_boundaries` | Architecture Gate | `architecture.gate` | `xtask/src/red_tests.rs` | red-tests gate |
 | `xtask::src::red_tests::scan_non_adjacent_pipeline_conversions` | Architecture Gate | `architecture.gate` | `xtask/src/red_tests.rs` | red-tests gate |
 | `xtask::src::red_tests::scan_rust_files` | Architecture Gate | `architecture.gate` | `xtask/src/red_tests.rs` | red-tests gate |
 | `xtask::src::red_tests::scan_state_file_write_owner` | Architecture Gate | `architecture.gate` | `xtask/src/red_tests.rs` | red-tests gate |
 | `xtask::src::red_tests::scan_text_files` | Architecture Gate | `architecture.gate` | `xtask/src/red_tests.rs` | red-tests gate |
 | `xtask::src::red_tests::scan_toml_parsing_owner` | Architecture Gate | `architecture.gate` | `xtask/src/red_tests.rs` | red-tests gate |
+
+| `crates::agentteam-gateway::src::input::parse_start` | Input Gateway | `gateway.input` | `crates/agentteam-gateway/src/input.rs` | gateway unit, function map gate |
+| `crates::agentteam-gateway::src::tests::parses_start_intent` | Input Gateway test | `gateway.input` | `crates/agentteam-gateway/src/tests.rs` | cargo test, function map gate |
+| `crates::agentteam-gateway::src::tests::render_local_start_result_uses_start_command_name` | Output Gateway test | `gateway.output` | `crates/agentteam-gateway/src/tests.rs` | cargo test, function map gate |
+| `crates::agentteam-runtime::src::startup::execute_startup` | Team Orchestrator | `team.orchestration` | `crates/agentteam-runtime/src/startup.rs` | runtime unit, function map gate |
+| `crates::agentteam-runtime::src::startup::execute_startup_worker` | Team Orchestrator | `team.orchestration` | `crates/agentteam-runtime/src/startup.rs` | runtime unit, function map gate |
+| `crates::agentteam-runtime::src::startup::startup_error` | Team Orchestrator | `team.orchestration` | `crates/agentteam-runtime/src/startup.rs` | runtime unit, function map gate |
+| `crates::agentteam-startup::src::config::default_config_path_missing_home` | Startup Session Manager | `startup.session` | `crates/agentteam-startup/src/config.rs` | startup unit, function map gate |
+| `crates::agentteam-startup::src::config::load_validated_config` | Startup Session Manager | `startup.session` | `crates/agentteam-startup/src/config.rs` | startup unit, function map gate |
+| `crates::agentteam-startup::src::env::build_agent_env` | Startup Session Manager | `startup.session` | `crates/agentteam-startup/src/env.rs` | startup unit, function map gate |
+| `crates::agentteam-startup::src::error::StartupError::reason` | Startup Session Manager | `startup.session` | `crates/agentteam-startup/src/error.rs` | startup unit, function map gate |
+| `crates::agentteam-startup::src::error::config_error` | Startup Session Manager | `startup.session` | `crates/agentteam-startup/src/error.rs` | startup unit, function map gate |
+| `crates::agentteam-startup::src::error::control_error` | Startup Session Manager | `startup.session` | `crates/agentteam-startup/src/error.rs` | startup unit, function map gate |
+| `crates::agentteam-startup::src::error::resource_error` | Startup Session Manager | `startup.session` | `crates/agentteam-startup/src/error.rs` | startup unit, function map gate |
+| `crates::agentteam-startup::src::error::tmux_error` | Startup Session Manager | `startup.session` | `crates/agentteam-startup/src/error.rs` | startup unit, function map gate |
+| `crates::agentteam-startup::src::paths::build_session_name` | Startup Session Manager | `startup.session` | `crates/agentteam-startup/src/paths.rs` | startup unit, function map gate |
+| `crates::agentteam-startup::src::paths::expand_default_config_path` | Startup Session Manager | `startup.session` | `crates/agentteam-startup/src/paths.rs` | startup unit, function map gate |
+| `crates::agentteam-startup::src::paths::expand_home_path` | Startup Session Manager | `startup.session` | `crates/agentteam-startup/src/paths.rs` | startup unit, function map gate |
+| `crates::agentteam-startup::src::paths::resolve_cwd` | Startup Session Manager | `startup.session` | `crates/agentteam-startup/src/paths.rs` | startup unit, function map gate |
+| `crates::agentteam-startup::src::paths::runtime_event_log_path` | Startup Session Manager | `startup.session` | `crates/agentteam-startup/src/paths.rs` | startup unit, function map gate |
+| `crates::agentteam-startup::src::paths::session_dir` | Startup Session Manager | `startup.session` | `crates/agentteam-startup/src/paths.rs` | startup unit, function map gate |
+| `crates::agentteam-startup::src::prompt::build_root_manager_bootstrap_prompt` | Startup Session Manager | `startup.session` | `crates/agentteam-startup/src/prompt.rs` | startup unit, function map gate |
+| `crates::agentteam-startup::src::prompt::build_worker_bootstrap_prompt` | Startup Session Manager | `startup.session` | `crates/agentteam-startup/src/prompt.rs` | startup unit, function map gate |
+| `crates::agentteam-startup::src::select::select_root_manager` | Startup Session Manager | `startup.session` | `crates/agentteam-startup/src/select.rs` | startup unit, function map gate |
+| `crates::agentteam-startup::src::select::select_team<'a>` | Startup Session Manager | `startup.session` | `crates/agentteam-startup/src/select.rs` | startup unit, function map gate |
+| `crates::agentteam-startup::src::select::select_worker<'a>` | Startup Session Manager | `startup.session` | `crates/agentteam-startup/src/select.rs` | startup unit, function map gate |
+| `crates::agentteam-startup::src::select::worker_names` | Startup Session Manager | `startup.session` | `crates/agentteam-startup/src/select.rs` | startup unit, function map gate |
+| `crates::agentteam-startup::src::lib::start_bootstrap` | Startup Session Manager | `startup.session` | `crates/agentteam-startup/src/lib.rs` | startup unit, function map gate |
+| `crates::agentteam-startup::src::lib::start_worker` | Startup Session Manager | `startup.session` | `crates/agentteam-startup/src/lib.rs` | startup unit, function map gate |
+| `crates::agentteam-startup::src::session::build_resume_args` | Startup Session Manager | `startup.session` | `crates/agentteam-startup/src/session.rs` | startup unit, function map gate |
+| `crates::agentteam-startup::src::session::control_session_input` | Startup Session Manager | `startup.session` | `crates/agentteam-startup/src/session.rs` | startup unit, function map gate |
+| `crates::agentteam-startup::src::session::ensure_agent_session` | Startup Session Manager | `startup.session` | `crates/agentteam-startup/src/session.rs` | startup unit, function map gate |
+| `crates::agentteam-startup::src::session::launch_new_agent_session` | Startup Session Manager | `startup.session` | `crates/agentteam-startup/src/session.rs` | startup unit, function map gate |
+| `crates::agentteam-startup::src::session::release_after_launch_failure<T>` | Startup Session Manager | `startup.session` | `crates/agentteam-startup/src/session.rs` | startup unit, function map gate |
+| `crates::agentteam-startup::src::session::seed_codex_agent_session` | Startup Session Manager | `startup.session` | `crates/agentteam-startup/src/session.rs` | startup unit, function map gate |
+| `crates::agentteam-startup::src::session::stop_seed_bridge` | Startup Session Manager | `startup.session` | `crates/agentteam-startup/src/session.rs` | startup unit, function map gate |
+| `crates::agentteam-startup::src::tests::agent_env_contains_identity_and_scope` | Startup Session Manager test | `startup.session` | `crates/agentteam-startup/src/tests.rs` | cargo test, function map gate |
+| `crates::agentteam-startup::src::tests::member` | Startup Session Manager test helper | `startup.session` | `crates/agentteam-startup/src/tests.rs` | cargo test, function map gate |
+| `crates::agentteam-startup::src::tests::normalized` | Startup Session Manager test helper | `startup.session` | `crates/agentteam-startup/src/tests.rs` | cargo test, function map gate |
+| `crates::agentteam-startup::src::tests::root_manager_prompt_teaches_identity_skill_and_worker_start` | Startup Session Manager test | `startup.session` | `crates/agentteam-startup/src/tests.rs` | cargo test, function map gate |
+| `crates::agentteam-startup::src::tests::session_name_uses_domain_project_and_agent` | Startup Session Manager test | `startup.session` | `crates/agentteam-startup/src/tests.rs` | cargo test, function map gate |
+| `crates::agentteam-startup::src::tests::team` | Startup Session Manager test helper | `startup.session` | `crates/agentteam-startup/src/tests.rs` | cargo test, function map gate |
+| `crates::agentteam-startup::src::tests::worker_names_includes_only_worker_roles` | Startup Session Manager test | `startup.session` | `crates/agentteam-startup/src/tests.rs` | cargo test, function map gate |
+| `crates::agentteam-startup::src::tests::worker_prompt_teaches_role_and_ready_loop` | Startup Session Manager test | `startup.session` | `crates/agentteam-startup/src/tests.rs` | cargo test, function map gate |
+| `crates::agentteam-tmux::src::launch::build_shell_command` | zterm/tmux Adapter | `adapter.zterm_tmux` | `crates/agentteam-tmux/src/launch.rs` | adapter unit, function map gate |
+| `crates::agentteam-tmux::src::launch::launch_managed_session` | zterm/tmux Adapter | `adapter.zterm_tmux` | `crates/agentteam-tmux/src/launch.rs` | adapter unit, function map gate |
+| `crates::agentteam-tmux::src::launch::quote_shell_word` | zterm/tmux Adapter | `adapter.zterm_tmux` | `crates/agentteam-tmux/src/launch.rs` | adapter unit, function map gate |
+| `crates::agentteam-tmux::src::launch::validate_launch_input` | zterm/tmux Adapter | `adapter.zterm_tmux` | `crates/agentteam-tmux/src/launch.rs` | adapter unit, function map gate |
+| `crates::agentteam-contracts::src::control::mod::AgentCtlReq01ModeIntent::new` | Agent Control Center contracts | `agent.control_center` | `crates/agentteam-contracts/src/control/mod.rs` | contract unit, function map gate |
+| `crates::agentteam-contracts::src::control::mod::AgentCtlReq01ModeIntent::resolve_mode` | Agent Control Center contracts | `agent.control_center` | `crates/agentteam-contracts/src/control/mod.rs` | contract unit, function map gate |
+| `crates::agentteam-contracts::src::control::mod::AgentCtlReq02ResolvedMode::bind_session` | Agent Control Center contracts | `agent.control_center` | `crates/agentteam-contracts/src/control/mod.rs` | contract unit, function map gate |
+| `crates::agentteam-contracts::src::control::mod::AgentCtlReq03SessionBinding::apply_action` | Agent Control Center contracts | `agent.control_center` | `crates/agentteam-contracts/src/control/mod.rs` | contract unit, function map gate |
+| `crates::agentteam-contracts::src::control::mod::AgentCtlReq04ControlAction::project` | Agent Control Center contracts | `agent.control_center` | `crates/agentteam-contracts/src/control/mod.rs` | contract unit, function map gate |
+| `crates::agentteam-contracts::src::control::mod::control_chain_keeps_mode_and_receipt` | Agent Control Center contract test | `agent.control_center` | `crates/agentteam-contracts/src/control/mod.rs` | cargo test, function map gate |
+| `crates::agentteam-contracts::src::control::mod::control_feature_id_is_stable` | Agent Control Center contract test | `agent.control_center` | `crates/agentteam-contracts/src/control/mod.rs` | cargo test, function map gate |
+| `crates::agentteam-control::src::error::ControlError::reason` | Agent Control Center | `agent.control_center` | `crates/agentteam-control/src/error.rs` | control unit, function map gate |
+| `crates::agentteam-control::src::error::tmux_error` | Agent Control Center | `agent.control_center` | `crates/agentteam-control/src/error.rs` | control unit, function map gate |
+| `crates::agentteam-control::src::headless_process::bridge_state_is_running` | Agent Control Center | `agent.control_center` | `crates/agentteam-control/src/headless_process.rs` | control unit, function map gate |
+| `crates::agentteam-control::src::headless_process::ensure_bridge_running` | Agent Control Center | `agent.control_center` | `crates/agentteam-control/src/headless_process.rs` | control unit, function map gate |
+| `crates::agentteam-control::src::headless_process::interrupt_turn` | Agent Control Center | `agent.control_center` | `crates/agentteam-control/src/headless_process.rs` | control unit, function map gate |
+| `crates::agentteam-control::src::headless_process::run_bridge` | Agent Control Center | `agent.control_center` | `crates/agentteam-control/src/headless_process.rs` | control unit, function map gate |
+| `crates::agentteam-control::src::headless_process::run_turn` | Agent Control Center | `agent.control_center` | `crates/agentteam-control/src/headless_process.rs` | control unit, function map gate |
+| `crates::agentteam-control::src::headless_process::seed_agent_session` | Agent Control Center | `agent.control_center` | `crates/agentteam-control/src/headless_process.rs` | control unit, function map gate |
+| `crates::agentteam-control::src::headless_process::send_request` | Agent Control Center | `agent.control_center` | `crates/agentteam-control/src/headless_process.rs` | control unit, function map gate |
+| `crates::agentteam-control::src::headless_process::session_status` | Agent Control Center | `agent.control_center` | `crates/agentteam-control/src/headless_process.rs` | control unit, function map gate |
+| `crates::agentteam-control::src::headless_process::spawn_bridge` | Agent Control Center | `agent.control_center` | `crates/agentteam-control/src/headless_process.rs` | control unit, function map gate |
+| `crates::agentteam-control::src::headless_process::start_session` | Agent Control Center | `agent.control_center` | `crates/agentteam-control/src/headless_process.rs` | control unit, function map gate |
+| `crates::agentteam-control::src::headless_process::stop_session` | Agent Control Center | `agent.control_center` | `crates/agentteam-control/src/headless_process.rs` | control unit, function map gate |
+| `crates::agentteam-control::src::headless_process::wait_until_running` | Agent Control Center | `agent.control_center` | `crates/agentteam-control/src/headless_process.rs` | control unit, function map gate |
+| `crates::agentteam-control::src::headless_protocol::HeadlessBridgePaths::read_state` | Agent Control Center | `agent.control_center` | `crates/agentteam-control/src/headless_protocol.rs` | control unit, function map gate |
+| `crates::agentteam-control::src::headless_protocol::HeadlessBridgePaths::request` | Agent Control Center | `agent.control_center` | `crates/agentteam-control/src/headless_protocol.rs` | control unit, function map gate |
+| `crates::agentteam-control::src::headless_protocol::HeadlessBridgePaths::resolve` | Agent Control Center | `agent.control_center` | `crates/agentteam-control/src/headless_protocol.rs` | control unit, function map gate |
+| `crates::agentteam-control::src::headless_protocol::headless_session_dir` | Agent Control Center | `agent.control_center` | `crates/agentteam-control/src/headless_protocol.rs` | control unit, function map gate |
+| `crates::agentteam-control::src::headless_protocol::project_slug_from_cwd` | Agent Control Center | `agent.control_center` | `crates/agentteam-control/src/headless_protocol.rs` | control unit, function map gate |
+| `crates::agentteam-control::src::headless_protocol::require_existing_path` | Agent Control Center | `agent.control_center` | `crates/agentteam-control/src/headless_protocol.rs` | control unit, function map gate |
+| `crates::agentteam-control::src::headless_protocol::sanitize_session_name` | Agent Control Center | `agent.control_center` | `crates/agentteam-control/src/headless_protocol.rs` | control unit, function map gate |
+| `crates::agentteam-control::src::lib::AgentControlCenter::default` | Agent Control Center | `agent.control_center` | `crates/agentteam-control/src/lib.rs` | control unit, function map gate |
+| `crates::agentteam-control::src::lib::AgentControlCenter::new` | Agent Control Center | `agent.control_center` | `crates/agentteam-control/src/lib.rs` | control unit, function map gate |
+| `crates::agentteam-control::src::lib::AgentControlCenter::attach_tui` | Agent Control Center | `agent.control_center` | `crates/agentteam-control/src/lib.rs` | control unit, function map gate |
+| `crates::agentteam-control::src::lib::AgentControlCenter::headless` | Agent Control Center | `agent.control_center` | `crates/agentteam-control/src/lib.rs` | control unit, function map gate |
+| `crates::agentteam-control::src::lib::AgentControlCenter::seed_agent_session` | Agent Control Center | `agent.control_center` | `crates/agentteam-control/src/lib.rs` | control unit, function map gate |
+| `crates::agentteam-control::src::lib::AgentControlCenter::headless_interrupt` | Agent Control Center | `agent.control_center` | `crates/agentteam-control/src/lib.rs` | control unit, function map gate |
+| `crates::agentteam-control::src::lib::AgentControlCenter::headless_run` | Agent Control Center | `agent.control_center` | `crates/agentteam-control/src/lib.rs` | control unit, function map gate |
+| `crates::agentteam-control::src::lib::AgentControlCenter::headless_status` | Agent Control Center | `agent.control_center` | `crates/agentteam-control/src/lib.rs` | control unit, function map gate |
+| `crates::agentteam-control::src::lib::AgentControlCenter::headless_stop` | Agent Control Center | `agent.control_center` | `crates/agentteam-control/src/lib.rs` | control unit, function map gate |
+| `crates::agentteam-control::src::lib::AgentControlCenter::help` | Agent Control Center | `agent.control_center` | `crates/agentteam-control/src/lib.rs` | control unit, function map gate |
+| `crates::agentteam-control::src::lib::AgentControlCenter::observe_output` | Agent Control Center | `agent.control_center` | `crates/agentteam-control/src/lib.rs` | control unit, function map gate |
+| `crates::agentteam-control::src::lib::AgentControlCenter::pause` | Agent Control Center | `agent.control_center` | `crates/agentteam-control/src/lib.rs` | control unit, function map gate |
+| `crates::agentteam-control::src::lib::AgentControlCenter::project_headless_response` | Agent Control Center | `agent.control_center` | `crates/agentteam-control/src/lib.rs` | control unit, function map gate |
+| `crates::agentteam-control::src::lib::AgentControlCenter::retry_dispatch` | Agent Control Center | `agent.control_center` | `crates/agentteam-control/src/lib.rs` | control unit, function map gate |
+| `crates::agentteam-control::src::lib::AgentControlCenter::run_session_control<F>` | Agent Control Center | `agent.control_center` | `crates/agentteam-control/src/lib.rs` | control unit, function map gate |
+| `crates::agentteam-control::src::lib::AgentControlCenter::run_tmux_control<F>` | Agent Control Center | `agent.control_center` | `crates/agentteam-control/src/lib.rs` | control unit, function map gate |
+| `crates::agentteam-control::src::lib::AgentControlCenter::send_input` | Agent Control Center | `agent.control_center` | `crates/agentteam-control/src/lib.rs` | control unit, function map gate |
+| `crates::agentteam-control::src::lib::AgentControlCenter::next_receipt_id` | Agent Control Center | `agent.control_center` | `crates/agentteam-control/src/lib.rs` | control unit, function map gate |
+| `crates::agentteam-control::src::lib::AgentControlCenter::snapshot` | Agent Control Center | `agent.control_center` | `crates/agentteam-control/src/lib.rs` | control unit, function map gate |
+| `crates::agentteam-control::src::lib::AgentControlCenter::status` | Agent Control Center | `agent.control_center` | `crates/agentteam-control/src/lib.rs` | control unit, function map gate |
+| `crates::agentteam-control::src::lib::AgentControlCenter::stop` | Agent Control Center | `agent.control_center` | `crates/agentteam-control/src/lib.rs` | control unit, function map gate |
+| `crates::agentteam-control::src::lib::AgentControlCenter::wait` | Agent Control Center | `agent.control_center` | `crates/agentteam-control/src/lib.rs` | control unit, function map gate |
+| `crates::agentteam-control::src::lib::control_action_label` | Agent Control Center | `agent.control_center` | `crates/agentteam-control/src/lib.rs` | control unit, function map gate |
+| `crates::agentteam-control::src::lib::help_text` | Agent Control Center | `agent.control_center` | `crates/agentteam-control/src/lib.rs` | control unit, function map gate |
+| `crates::agentteam-control::src::lib::status_from_capture` | Agent Control Center | `agent.control_center` | `crates/agentteam-control/src/lib.rs` | control unit, function map gate |
+| `crates::agentteam-control::src::model::ControlRetryInput::new` | Agent Control Center | `agent.control_center` | `crates/agentteam-control/src/model.rs` | control unit, function map gate |
+| `crates::agentteam-control::src::model::ControlAgentSessionBinding::new` | Agent Control Center | `agent.control_center` | `crates/agentteam-control/src/model.rs` | control unit, function map gate |
+| `crates::agentteam-control::src::model::ControlSendInput::new` | Agent Control Center | `agent.control_center` | `crates/agentteam-control/src/model.rs` | control unit, function map gate |
+| `crates::agentteam-control::src::model::ControlSessionInput::new` | Agent Control Center | `agent.control_center` | `crates/agentteam-control/src/model.rs` | control unit, function map gate |
+| `crates::agentteam-control::src::model::ControlSessionInput::with_scope` | Agent Control Center | `agent.control_center` | `crates/agentteam-control/src/model.rs` | control unit, function map gate |
+| `crates::agentteam-control::src::model::ControlSnapshot::from_projection` | Agent Control Center | `agent.control_center` | `crates/agentteam-control/src/model.rs` | control unit, function map gate |
+| `crates::agentteam-control::src::tests::attach_help_returns_tmux_contract` | Agent Control Center test | `agent.control_center` | `crates/agentteam-control/src/tests.rs` | cargo test, function map gate |
+| `crates::agentteam-control::src::tests::agent_session_binding_requires_thread_id` | Agent Control Center test | `agent.control_center` | `crates/agentteam-control/src/tests.rs` | cargo test, function map gate |
+| `crates::agentteam-control::src::tests::control_chain_projects_receipt` | Agent Control Center test | `agent.control_center` | `crates/agentteam-control/src/tests.rs` | cargo test, function map gate |
+| `crates::agentteam-control::src::tests::headless_bridge_response_parses_sdk_payload` | Agent Control Center test | `agent.control_center` | `crates/agentteam-control/src/tests.rs` | cargo test, function map gate |
+| `crates::agentteam-control::src::tests::headless_run_requires_input` | Agent Control Center test | `agent.control_center` | `crates/agentteam-control/src/tests.rs` | cargo test, function map gate |
+| `crates::agentteam-control::src::tests::retry_input_requires_fact_ids` | Agent Control Center test | `agent.control_center` | `crates/agentteam-control/src/tests.rs` | cargo test, function map gate |
+| `crates::agentteam-control::src::tests::send_input_requires_text` | Agent Control Center test | `agent.control_center` | `crates/agentteam-control/src/tests.rs` | cargo test, function map gate |
+| `crates::agentteam-control::src::tests::stopped_headless_bridge_projects_offline` | Agent Control Center test | `agent.control_center` | `crates/agentteam-control/src/tests.rs` | cargo test, function map gate |
+| `crates::agentteam-gateway::src::input::parse_control` | Input Gateway | `gateway.input` | `crates/agentteam-gateway/src/input.rs` | gateway unit, function map gate |
+| `crates::agentteam-gateway::src::input::parse_start_worker` | Input Gateway | `gateway.input` | `crates/agentteam-gateway/src/input.rs` | gateway unit, function map gate |
+| `crates::agentteam-gateway::src::validate::require_json` | Input Gateway | `gateway.input` | `crates/agentteam-gateway/src/validate.rs` | gateway unit, function map gate |
+| `crates::agentteam-gateway::src::validate::require_value` | Input Gateway | `gateway.input` | `crates/agentteam-gateway/src/validate.rs` | gateway unit, function map gate |
+| `crates::agentteam-gateway::src::validate::validate_intent` | Input Gateway | `gateway.input` | `crates/agentteam-gateway/src/validate.rs` | gateway unit, function map gate |
+| `crates::agentteam-gateway::src::tests::parses_control_attach_intent` | Input Gateway test | `gateway.input` | `crates/agentteam-gateway/src/tests.rs` | cargo test, function map gate |
+| `crates::agentteam-gateway::src::tests::parses_control_headless_run_intent` | Input Gateway test | `gateway.input` | `crates/agentteam-gateway/src/tests.rs` | cargo test, function map gate |
+| `crates::agentteam-gateway::src::tests::parses_control_retry_intent` | Input Gateway test | `gateway.input` | `crates/agentteam-gateway/src/tests.rs` | cargo test, function map gate |
+| `crates::agentteam-gateway::src::tests::render_headless_run_result_json_uses_dynamic_control_command_name` | Output Gateway test | `gateway.output` | `crates/agentteam-gateway/src/tests.rs` | cargo test, function map gate |
+| `crates::agentteam-gateway::src::tests::render_control_result_json_uses_dynamic_control_command_name` | Output Gateway test | `gateway.output` | `crates/agentteam-gateway/src/tests.rs` | cargo test, function map gate |
+| `crates::agentteam-runtime::src::control::execute_control` | Team Orchestrator | `team.orchestration` | `crates/agentteam-runtime/src/control.rs` | runtime unit, function map gate |
+| `crates::agentteam-runtime::src::local_projection::control_result` | Team Orchestrator projection | `team.orchestration` | `crates/agentteam-runtime/src/local_projection.rs` | runtime unit, function map gate |
+| `crates::agentteam-runtime::src::local_tests::local_control_headless_run_requires_input` | Team Orchestrator test | `team.orchestration` | `crates/agentteam-runtime/src/local_tests.rs` | cargo test, function map gate |
+| `crates::agentteam-tmux::src::control::capture_session` | zterm/tmux Adapter | `adapter.zterm_tmux` | `crates/agentteam-tmux/src/control.rs` | adapter unit, function map gate |
+| `crates::agentteam-tmux::src::control::interrupt_session` | zterm/tmux Adapter | `adapter.zterm_tmux` | `crates/agentteam-tmux/src/control.rs` | adapter unit, function map gate |
+| `crates::agentteam-tmux::src::control::send_input` | zterm/tmux Adapter | `adapter.zterm_tmux` | `crates/agentteam-tmux/src/control.rs` | adapter unit, function map gate |
+| `crates::agentteam-tmux::src::control::session_exists` | zterm/tmux Adapter | `adapter.zterm_tmux` | `crates/agentteam-tmux/src/control.rs` | adapter unit, function map gate |
+| `crates::agentteam-tmux::src::control::stop_session` | zterm/tmux Adapter | `adapter.zterm_tmux` | `crates/agentteam-tmux/src/control.rs` | adapter unit, function map gate |
+| `crates::agentteam-tmux::src::control::validate_session_name` | zterm/tmux Adapter | `adapter.zterm_tmux` | `crates/agentteam-tmux/src/control.rs` | adapter unit, function map gate |
 
 ## Discussion Items
 

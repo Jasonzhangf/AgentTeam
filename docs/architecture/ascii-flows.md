@@ -183,12 +183,12 @@ User/Agent CLI
 +-----------------------+
 ```
 
-## 2.1 Kevin Bootstrap And Worker Spawn
+## 2.1 Manager Bootstrap And Worker Spawn
 
 ```text
 Current TUI / human
     |
-    | agentteam startup init
+    | agentteam start (defaults to cwd scope)
     v
 +-----------------------+
 | Input Gateway         |
@@ -203,7 +203,7 @@ Current TUI / human
       v           v
 +-----+----+  +---+----------------+
 | Config   |  | Agent Registry     |
-| Center   |  | Kevin + names      |
+| Center   |  | manager + names    |
 +-----+----+  +---+----------------+
       |           |
       v           v
@@ -220,16 +220,92 @@ Current TUI / human
       |
       v
 +-----+-----------------+
-| Kevin + workers       |
-| skill/identity ready  |
+| Manager ready         |
+| worker launch later   |
 +-----------------------+
 ```
+
+Role control path:
+
+```text
+Manager startup params -> configured name/role/team/project scope
+Manager skills -> manager behavior and worker initialization
+Worker startup params -> worker name/role/team/project scope
+Worker skills -> ready/claim/done/error/note control
+Manager -> task/message/broadcast/debug control
+tmux -> transparent transport carrier, hidden from agents
+```
+
+## 2.2 Single-Agent Control Plane
+
+```text
+User / Manager / Runtime
+    |
+    | typed control intent
+    v
++---------------------------+
+| Input Gateway             |
+| control intent parse      |
++-------------+-------------+
+              |
+              v
++---------------------------+
+| Agent Control Center      |
+| mode select + bind        |
++------+------+-------------+
+       |      |
+       |      | headless
+       |      v
+       |  +----------------------+
+       |  | SDK Bridge Process   |
+       |  | live client/thread    |
+       |  +----------+-----------+
+       |             |
+       |             v
+       |  +----------------------+
+       |  | Headless Agent       |
+       |  | session/control loop  |
+       |  +----------+-----------+
+       |             |
+       |             v
+       |  +----------------------+
+       |  | Output Gateway       |
+       |  | status/projection    |
+       |  +----------------------+
+       |
+       | attach_tui
+       v
+ +----------------------+
+ | zterm/tmux Adapter   |
+ | stdin/stdout carrier  |
+ +----------+-----------+
+            |
+            v
+ +----------------------+
+ | Visible TUI Agent    |
+ | tmux session/pane    |
+ +----------+-----------+
+            |
+            v
+ +----------------------+
+ | Output Gateway       |
+ | status/projection    |
+ +----------------------+
+```
+
+Rules:
+
+- mode selection is explicit
+- attach_tui and headless are both first-class
+- control-plane output is projected, not guessed from raw pane text alone
+- tmux session details stay hidden from agent-facing layers
+- SDK control is the automatic lane; tmux control remains the human-observable lane
 
 Forbidden:
 
 ```text
-Kevin -> event log direct
-Kevin -> tmux direct
+Manager -> event log direct
+Manager -> tmux direct
 Startup Manager -> tmux direct
 Startup Manager -> state file direct
 Worker -> hidden daemon wire

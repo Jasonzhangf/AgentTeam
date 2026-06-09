@@ -12,7 +12,7 @@ The first implementation scope is Rust workspace scaffolding, architecture gates
 |---|---|
 | user config scope | one active project per `~/.agentteam/config.toml` |
 | agent launcher shape | `command` plus explicit `args`; no shell-string truth |
-| startup identity | `agentteam startup init` binds current TUI as Kevin |
+| startup identity | `agentteam start` launches the configured manager from current `cwd` through startup params and skill context |
 | daemon API | JSON over loopback HTTP in v1 |
 | persistence format | typed JSONL event log, with materialized snapshots later |
 | task completion truth | explicit CLI `task done` / `task error` only |

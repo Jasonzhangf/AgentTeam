@@ -38,6 +38,27 @@ pub enum TeamReq02ParsedCommand {
         runtime_home: Option<String>,
         json: bool,
     },
+    Startup {
+        cwd: Option<String>,
+        config_path: Option<String>,
+        team_id: Option<String>,
+        json: bool,
+    },
+    StartupWorker {
+        agent_name: Option<String>,
+        cwd: Option<String>,
+        config_path: Option<String>,
+        team_id: Option<String>,
+        json: bool,
+    },
+    ReadyReport {
+        runtime_home: Option<String>,
+        sender: Option<String>,
+        team_id: Option<String>,
+        agent_name: Option<String>,
+        body: Option<String>,
+        json: bool,
+    },
     TaskSend {
         runtime_home: Option<String>,
         team_id: Option<String>,
@@ -77,6 +98,33 @@ pub enum TeamReq02ParsedCommand {
         worker_role: Option<String>,
         json: bool,
     },
+    MsgSend {
+        runtime_home: Option<String>,
+        from: Option<String>,
+        to: Option<String>,
+        action: Option<String>,
+        body: Option<String>,
+        json: bool,
+    },
+    MsgBroadcast {
+        runtime_home: Option<String>,
+        sender: Option<String>,
+        team_id: Option<String>,
+        action: Option<String>,
+        body: Option<String>,
+        members: Option<String>,
+        json: bool,
+    },
+    Control {
+        action: Option<String>,
+        agent_name: Option<String>,
+        team_id: Option<String>,
+        session_name: Option<String>,
+        input: Option<String>,
+        task_id: Option<String>,
+        error_fact_id: Option<String>,
+        json: bool,
+    },
     TmuxLoopback {
         runtime_home: Option<String>,
         session_count: Option<String>,
@@ -103,6 +151,27 @@ pub enum TeamReq03ValidatedIntent {
     DebugSnapshot {
         config_path: String,
         runtime_home: String,
+        json: bool,
+    },
+    Startup {
+        cwd: Option<String>,
+        config_path: Option<String>,
+        team_id: Option<String>,
+        json: bool,
+    },
+    StartupWorker {
+        agent_name: String,
+        cwd: Option<String>,
+        config_path: Option<String>,
+        team_id: Option<String>,
+        json: bool,
+    },
+    ReadyReport {
+        runtime_home: String,
+        sender: String,
+        team_id: String,
+        agent_name: String,
+        body: String,
         json: bool,
     },
     TaskSend {
@@ -144,6 +213,33 @@ pub enum TeamReq03ValidatedIntent {
         worker_role: String,
         json: bool,
     },
+    MsgSend {
+        runtime_home: String,
+        from: String,
+        to: String,
+        action: String,
+        body: String,
+        json: bool,
+    },
+    MsgBroadcast {
+        runtime_home: String,
+        sender: String,
+        team_id: String,
+        action: String,
+        body: String,
+        members: Vec<String>,
+        json: bool,
+    },
+    Control {
+        action: String,
+        agent_name: String,
+        team_id: String,
+        session_name: String,
+        input: Option<String>,
+        task_id: Option<String>,
+        error_fact_id: Option<String>,
+        json: bool,
+    },
     TmuxLoopback {
         runtime_home: String,
         session_count: String,
@@ -160,12 +256,18 @@ impl TeamReq03ValidatedIntent {
             Self::DaemonCheck { .. } => "daemon.check",
             Self::DomainResolve { .. } => "domain.resolve",
             Self::DebugSnapshot { .. } => "debug.snapshot",
+            Self::Startup { .. } => "start",
+            Self::StartupWorker { .. } => "start.worker",
+            Self::ReadyReport { .. } => "ready.report",
             Self::TaskSend { .. } => "task.send",
             Self::TaskList { .. } => "task.list",
             Self::TaskStatus { .. } => "task.status",
             Self::TaskDone { .. } => "task.done",
             Self::TaskError { .. } => "task.error",
             Self::TaskClaim { .. } => "task.claim",
+            Self::MsgSend { .. } => "msg.send",
+            Self::MsgBroadcast { .. } => "msg.broadcast",
+            Self::Control { .. } => "control",
             Self::TmuxLoopback { .. } => "tmux.loopback",
         }
     }
@@ -188,6 +290,22 @@ mod tests {
             json: true,
         };
         assert_eq!(intent.command_name(), "daemon.check");
+        let intent = TeamReq03ValidatedIntent::Startup {
+            cwd: Some("/tmp/project".to_owned()),
+            config_path: Some("~/.agentteam/config.toml".to_owned()),
+            team_id: Some("default".to_owned()),
+            json: true,
+        };
+        assert_eq!(intent.command_name(), "start");
+        let intent = TeamReq03ValidatedIntent::ReadyReport {
+            runtime_home: "target/agentteam-smoke".to_owned(),
+            sender: "Alice".to_owned(),
+            team_id: "default".to_owned(),
+            agent_name: "Alice".to_owned(),
+            body: "ready".to_owned(),
+            json: true,
+        };
+        assert_eq!(intent.command_name(), "ready.report");
         let intent = TeamReq03ValidatedIntent::TaskList {
             runtime_home: "target/agentteam-smoke".to_owned(),
             json: true,
@@ -200,6 +318,36 @@ mod tests {
             json: true,
         };
         assert_eq!(intent.command_name(), "task.claim");
+        let intent = TeamReq03ValidatedIntent::MsgSend {
+            runtime_home: "target/agentteam-smoke".to_owned(),
+            from: "Kevin".to_owned(),
+            to: "Alice".to_owned(),
+            action: "message".to_owned(),
+            body: "hello".to_owned(),
+            json: true,
+        };
+        assert_eq!(intent.command_name(), "msg.send");
+        let intent = TeamReq03ValidatedIntent::MsgBroadcast {
+            runtime_home: "target/agentteam-smoke".to_owned(),
+            sender: "Kevin".to_owned(),
+            team_id: "default".to_owned(),
+            action: "broadcast".to_owned(),
+            body: "hello".to_owned(),
+            members: vec!["Alice".to_owned(), "Bob".to_owned()],
+            json: true,
+        };
+        assert_eq!(intent.command_name(), "msg.broadcast");
+        let intent = TeamReq03ValidatedIntent::Control {
+            action: "attach".to_owned(),
+            agent_name: "Kevin".to_owned(),
+            team_id: "default".to_owned(),
+            session_name: "TA_local_agentteam_Kevin".to_owned(),
+            input: None,
+            task_id: None,
+            error_fact_id: None,
+            json: true,
+        };
+        assert_eq!(intent.command_name(), "control");
         let intent = TeamReq03ValidatedIntent::TmuxLoopback {
             runtime_home: "target/agentteam-smoke".to_owned(),
             session_count: "2".to_owned(),

@@ -1,10 +1,17 @@
+use std::path::Path;
+
+use agentteam_contracts::comm::CommReq03DeliveryEnvelope;
+use agentteam_contracts::persist::PersistResp03AppendReceipt;
+
 use crate::error::{CommCenterError, CommCenterResult};
 use crate::model::{
-    CommBroadcastResult, CommBroadcastTarget, CommMessageResult, CommReadyReportRequest,
-    CommReadyReportResult, CommReadyReportTarget, CommRouteRequest, CommRouteTarget,
+    CommBroadcastResult, CommBroadcastSendResult, CommBroadcastTarget, CommMessageResult,
+    CommMessageSendResult, CommReadyReportRequest, CommReadyReportResult,
+    CommReadyReportSendResult, CommReadyReportTarget, CommRouteRequest, CommRouteTarget,
     CommTaskBoardQueryRequest, CommTaskBoardQueryResult, CommTaskBoardQueryTarget,
     CommTaskClaimRequest, CommTaskClaimResult, CommTaskClaimTarget, CommTeamBroadcastRequest,
 };
+use crate::persist::persist_delivery_event;
 
 #[derive(Debug, Default, Clone, PartialEq, Eq)]
 pub struct CommCenter;
@@ -23,6 +30,19 @@ impl CommCenter {
         })
     }
 
+    pub fn send_message(
+        &self,
+        log_path: impl AsRef<Path>,
+        request: CommRouteRequest,
+    ) -> CommCenterResult<CommMessageSendResult> {
+        let target = validate_message_target(request)?;
+        let delivery_envelope = target.delivery_envelope();
+        let delivery_id = delivery_id_for(&delivery_envelope.target, &delivery_envelope.action);
+        let receipt =
+            persist_delivery_event(log_path, "comm_message_delivery", &delivery_envelope)?;
+        Ok(message_send_result(delivery_id, delivery_envelope, receipt))
+    }
+
     pub fn route_broadcast(
         &self,
         request: CommTeamBroadcastRequest,
@@ -35,6 +55,17 @@ impl CommCenter {
         })
     }
 
+    pub fn send_broadcast(
+        &self,
+        log_path: impl AsRef<Path>,
+        request: CommTeamBroadcastRequest,
+    ) -> CommCenterResult<CommBroadcastSendResult> {
+        let resolved = validate_broadcast_members(request)?;
+        let delivery_id = delivery_id_for(&resolved.team_id, &resolved.action);
+        let receipt = persist_delivery_event(log_path, "comm_broadcast_delivery", &resolved)?;
+        Ok(broadcast_send_result(delivery_id, resolved, receipt))
+    }
+
     pub fn route_ready_report(
         &self,
         request: CommReadyReportRequest,
@@ -45,6 +76,23 @@ impl CommCenter {
             team_id: target.team_id,
             agent_name: target.agent_name,
         })
+    }
+
+    pub fn send_ready_report(
+        &self,
+        log_path: impl AsRef<Path>,
+        request: CommReadyReportRequest,
+    ) -> CommCenterResult<CommReadyReportSendResult> {
+        let target = validate_ready_report(request)?;
+        let delivery_envelope = target.delivery_envelope();
+        let delivery_id = delivery_id_for(&delivery_envelope.agent_name, "ready.report");
+        let receipt =
+            persist_delivery_event(log_path, "comm_ready_report_delivery", &delivery_envelope)?;
+        Ok(ready_report_send_result(
+            delivery_id,
+            delivery_envelope,
+            receipt,
+        ))
     }
 
     pub fn route_task_board_query(
@@ -77,14 +125,35 @@ pub fn route_message(request: CommRouteRequest) -> CommCenterResult<CommMessageR
     CommCenter::new().route_message(request)
 }
 
+pub fn send_message(
+    log_path: impl AsRef<Path>,
+    request: CommRouteRequest,
+) -> CommCenterResult<CommMessageSendResult> {
+    CommCenter::new().send_message(log_path, request)
+}
+
 pub fn route_broadcast(request: CommTeamBroadcastRequest) -> CommCenterResult<CommBroadcastResult> {
     CommCenter::new().route_broadcast(request)
+}
+
+pub fn send_broadcast(
+    log_path: impl AsRef<Path>,
+    request: CommTeamBroadcastRequest,
+) -> CommCenterResult<CommBroadcastSendResult> {
+    CommCenter::new().send_broadcast(log_path, request)
 }
 
 pub fn route_ready_report(
     request: CommReadyReportRequest,
 ) -> CommCenterResult<CommReadyReportResult> {
     CommCenter::new().route_ready_report(request)
+}
+
+pub fn send_ready_report(
+    log_path: impl AsRef<Path>,
+    request: CommReadyReportRequest,
+) -> CommCenterResult<CommReadyReportSendResult> {
+    CommCenter::new().send_ready_report(log_path, request)
 }
 
 pub fn route_task_board_query(
@@ -232,4 +301,49 @@ fn validate_task_claim(request: CommTaskClaimRequest) -> CommCenterResult<CommTa
 
 fn delivery_id_for(target: &str, action: &str) -> String {
     format!("delivery:{target}:{action}")
+}
+
+fn ready_report_send_result(
+    delivery_id: String,
+    envelope: crate::model::CommReadyReportEnvelope,
+    receipt: PersistResp03AppendReceipt,
+) -> CommReadyReportSendResult {
+    CommReadyReportSendResult {
+        delivery_id,
+        team_id: envelope.team_id,
+        agent_name: envelope.agent_name,
+        event_id: receipt.event_id,
+        sequence: receipt.sequence,
+        log_path: receipt.log_path,
+    }
+}
+
+fn broadcast_send_result(
+    delivery_id: String,
+    envelope: CommBroadcastTarget,
+    receipt: PersistResp03AppendReceipt,
+) -> CommBroadcastSendResult {
+    CommBroadcastSendResult {
+        delivery_id,
+        team_id: envelope.team_id,
+        recipient_count: envelope.members.len(),
+        event_id: receipt.event_id,
+        sequence: receipt.sequence,
+        log_path: receipt.log_path,
+    }
+}
+
+fn message_send_result(
+    delivery_id: String,
+    envelope: CommReq03DeliveryEnvelope,
+    receipt: PersistResp03AppendReceipt,
+) -> CommMessageSendResult {
+    CommMessageSendResult {
+        delivery_id,
+        target: envelope.target,
+        action: envelope.action,
+        event_id: receipt.event_id,
+        sequence: receipt.sequence,
+        log_path: receipt.log_path,
+    }
 }

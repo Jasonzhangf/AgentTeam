@@ -10,7 +10,9 @@ It must provide:
 - tmux-backed TUI agent stdin/stdout communication
 - zterm-compatible terminal mirror/render integration
 - provider-adapted TUI agent status signals
+- single-agent control mode selection for attach_tui and headless operation
 - local session bootstrap and project startup management
+- startup parameter injection for agent name, role, team, and project scope
 - role-based task orchestration
 - explicit inter-agent messaging
 - cross-daemon agent addressing through daemon domains
@@ -26,6 +28,7 @@ AgentTeam owns:
 - team registry
 - daemon domain registry
 - agent naming pool
+- single-agent control plane
 - role/member lifecycle
 - task queue
 - message bus semantics
@@ -60,6 +63,14 @@ TUI Agent Adapter Center owns:
 - normalized TUI agent status signals
 - Codex/generic/future TUI adapter boundary
 
+Agent Control Center owns:
+
+- single-agent control mode selection
+- attach_tui tmux binding
+- headless SDK-style binding
+- pause/stop/wait/retry control
+- per-agent input/output routing
+
 No AgentTeam module may copy zterm daemon logic. AgentTeam may depend on a zterm-compatible adapter contract.
 
 ## Rust Workspace Direction
@@ -76,6 +87,7 @@ Future crate layout:
 - `agentteam-startup`: startup and local session manager
 - `agentteam-tanote`: TANote collaboration board
 - `agentteam-resource`: Resource Lifecycle Manager
+- `agentteam-control`: Agent Control Center
 - `agentteam-tmux`: tmux/zterm adapter
 - `agentteam-tui-adapter`: TUI agent provider adapter center
 - `agentteam-gateway`: input/output/UI gateway
@@ -97,7 +109,8 @@ Future crate layout:
 - Config Center is the only TOML parser and config normalizer.
 - Persistence owns event append/replay; no module writes state files directly.
 - TUI Agent Adapter Center extracts provider signals only; it does not project final lifecycle status.
-- Startup Manager coordinates bootstrap/session plans only; it does not persist files directly or execute tmux directly.
+- Agent Control Center binds one agent at a time and owns attach_tui/headless control mode selection; it does not own task truth or name allocation.
+- Startup Manager coordinates bootstrap/session plans only; it does not persist files directly or execute tmux directly. Standard tmux is the transparent operator carrier for the configured manager shell, but tmux/session details remain hidden from agents.
 
 ## Main Chains
 
@@ -115,7 +128,11 @@ Debug chain:
 
 Terminal/status chain:
 
-`TaskDispatch -> InputGateway -> TmuxAdapter -> zterm/tmux -> TuiAgentAdapter -> AgentRegistry/Runtime -> OutputGateway`
+`TaskDispatch -> InputGateway -> AgentControlCenter -> TmuxAdapter/SDKAdapter -> zterm/tmux or SDK -> TuiAgentAdapter -> AgentRegistry/Runtime -> OutputGateway`
+
+Single-agent control chain:
+
+`ControlIntent -> InputGateway -> AgentControlCenter -> SessionBinding -> Input/Output/Wait/Pause/Stop -> Adapter -> Observation -> OutputGateway`
 
 TANote/forum chain:
 

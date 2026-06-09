@@ -147,7 +147,7 @@ fn validate_teams(path: &str, teams: &[TeamConfig]) -> ConfigCenterResult<()> {
     } else {
         validation_error(
             path,
-            format!("v1 requires exactly one manager Kevin, got {manager_count}"),
+            format!("v1 requires exactly one manager, got {manager_count}"),
         )
     }
 }
@@ -163,9 +163,6 @@ fn validate_team_members(path: &str, team: &TeamConfig) -> ConfigCenterResult<us
         require_non_empty(path, "teams.members.command", &member.command)?;
         insert_unique(path, &mut names, "member name", &member.name)?;
         if member.team_role == "manager" {
-            if member.name != "Kevin" {
-                return validation_error(path, "v1 manager name must be Kevin");
-            }
             manager_count += 1;
         }
     }

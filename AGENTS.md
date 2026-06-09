@@ -18,12 +18,13 @@ Current phase: MVP scaffold may be implemented. Business runtime behavior still 
 8. Every tracked build path must be explicit. Future build scripts must fail when required source/config/test files are missing or untracked.
 9. zterm terminal transport remains an external adapter truth. AgentTeam owns team/task/message/config/debug/error orchestration truth.
 10. Rust is the implementation language for runtime, daemon, CLI, gateways, contracts, and governance.
-11. Local skills must have valid YAML frontmatter or Kevin/worker operating instructions are considered unavailable.
+11. Local skills must have valid YAML frontmatter or configured-manager/worker operating instructions are considered unavailable.
 12. Every long-lived resource must have an owner-scoped lifecycle lease and debug-visible release/orphan/leak evidence.
 13. Function map is a hard gate: no feature implementation or modification without `feature_id`, owner, allowed paths, forbidden paths, required gates, and verification mapping.
 14. Hand-written Rust source leaf files are limited to 500 lines. Shared blocks/contracts are not exempt; split them by owner/domain/node instead.
 15. Module development cycle belongs to the local `agentteam-dev` skill. The `agentteam` skill remains the runtime/CLI collaboration surface.
 16. Daemon domains are the cross-daemon naming boundary. Agent Registry owns domain-local names only; Daemon Domain Registry owns `agent@domain` parsing and route resolution.
+17. `Kevin` is only a configured/default sample agent name. Code functions, structs, schema fields, feature ids, and red-test ids must use neutral manager/root-manager/configured-agent naming.
 
 ## Rust Naming Contract
 
@@ -78,6 +79,7 @@ Module requirements:
 - `docs/modules/16-tanote-collaboration-board.md`
 - `docs/modules/17-resource-lifecycle-manager.md`
 - `docs/modules/18-daemon-domain-registry.md`
+- `docs/modules/19-agent-control-center.md`
 
 ## Required Flow Before Code
 

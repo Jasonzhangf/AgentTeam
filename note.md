@@ -55,3 +55,117 @@
 - `TaskEngine::claim_task` now selects assigned tasks before role-matching tasks, with blocked-before-unblocked ordering inside the same claim class and explicit `task_claimed` persistence.
 - Added CLI/Gateway support for `task claim --runtime-home ... --worker-name ... --worker-role ... --json` and a local runtime smoke that claims a task, transitions it to running, then completes it.
 - Verified with `cargo test -p agentteam-runtime -p agentteam-gateway`, `cargo xtask verify-function-map`, `cargo fmt --check`, `cargo clippy --workspace --all-targets -- -D warnings`, `cargo test --workspace`, `cargo xtask verify-code-size`, and `cargo xtask verify`.
+2026-06-08 Communication Center delivery persistence slice start:
+- Next executable slice is `comm.persist_delivery_event`: add a comm-owned JSONL append helper, keep route validation separate from persistence, and verify replayable delivery payloads against `agentteam-persist`.
+- Communication Center needs explicit persistence failure classification so append errors do not collapse into validation.
+- Function-map and verification-map entries must be added before/with the implementation because `cargo xtask verify-function-map` is a hard gate.
+2026-06-08 Communication Center message-send slice result:
+- Added `comm.send_message` plus `agentteam msg send --runtime-home ... --from ... --to ... --action ... --body ... --json`.
+- The route now validates target, persists a `comm_message_delivery` JSONL event through `agentteam-persist`, and returns delivery metadata with event id/sequence/log path.
+- Added gateway/runtime/output coverage for `msg send`, plus function-map and verification-map entries for the new path.
+- Verified with `cargo test -p agentteam-comm -p agentteam-gateway -p agentteam-runtime`, `cargo xtask red-tests`, `cargo xtask verify-code-size`, `cargo xtask verify-function-map`, and `cargo xtask verify`.
+2026-06-08 Communication Center ready-report slice result:
+- Added `comm.send_ready_report` plus `agentteam ready report --runtime-home ... --sender ... --team ... --agent-name ... --body ... --json`.
+- The route now validates ready reports, persists a `comm_ready_report_delivery` JSONL event through `agentteam-persist`, and returns replayable delivery metadata with event id/sequence/log path.
+- Added gateway/runtime/output coverage for `ready report`, plus function-map, verification-map, red-test-plan, and startup/CLI docs updates for the worker-ready surface.
+- Verified with `cargo fmt --check`, `cargo test -p agentteam-comm -p agentteam-gateway -p agentteam-runtime`, `cargo xtask red-tests`, `cargo xtask verify-code-size`, `cargo xtask verify-required-files`, `cargo xtask verify-skill-frontmatter`, `cargo xtask verify-resource-lifecycle`, `cargo test --workspace`, `cargo clippy --workspace --all-targets -- -D warnings`, `cargo xtask verify-function-map`, and `cargo xtask verify`.
+2026-06-08 Broadcast/pre-E2E slice result:
+- Added `msg broadcast` delivery path in `agentteam-comm`, `agentteam-gateway`, and `agentteam-runtime`, plus matching docs/gates for the command surface and receipts.
+- Split gateway parsing into `input.rs`, `broadcast.rs`, and `options.rs` so every hand-written Rust leaf file stays under 500 lines.
+- Verified `cargo xtask verify-function-map`, `cargo xtask verify-code-size`, `cargo xtask red-tests`, `cargo xtask verify-required-files`, `cargo xtask verify-skill-frontmatter`, `cargo xtask verify-resource-lifecycle`, `cargo fmt --check`, `cargo clippy --workspace --all-targets -- -D warnings`, `cargo test --workspace`, and `cargo xtask verify`.
+- Playground smoke in `~/code/playground` succeeded with runtime home `/Volumes/extension/code/playground/agentteam-smoke`: ready report, broadcast delivery receipt, task send, task claim, task done, and task status all returned JSON receipts with persisted event ids/sequences.
+2026-06-09 E2E smoke result:
+- Real local E2E smoke ran under `/Users/fanzhang/Documents/github/agentteam/agentteam-e2e` and `/Users/fanzhang/Documents/github/agentteam/agentteam-tmux-e2e`.
+- Sequence passed: ready report, direct message, broadcast, task send/list/claim/done/status, second task claim/error/status, and tmux loopback.
+- Task success path ended in `done` for `AT-000001`; task error path ended in `error` for `AT-000002`.
+- tmux loopback reported `observed_count=2`, `cleaned_handle_count=2`, and `cleanup_status=cleaned_exact_handles`.
+2026-06-09 Usage guide result:
+- Added `docs/usage/agentteam-usage.md` as the unified role-based operating guide.
+- Linked the guide from `agentteam` skill, `13-cli-agent-skill.md`, and `docs/architecture/file-structure.md`.
+- The guide documents current real startup behavior, role reading order, Kevin workflow, worker workflow, and current E2E smoke sequence.
+2026-06-09 startup clarification:
+- Standard tmux is now the transparent bootstrap carrier in docs; `routecodex`/`rcc` startup wording was removed from the user-facing path.
+- Kevin startup parameters assign Kevin identity; Kevin later initializes workers with their own tmux + role params through skills/CLI.
+- Kevin and worker docs now emphasize CLI control, `ready report`, `msg send`, `msg broadcast`, task commands, and note commands rather than hidden tmux/session details.
+2026-06-09 bootstrap refinement:
+- Kevin is the only first-launch target for startup params; Kevin then initializes workers with their own tmux + params.
+- Worker startup remains tmux + role together, but it is Kevin-issued after Kevin's own launch.
+2026-06-09 startup implementation planning:
+- `agentteam start` is the executable bootstrap entrypoint.
+- Default scope is current `cwd`; config path can still default to `~/.agentteam/config.toml`.
+- Implementation should launch Kevin through the tmux adapter, persist a startup/resource lease event, and return a JSON bootstrap report.
+- Kevin workers remain later-issued by Kevin through skills/CLI; `start` does not directly spawn workers in v1.
+2026-06-09 startup/status rule:
+- Kevin output status cannot be forced by semantic reply.
+- `stdout` is transport evidence; `busy` covers active work and pending request/response.
+- `idle` requires live session + no active task/request; `error` requires launch/session/transport/framework fault.
+- function map needed new entries for `start` parse/execute/startup helpers and tmux launch helpers.
+2026-06-09 evidence retention rule:
+- Do not clean Kevin test sessions/evidence during the test run.
+- Cleanup must wait until the user explicitly exits Kevin; otherwise evidence is lost before the test concludes.
+2026-06-09 Kevin root-manager rule:
+- Kevin is the root manager of the project agent tree.
+- User explicitly exits Kevin; Kevin must not auto-exit after startup.
+- Kevin exit triggers scoped worker exit through shutdown flow.
+- Kevin skills need a CLI feedback path to return execution results to the framework.
+
+2026-06-09 stdin experiment:
+- Confirmed live Kevin tmux session exists: `TA_local_agentteam_Kevin`.
+- Manual `tmux send-keys -l <probe>` + `Enter` injected a unique marker into the Kevin pane; `tmux capture-pane -pt TA_local_agentteam_Kevin -J` showed the marker in the pane output.
+- Current framework CLI does not expose a real agent-input command path yet: `agentteam startup input --help` returns unsupported command.
+- Current `agentteam start` path launches Kevin, but the framework still lacks a public CLI command that routes a typed input envelope into Kevin's tmux stdin.
+
+2026-06-09 control-plane design:
+- Added a new `Agent Control Center` module doc as the single-agent control plane.
+- The new module owns explicit `attach_tui` and `headless` mode selection, session binding, typed input/output routing, pause/stop/wait/retry, and control-plane snapshots.
+- Startup now hands the live agent to Agent Control Center after bootstrap instead of owning per-agent input/output control.
+- tmux adapter keeps transport ownership; TUI adapter keeps provider-signal normalization; Agent Control Center sits between them and the higher-level runtime/CLI orchestration.
+2026-06-09 headless bridge discovery:
+- `python3` cannot import `openai_codex` in the current environment (`ModuleNotFoundError`).
+- `/Users/fanzhang/code/codex` does contain real Codex thread/turn/collab control surfaces, including `thread_start`, `thread_resume`, `thread_read`, `turn.run`, `turn.interrupt`, and collab tools `spawnAgent/sendInput/resumeAgent/wait/closeAgent`.
+- A Rust headless bridge will need either a local SDK install or a separate bridge process; it is not available directly in the current workspace yet.
+2026-06-09 control-plane split:
+- `agentteam-runtime::local.rs` still carried `execute_control`; moved control execution into `agentteam-runtime::control` so the local orchestrator stays under the 500-line leaf-file cap.
+- Function map must be updated to point `execute_control` / `control_error` at `crates/agentteam-runtime/src/control.rs`.
+2026-06-09 Codex SDK bridge result:
+- Confirmed local SDK source import works from `/Users/fanzhang/code/codex/sdk/python/src`.
+- Confirmed public SDK surface includes `Codex(CodexConfig(codex_bin=...))`, `thread_start`, `thread_resume`, `thread.read(include_turns=False)`, `thread.turn(...).run()`, and `thread.turn(...).interrupt()` via the SDK client.
+- The bridge now uses a project-scoped session dir under `~/.agentteam/sessions/<project_slug>/headless/<session_name>/state.json`.
+- `headless` in Agent Control Center now routes through the bridge instead of returning explicit unavailable.
+- Bridge failures are split from env/path failures: env/path launch issues map to `HeadlessUnavailable`, bridge/runtime/parse issues map to `HeadlessBridge`.
+- `turn_interrupt` is not exposed as a public thread method in the SDK surface we inspected; the bridge uses the SDK client interrupt call for an existing turn id.
+
+2026-06-09 persistent headless bridge plan:
+- Verified Codex Python SDK `Codex` owns a live app-server client/process, and `Thread.turn(...).run()` consumes notifications through that live client. Persisting only `thread_id` in state.json is insufficient for later turns after the bridge process exits.
+- Next implementation must keep one session-scoped Python bridge process alive per headless session, with Rust commands sent over a local request channel. `state.json` should hold pid/port/thread evidence, not replace the live SDK runtime.
+- CLI needs explicit headless control actions (`headless-run`, `headless-status`, `headless-interrupt`, `headless-stop`) so AgentTeam can verify SDK turn execution through the framework instead of a standalone Python experiment.
+
+2026-06-09 persistent headless bridge result:
+- Implemented session-scoped persistent Codex SDK bridge process with localhost JSON request channel and state evidence under ~/.agentteam/sessions/<project_slug>/headless/<session_name>/state.json.
+- First smoke failure `headless bridge did not become ready` was traced to ping response missing the full bridge response schema; fixed by returning full HeadlessBridgeResponse-shaped ping/error payloads.
+- Second smoke failure `headless thread not started` after run/status was traced to new bridge processes not resuming state thread_id; fixed status/run/interrupt to load or resume the persisted thread_id before acting.
+- Verified real AgentTeam CLI bridge smoke on TA_headless_bridge_smoke_4: headless-run returned details `ready`, headless-status returned idle/thread idle, headless-stop returned ok, and ps showed no remaining headless_bridge.py process. Evidence state remains persisted.
+
+2026-06-09 create/control/recover + workflow verification start:
+- Current MVP definition: `control headless` is agent create/bind for a headless Codex agent; `control headless-run` is the control input path; `headless-stop` stops the scoped bridge process; a later `headless-status` or `headless-run` must recover by spawning a new bridge process and resuming persisted `thread_id` from the session state file.
+- Minimal workflow verification should not depend on deterministic model prose. Success truth is event-log/task/control projection evidence: ready report persisted, message persisted, task sent, worker claimed, worker headless response captured as evidence, task marked done, task status projects done.
+- First workflow attempt reached ready/message/task send/task claim and Alice headless returned `done`, but the outer script's later `task done --detail "headless evidence returned done"` failed with `cannot transition from done to done`. Event log showed sequence 5 was already `task_done` with detail `done`, meaning the worker turn had completed the task itself. Revised workflow truth: worker is responsible for task completion via CLI; outer smoke verifies `task status` instead of reporting completion a second time.
+- Second workflow attempt from repo cwd failed to let worker write `~/code/playground/...` through Codex SDK workspace sandbox (`Operation not permitted`), leaving the task running. Revised execution rule: for headless workflow smokes that write playground runtime state, invoke control commands from `~/code/playground` so the SDK workspace-write sandbox matches the runtime home.
+- Third workflow attempt passed with runtime home `/Users/fanzhang/code/playground/agentteam-workflow-20260609-03` and session `TA_headless_Alice_workflow_20260609_03`: ready report sequence 1, message sequence 2, task_created sequence 3, task_claimed sequence 4, Alice headless final response `workflow-result: AT-000001 done by Alice, status ok.`, task_done sequence 5, final task.status `done`, and scoped headless-stop projected `offline`.
+
+2026-06-09 visible Kevin TUI correction:
+- User checked `TA_local_agentteam` / `TA_local_agentteam_Kevin` and did not see visible Kevin initialization evidence. Verified current startup only injects environment variables into the Codex TUI process; it does not send a visible bootstrap prompt that tells the TUI agent it is Kevin, which skill to read, how to manage tasks/workers, or how to launch worker sessions.
+- Corrected startup requirement: Kevin's tmux Codex TUI session is the human-facing management session. A bootstrap prompt must be injected only for a newly created session. Existing sessions must not be reinjected because that pollutes active user conversation and evidence.
+2026-06-09 startup lifecycle implementation note:
+- Current partial `agentteam-startup/src/lib.rs` exceeded the 500-line Rust leaf limit and mixed models, config loading, selection, env, prompts, and session lifecycle in one file.
+- Required implementation shape: session existence check must happen before resource acquisition, tmux launch, and prompt injection; existing sessions return `session_lifecycle=existing` and `bootstrap_prompt_status=skipped_existing_session`.
+- User added agent-session recovery requirement: after creating Kevin or a child agent, Startup Manager must record that agent's own session id/binding. This is not the AgentTeam project session. Later starts must read the agent-session binding, verify the tmux session is still alive, and restore/bind instead of creating a duplicate. If the agent-session binding exists but the tmux session is dead, the record is stale evidence and startup may create a new agent session with explicit lifecycle status; no existing live agent session may be reinjected.
+- Correction: the agent-session id is the Codex resumable thread/session id, not the tmux session id. Local evidence: `codex resume --help` accepts `SESSION_ID` and Codex CLI exit hint formats `codex resume <thread_id>`; Codex SDK docs expose explicit `thread_start(...)` and `thread_resume(thread_id, ...)`. tmux remains the visible carrier only.
+
+2026-06-09 Codex session-id startup experiment:
+- User clarified startup truth: create the Codex agent session first through SDK, obtain the Codex thread/session id, then start the visible TUI by running `codex resume <thread_id>` inside tmux. tmux id is only carrier identity.
+- Experiment 1: SDK `thread_start(cwd=/Users/fanzhang/code/playground)` returned `019eaad5-596b-72c0-8554-7f1d6b5a6367`, but visible TUI `codex resume 019eaad5-596b-72c0-8554-7f1d6b5a6367` in `TA_sdk_bare_resume_probe_20260609_01` failed with `No saved session found`. Bare SDK thread creation is not enough for TUI resume.
+- Experiment 2: SDK `thread_start` plus one completed seed turn returned thread id `019eaad6-49c3-7e31-964b-e9bcae139702` and `seeded-session-ok`; visible TUI `codex resume 019eaad6-49c3-7e31-964b-e9bcae139702` in `TA_sdk_seeded_resume_probe_20260609_01` loaded prior history and accepted a new prompt. SDK `thread_resume(...).read(include_turns=False)` on the same id returned status `idle`.
+- Startup implementation implication: first launch must seed the SDK-created thread before tmux resume; subsequent launch must reuse persisted `agent_session_id` / Codex thread id and skip bootstrap reinjection when a live tmux carrier already exists.
+2026-06-09 neutral manager naming correction:
+- User clarified that `Kevin` is only the configured default agent name. Code functions, structs, schema fields, feature ids, and red-test ids must use neutral concepts such as root manager, configured manager, bootstrap agent, or manager. Literal `Kevin` may remain only as config/example/test data where the framework is exercising a configured agent name.

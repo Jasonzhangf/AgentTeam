@@ -1,13 +1,16 @@
 use std::path::PathBuf;
 
+use agentteam_comm::{CommBroadcastSendResult, CommMessageSendResult, CommReadyReportSendResult};
 use agentteam_config::NormalizedConfig;
 use agentteam_contracts::debug::DebugResp03Bundle;
+use agentteam_control::ControlSnapshot;
 use agentteam_tmux::TmuxLoopbackReport;
 use serde::Serialize;
 
 use crate::domain::{
     DomainRegistrySnapshot, DomainRouteKind, DomainTargetKind, ResolvedDomainTarget,
 };
+pub use crate::local_startup_projection::{StartupStartResult, StartupWorkerResult};
 use crate::task::{TaskBoard, TaskStateChanged};
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -15,7 +18,10 @@ pub enum LocalCommandError {
     Config { reason: String },
     Domain { reason: String },
     Debug { reason: String },
+    Startup { reason: String },
+    Control { reason: String },
     Task { reason: String },
+    Comm { reason: String },
     Tmux { reason: String },
 }
 
@@ -35,6 +41,15 @@ pub enum LocalCommandResult {
     DebugSnapshot {
         bundle: DebugBundleResult,
     },
+    StartupStart {
+        bootstrap: StartupStartResult,
+    },
+    StartupWorker {
+        worker: StartupWorkerResult,
+    },
+    Control {
+        control: ControlResult,
+    },
     TaskSend {
         task: TaskStateChangedResult,
     },
@@ -52,6 +67,15 @@ pub enum LocalCommandResult {
     },
     TaskClaim {
         task: TaskStateChangedResult,
+    },
+    MessageSend {
+        delivery: MessageSendResult,
+    },
+    BroadcastSend {
+        delivery: BroadcastSendResult,
+    },
+    ReadyReport {
+        delivery: ReadyReportResult,
     },
     TmuxLoopback {
         loopback: TmuxLoopbackResult,
@@ -164,6 +188,50 @@ pub struct TmuxLoopbackObservationResult {
     pub observed_text_bytes: usize,
 }
 
+#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
+pub struct MessageSendResult {
+    pub delivery_id: String,
+    pub target: String,
+    pub action: String,
+    pub event_id: String,
+    pub sequence: u64,
+    pub log_path: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
+pub struct BroadcastSendResult {
+    pub delivery_id: String,
+    pub team_id: String,
+    pub recipient_count: usize,
+    pub event_id: String,
+    pub sequence: u64,
+    pub log_path: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
+pub struct ReadyReportResult {
+    pub delivery_id: String,
+    pub team_id: String,
+    pub agent_name: String,
+    pub event_id: String,
+    pub sequence: u64,
+    pub log_path: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
+pub struct ControlResult {
+    pub action: String,
+    pub agent_name: String,
+    pub team_id: String,
+    pub session_name: String,
+    pub mode: String,
+    pub adapter_kind: String,
+    pub state: String,
+    pub details: String,
+    pub receipt_id: String,
+    pub observed_bytes: usize,
+}
+
 pub fn config_result(normalized: NormalizedConfig) -> ConfigCheckResult {
     ConfigCheckResult {
         path: normalized.path,
@@ -261,6 +329,81 @@ pub fn task_board_result(board: TaskBoard) -> TaskBoardResult {
                 latest_sequence: task.latest_sequence,
             })
             .collect(),
+    }
+}
+
+pub fn message_send_result(delivery: CommMessageSendResult) -> MessageSendResult {
+    MessageSendResult {
+        delivery_id: delivery.delivery_id,
+        target: delivery.target,
+        action: delivery.action,
+        event_id: delivery.event_id,
+        sequence: delivery.sequence,
+        log_path: delivery.log_path,
+    }
+}
+
+pub fn broadcast_send_result(delivery: CommBroadcastSendResult) -> BroadcastSendResult {
+    BroadcastSendResult {
+        delivery_id: delivery.delivery_id,
+        team_id: delivery.team_id,
+        recipient_count: delivery.recipient_count,
+        event_id: delivery.event_id,
+        sequence: delivery.sequence,
+        log_path: delivery.log_path,
+    }
+}
+
+pub fn ready_report_result(delivery: CommReadyReportSendResult) -> ReadyReportResult {
+    ReadyReportResult {
+        delivery_id: delivery.delivery_id,
+        team_id: delivery.team_id,
+        agent_name: delivery.agent_name,
+        event_id: delivery.event_id,
+        sequence: delivery.sequence,
+        log_path: delivery.log_path,
+    }
+}
+
+pub fn control_result(snapshot: ControlSnapshot) -> ControlResult {
+    let details = snapshot.details;
+    let observed_bytes = details.len();
+    ControlResult {
+        action: match snapshot.action {
+            agentteam_contracts::control::AgentControlAction::Attach => "attach".to_owned(),
+            agentteam_contracts::control::AgentControlAction::Send => "send".to_owned(),
+            agentteam_contracts::control::AgentControlAction::Observe => "observe".to_owned(),
+            agentteam_contracts::control::AgentControlAction::Pause => "pause".to_owned(),
+            agentteam_contracts::control::AgentControlAction::Stop => "stop".to_owned(),
+            agentteam_contracts::control::AgentControlAction::Wait => "wait".to_owned(),
+            agentteam_contracts::control::AgentControlAction::Retry => "retry".to_owned(),
+            agentteam_contracts::control::AgentControlAction::Status => "status".to_owned(),
+            agentteam_contracts::control::AgentControlAction::Headless => "headless".to_owned(),
+            agentteam_contracts::control::AgentControlAction::HeadlessRun => {
+                "headless-run".to_owned()
+            }
+            agentteam_contracts::control::AgentControlAction::HeadlessStatus => {
+                "headless-status".to_owned()
+            }
+            agentteam_contracts::control::AgentControlAction::HeadlessInterrupt => {
+                "headless-interrupt".to_owned()
+            }
+            agentteam_contracts::control::AgentControlAction::HeadlessStop => {
+                "headless-stop".to_owned()
+            }
+        },
+        agent_name: snapshot.agent_name,
+        team_id: snapshot.team_id,
+        session_name: snapshot.session_name,
+        mode: match snapshot.mode {
+            agentteam_contracts::control::AgentControlMode::AttachTui => "attach_tui".to_owned(),
+            agentteam_contracts::control::AgentControlMode::Headless => "headless".to_owned(),
+        },
+        adapter_kind: snapshot.adapter_kind,
+        state: snapshot.state,
+        details,
+        receipt_id: snapshot.receipt_id,
+        observed_bytes,
     }
 }
 

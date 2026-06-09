@@ -39,9 +39,12 @@ Red tests prove forbidden architecture behavior stays forbidden.
 | `red.domain.remote_fallback_to_local` | Remote domain lookup failure is delivered to local daemon instead | domain/comm red test fails |
 | `red.domain.token_leak` | Remote daemon auth token appears in help, output, or debug snapshot | config/debug red test fails |
 | `red.comm.delivery_not_persisted` | Delivery/ready/claim envelope lacks persistence request | comm red test fails |
+| `red.comm.ready_delivery_not_persisted` | Ready report lacks persistence request | comm red test fails |
+| `red.comm.broadcast_delivery_not_persisted` | Broadcast delivery lacks persistence request | comm red test fails |
 | `red.comm.partial_broadcast_success` | Broadcast skips failed recipients but reports success | comm red test fails |
 | `red.registry.multiple_super_managers_v1` | Config/runtime accepts more than one super manager | registry/config red test fails |
-| `red.registry.manager_not_kevin` | v1 manager name is not `Kevin` | registry/config red test fails |
+| `red.registry.manager_missing_or_duplicate` | v1 manager is missing or duplicated | registry/config red test fails |
+| `red.registry.sample_agent_name_as_code_concept` | Sample configured agent name becomes a Rust declaration, feature id, function id, or red-test id | architecture gate fails |
 | `red.registry.worker_pool_order` | Worker 1-20 name allocation differs from fixed pool | registry red test fails |
 | `red.registry.worker_overflow_name` | Worker 21+ does not use `<project_slug>_worker_<seq>` | registry red test fails |
 | `red.registry.ready_without_ta_session` | Agent marked ready without managed TA session existence | registry/adapter red test fails |
@@ -54,8 +57,16 @@ Red tests prove forbidden architecture behavior stays forbidden.
 | `red.tui_adapter.codex_required` | Generic/non-Codex agent requires Codex SDK for status | tui adapter red test fails |
 | `red.tui_adapter.provider_payload_leak` | Provider-specific payload enters runtime business status | tui adapter red test fails |
 | `red.tui_adapter.unknown_as_success` | Unknown provider signal becomes idle/success | tui adapter red test fails |
-| `red.startup.kevin_persistence_truth` | Kevin writes/owns durable state directly | startup/persistence red test fails |
+| `red.agent.mode_fallback` | Agent Control Center silently falls back between attach_tui and headless | control red test fails |
+| `red.agent.attach_without_tmux_binding` | attach_tui mode is selected without tmux binding | control red test fails |
+| `red.agent.headless_without_sdk_binding` | headless mode is selected without SDK binding | control red test fails |
+| `red.agent.pause_not_propagated` | pause request does not reach active control session | control red test fails |
+| `red.agent.stop_not_propagated` | stop request does not reach active control session | control red test fails |
+| `red.agent.retry_without_error_fact` | retry dispatch happens without a persisted error fact | control/error red test fails |
+| `red.agent.session_state_leak` | control-plane snapshot exposes private session internals to agent-facing output | control/debug red test fails |
+| `red.startup.manager_persistence_truth` | configured root manager writes/owns durable state directly | startup/persistence red test fails |
 | `red.startup.direct_tmux` | Startup Manager calls tmux directly instead of adapter | startup/adapter red test fails |
+| `red.startup.no_reply_forced_error` | A live manager session with no immediate semantic reply is forced to `error` instead of staying `busy`/pending | startup/status red test fails |
 | `red.startup.session_path_outside_home` | Session descriptor path outside `~/.agentteam/sessions/<project_slug>/` | startup red test fails |
 | `red.startup.worker_identity_missing` | Spawned worker lacks name/role/team identity injection | startup red test fails |
 | `red.startup.raw_input_bypass` | Agent input op bypasses typed operation envelope | startup/input red test fails |
@@ -77,8 +88,8 @@ Red tests prove forbidden architecture behavior stays forbidden.
 | `red.resource.temp_left_after_shutdown` | Scoped daemon/session shutdown leaves tracked temporary files without cleanup result | startup/resource red test fails |
 | `red.debug.missing_resource_snapshot` | MVP debug bundle lacks Resource Lifecycle snapshot | debug/resource red test fails |
 | `red.agent.exposes_tmux_session` | Agent-facing CLI/skill/projection exposes tmux session name, pane id, session path, or zterm endpoint | doc/API red test fails |
-| `red.kevin.skill_missing_ops` | Kevin skill lacks init/query/task/message/wait instructions | skill doc red test fails |
-| `red.kevin.skill_missing_tanote` | Kevin/agent skill lacks TANote post/read/thread instructions | skill doc red test fails |
+| `red.manager.skill_missing_ops` | manager skill lacks init/query/task/message/wait instructions | skill doc red test fails |
+| `red.manager.skill_missing_tanote` | manager/agent skill lacks TANote post/read/thread instructions | skill doc red test fails |
 | `red.gateway.non_adjacent_conversion` | Raw CLI becomes daemon command directly | pipeline red test fails |
 | `red.ui.bypass_input_gateway` | UI/WebUI sends command directly to runtime/module | UI/input red test fails |
 | `red.ui.bypass_output_gateway` | UI/WebUI reads module state instead of projection | UI/output red test fails |

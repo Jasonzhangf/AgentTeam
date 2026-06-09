@@ -28,6 +28,8 @@ agentteam/
       config.toml.example
     flows/
       build-regression-flow.md
+    usage/
+      agentteam-usage.md
     modules/
       00-module-discussion-index.md
       01-config-center.md
@@ -48,6 +50,7 @@ agentteam/
       16-tanote-collaboration-board.md
       17-resource-lifecycle-manager.md
       18-daemon-domain-registry.md
+      19-agent-control-center.md
     tanote/
       TANote.md.example
     red-tests/
@@ -93,6 +96,10 @@ agentteam/
       src/
         lib.rs
     agentteam-resource/
+      Cargo.toml
+      src/
+        lib.rs
+    agentteam-control/
       Cargo.toml
       src/
         lib.rs

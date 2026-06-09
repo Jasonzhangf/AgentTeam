@@ -7,7 +7,7 @@ description: Use when developing AgentTeam modules, adding or changing Rust code
 
 Use this skill for module development inside the AgentTeam repository.
 
-This is the local development-agent playbook. It is separate from the `agentteam` skill, which is the future runtime/CLI collaboration surface for Kevin and worker agents.
+This is the local development-agent playbook. It is separate from the `agentteam` skill, which is the future runtime/CLI collaboration surface for the configured manager and worker agents.
 
 ## Required Reading
 
@@ -113,6 +113,7 @@ Cover:
 - Keep module APIs isolated.
 - Put reusable helpers in shared contracts/blocks.
 - Reuse `agentteam-contracts::event_hash::event_payload_hash` for persisted event payload hashes; do not add per-module duplicate hash helpers.
+- Treat configured sample names such as `Kevin` as data only; Rust declarations, schema fields, feature ids, function ids, and red-test ids must use neutral manager/root-manager/configured-agent names.
 - Do not duplicate owner logic in adapters, gateways, UI, or runtime.
 - Keep hand-written Rust leaf files at 500 lines or less.
 - Do not implement business behavior for a module whose docs/red tests are incomplete.

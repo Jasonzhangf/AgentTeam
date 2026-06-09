@@ -41,7 +41,8 @@ The system lets a team contain multiple named agents, send work to roles, inspec
 - tmux stdout alone is not final status truth; provider TUI adapters normalize richer status signals.
 - WebUI/UI only consumes input/output projections and stays decoupled from agent framework internals.
 - tmux/session identifiers are internal and invisible to agents; agents use CLI/skill operations by name, role, task, and message.
-- Kevin reads AgentTeam skill and uses CLI to initialize framework, query tasks, publish tasks, communicate with child agents, and wait for projected results.
+- The configured manager reads AgentTeam skill and uses CLI to initialize framework, query tasks, publish tasks, communicate with child agents, and wait for projected results.
+- Standard startup parameters assign each agent's name, role, team, and project scope; skills define how the configured manager behaves after launch and how the manager initializes workers.
 - Every agent writes work notes through `agentteam note post`, producing a project `TANote.md` forum-style collaboration projection.
 - Tmux communication payloads must use an agent-visible AgentTeam envelope with `from`, `to`, `action`, and content.
 - Every module-owned resource must have a lifecycle lease, owner, scope, release policy, orphan/leak detection, debug snapshot, and efficiency budget.
@@ -70,8 +71,8 @@ Only matching sessions may be controlled as a group. These are internal framewor
 
 1. Configure project/team/agents in `~/.agentteam/config.toml`.
 2. Start AgentTeam daemon.
-3. Run `agentteam startup init` from current TUI to initialize Kevin.
-4. Kevin uses CLI/skill to spawn workers in scoped tmux sessions.
+3. Run `agentteam start` from the current `cwd` to launch the configured manager.
+4. The manager uses CLI/skill to spawn workers in scoped tmux sessions with worker startup params.
 5. Send task to a role or named agent.
 6. Agent checks own task list through CLI.
 7. Agent reports task done/error through CLI.
@@ -92,7 +93,7 @@ Only matching sessions may be controlled as a group. These are internal framewor
 - Non-tmux process backend.
 - Copying zterm daemon source.
 - Provider SDK as universal status truth.
-- Kevin as durable persistence truth.
+- Manager as durable persistence truth.
 - Direct tmux launch outside zterm/tmux Adapter.
 - Treating `TANote.md` as task/message/event truth.
 - Resource cleanup without exact handle, owner receipt, and event receipt.

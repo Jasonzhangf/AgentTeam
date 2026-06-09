@@ -1,13 +1,9 @@
-use std::collections::BTreeMap;
-
+use crate::broadcast::parse_msg_broadcast;
+use crate::control::parse_control;
 use crate::error::{GatewayError, GatewayResult};
 use crate::model::{TeamReq01CliRaw, TeamReq02ParsedCommand, TeamReq03ValidatedIntent};
-
-#[derive(Debug, Clone, PartialEq, Eq)]
-struct ParsedOptions {
-    values: BTreeMap<String, String>,
-    json: bool,
-}
+use crate::options::{parse_options, ParsedOptions};
+use crate::validate::validate_intent;
 
 pub fn parse_cli_args(args: Vec<String>) -> GatewayResult<TeamReq03ValidatedIntent> {
     let raw = TeamReq01CliRaw::new(args);
@@ -29,6 +25,10 @@ fn parse_cli_raw(raw: TeamReq01CliRaw) -> GatewayResult<TeamReq02ParsedCommand> 
         [area, action, rest @ ..] if area == "debug" && action == "snapshot" => {
             parse_debug_snapshot(rest)
         }
+        [area, rest @ ..] if area == "start" => parse_start(rest),
+        [area, action, rest @ ..] if area == "ready" && action == "report" => {
+            parse_ready_report(rest)
+        }
         [area, action, rest @ ..] if area == "task" && action == "send" => parse_task_send(rest),
         [area, action, rest @ ..] if area == "task" && action == "list" => parse_task_list(rest),
         [area, action, rest @ ..] if area == "task" && action == "status" => {
@@ -37,6 +37,11 @@ fn parse_cli_raw(raw: TeamReq01CliRaw) -> GatewayResult<TeamReq02ParsedCommand> 
         [area, action, rest @ ..] if area == "task" && action == "done" => parse_task_done(rest),
         [area, action, rest @ ..] if area == "task" && action == "error" => parse_task_error(rest),
         [area, action, rest @ ..] if area == "task" && action == "claim" => parse_task_claim(rest),
+        [area, action, rest @ ..] if area == "msg" && action == "send" => parse_msg_send(rest),
+        [area, action, rest @ ..] if area == "msg" && action == "broadcast" => {
+            parse_msg_broadcast(rest)
+        }
+        [area, action, rest @ ..] if area == "control" => parse_control(action, rest),
         [area, action, rest @ ..] if area == "tmux" && action == "loopback" => {
             parse_tmux_loopback(rest)
         }
@@ -89,6 +94,58 @@ fn parse_debug_snapshot(args: &[String]) -> GatewayResult<TeamReq02ParsedCommand
     Ok(TeamReq02ParsedCommand::DebugSnapshot {
         config_path: option_value(&options, "--config"),
         runtime_home: option_value(&options, "--runtime-home"),
+        json: options.json,
+    })
+}
+
+fn parse_start(args: &[String]) -> GatewayResult<TeamReq02ParsedCommand> {
+    if let Some((first, rest)) = args.split_first() {
+        if first == "worker" {
+            return parse_start_worker(rest);
+        }
+    }
+    let options = parse_options(args, &["--cwd", "--config", "--team"], &["--json"])?;
+    Ok(TeamReq02ParsedCommand::Startup {
+        cwd: option_value(&options, "--cwd"),
+        config_path: option_value(&options, "--config"),
+        team_id: option_value(&options, "--team"),
+        json: options.json,
+    })
+}
+
+fn parse_start_worker(args: &[String]) -> GatewayResult<TeamReq02ParsedCommand> {
+    let options = parse_options(
+        args,
+        &["--agent", "--cwd", "--config", "--team"],
+        &["--json"],
+    )?;
+    Ok(TeamReq02ParsedCommand::StartupWorker {
+        agent_name: option_value(&options, "--agent"),
+        cwd: option_value(&options, "--cwd"),
+        config_path: option_value(&options, "--config"),
+        team_id: option_value(&options, "--team"),
+        json: options.json,
+    })
+}
+
+fn parse_ready_report(args: &[String]) -> GatewayResult<TeamReq02ParsedCommand> {
+    let options = parse_options(
+        args,
+        &[
+            "--runtime-home",
+            "--sender",
+            "--team",
+            "--agent-name",
+            "--body",
+        ],
+        &["--json"],
+    )?;
+    Ok(TeamReq02ParsedCommand::ReadyReport {
+        runtime_home: option_value(&options, "--runtime-home"),
+        sender: option_value(&options, "--sender"),
+        team_id: option_value(&options, "--team"),
+        agent_name: option_value(&options, "--agent-name"),
+        body: option_value(&options, "--body"),
         json: options.json,
     })
 }
@@ -180,205 +237,22 @@ fn parse_task_claim(args: &[String]) -> GatewayResult<TeamReq02ParsedCommand> {
     })
 }
 
-fn parse_options(
-    args: &[String],
-    value_flags: &[&str],
-    bool_flags: &[&str],
-) -> GatewayResult<ParsedOptions> {
-    let mut values = BTreeMap::new();
-    let mut json = false;
-    let mut index = 0;
-    while index < args.len() {
-        let token = &args[index];
-        if contains_flag(value_flags, token) {
-            if values.contains_key(token) {
-                return Err(GatewayError::parse(format!("duplicate flag {token}")));
-            }
-            let Some(value) = args.get(index + 1) else {
-                return Err(GatewayError::parse(format!("missing value for {token}")));
-            };
-            if value.starts_with("--") {
-                return Err(GatewayError::parse(format!("missing value for {token}")));
-            }
-            values.insert(token.clone(), value.clone());
-            index += 2;
-        } else if contains_flag(bool_flags, token) {
-            if token == "--json" && json {
-                return Err(GatewayError::parse("duplicate flag --json"));
-            }
-            json = true;
-            index += 1;
-        } else if token.starts_with("--") {
-            return Err(GatewayError::parse(format!("unknown flag {token}")));
-        } else {
-            return Err(GatewayError::parse(format!(
-                "unexpected positional argument {token}"
-            )));
-        }
-    }
-    Ok(ParsedOptions { values, json })
+fn parse_msg_send(args: &[String]) -> GatewayResult<TeamReq02ParsedCommand> {
+    let options = parse_options(
+        args,
+        &["--runtime-home", "--from", "--to", "--action", "--body"],
+        &["--json"],
+    )?;
+    Ok(TeamReq02ParsedCommand::MsgSend {
+        runtime_home: option_value(&options, "--runtime-home"),
+        from: option_value(&options, "--from"),
+        to: option_value(&options, "--to"),
+        action: option_value(&options, "--action"),
+        body: option_value(&options, "--body"),
+        json: options.json,
+    })
 }
 
-fn validate_intent(parsed: TeamReq02ParsedCommand) -> GatewayResult<TeamReq03ValidatedIntent> {
-    match parsed {
-        TeamReq02ParsedCommand::ConfigCheck { config_path, json } => {
-            require_json(json)?;
-            Ok(TeamReq03ValidatedIntent::ConfigCheck {
-                config_path: require_value(config_path, "--config")?,
-                json,
-            })
-        }
-        TeamReq02ParsedCommand::DaemonCheck { config_path, json } => {
-            require_json(json)?;
-            Ok(TeamReq03ValidatedIntent::DaemonCheck {
-                config_path: require_value(config_path, "--config")?,
-                json,
-            })
-        }
-        TeamReq02ParsedCommand::DomainResolve {
-            target,
-            config_path,
-            json,
-        } => {
-            require_json(json)?;
-            Ok(TeamReq03ValidatedIntent::DomainResolve {
-                target: require_value(target, "--target")?,
-                config_path: require_value(config_path, "--config")?,
-                json,
-            })
-        }
-        TeamReq02ParsedCommand::DebugSnapshot {
-            config_path,
-            runtime_home,
-            json,
-        } => {
-            require_json(json)?;
-            Ok(TeamReq03ValidatedIntent::DebugSnapshot {
-                config_path: require_value(config_path, "--config")?,
-                runtime_home: require_value(runtime_home, "--runtime-home")?,
-                json,
-            })
-        }
-        TeamReq02ParsedCommand::TaskSend {
-            runtime_home,
-            team_id,
-            created_by,
-            target_kind,
-            target,
-            title,
-            body,
-            json,
-        } => {
-            require_json(json)?;
-            Ok(TeamReq03ValidatedIntent::TaskSend {
-                runtime_home: require_value(runtime_home, "--runtime-home")?,
-                team_id: require_value(team_id, "--team")?,
-                created_by: require_value(created_by, "--created-by")?,
-                target_kind: require_value(target_kind, "--target-kind")?,
-                target: require_value(target, "--target")?,
-                title: require_value(title, "--title")?,
-                body: require_value(body, "--body")?,
-                json,
-            })
-        }
-        TeamReq02ParsedCommand::TaskList { runtime_home, json } => {
-            require_json(json)?;
-            Ok(TeamReq03ValidatedIntent::TaskList {
-                runtime_home: require_value(runtime_home, "--runtime-home")?,
-                json,
-            })
-        }
-        TeamReq02ParsedCommand::TaskStatus {
-            runtime_home,
-            task_id,
-            json,
-        } => {
-            require_json(json)?;
-            Ok(TeamReq03ValidatedIntent::TaskStatus {
-                runtime_home: require_value(runtime_home, "--runtime-home")?,
-                task_id: require_value(task_id, "--task")?,
-                json,
-            })
-        }
-        TeamReq02ParsedCommand::TaskDone {
-            runtime_home,
-            task_id,
-            actor,
-            detail,
-            json,
-        } => {
-            require_json(json)?;
-            Ok(TeamReq03ValidatedIntent::TaskDone {
-                runtime_home: require_value(runtime_home, "--runtime-home")?,
-                task_id: require_value(task_id, "--task")?,
-                actor: require_value(actor, "--actor")?,
-                detail: require_value(detail, "--detail")?,
-                json,
-            })
-        }
-        TeamReq02ParsedCommand::TaskError {
-            runtime_home,
-            task_id,
-            actor,
-            detail,
-            json,
-        } => {
-            require_json(json)?;
-            Ok(TeamReq03ValidatedIntent::TaskError {
-                runtime_home: require_value(runtime_home, "--runtime-home")?,
-                task_id: require_value(task_id, "--task")?,
-                actor: require_value(actor, "--actor")?,
-                detail: require_value(detail, "--detail")?,
-                json,
-            })
-        }
-        TeamReq02ParsedCommand::TaskClaim {
-            runtime_home,
-            worker_name,
-            worker_role,
-            json,
-        } => {
-            require_json(json)?;
-            Ok(TeamReq03ValidatedIntent::TaskClaim {
-                runtime_home: require_value(runtime_home, "--runtime-home")?,
-                worker_name: require_value(worker_name, "--worker-name")?,
-                worker_role: require_value(worker_role, "--worker-role")?,
-                json,
-            })
-        }
-        TeamReq02ParsedCommand::TmuxLoopback {
-            runtime_home,
-            session_count,
-            json,
-        } => {
-            require_json(json)?;
-            Ok(TeamReq03ValidatedIntent::TmuxLoopback {
-                runtime_home: require_value(runtime_home, "--runtime-home")?,
-                session_count: require_value(session_count, "--session-count")?,
-                json,
-            })
-        }
-    }
-}
-
-fn require_json(json: bool) -> GatewayResult<()> {
-    if json {
-        Ok(())
-    } else {
-        Err(GatewayError::validation(
-            "local parsing MVP requires --json output",
-        ))
-    }
-}
-
-fn require_value(value: Option<String>, flag: &str) -> GatewayResult<String> {
-    value.ok_or_else(|| GatewayError::validation(format!("{flag} is required")))
-}
-
-fn option_value(options: &ParsedOptions, flag: &str) -> Option<String> {
+pub(crate) fn option_value(options: &ParsedOptions, flag: &str) -> Option<String> {
     options.values.get(flag).cloned()
-}
-
-fn contains_flag(allowed: &[&str], token: &str) -> bool {
-    allowed.contains(&token)
 }

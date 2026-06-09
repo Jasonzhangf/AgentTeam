@@ -68,7 +68,7 @@ category = "development"
 agent_count = 3
 
 [[teams.members]]
-# v1 super manager name is fixed.
+# Default configured root manager name. Code treats this as config data, not a hard-coded identity.
 name = "Kevin"
 
 # Team role category controls capability. v1 allows one manager.

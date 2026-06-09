@@ -10,7 +10,7 @@ It does not use provider SDKs as generic status truth. AgentTeam must support no
 
 - Agent name pool.
 - Domain-local agent name uniqueness.
-- Fixed super manager name.
+- Configured root manager name.
 - Worker overflow name rule.
 - Role/member registry.
 - Manager/worker capability facts.
@@ -20,6 +20,7 @@ It does not use provider SDKs as generic status truth. AgentTeam must support no
 - Managed-session filtering.
 - Agent lifecycle status projection.
 - Agent owner facts for assigned/claimed tasks.
+- It does not choose attach_tui/headless control mode.
 
 ## Does Not Own
 
@@ -37,7 +38,7 @@ It does not use provider SDKs as generic status truth. AgentTeam must support no
 
 | function_id | Owner | Purpose | Input | Output | Required red tests |
 |---|---|---|---|---|---|
-| `agent.allocate_manager_name` | Agent Registry | Allocate fixed super manager name `Kevin` inside one daemon domain | domain + team config | `AgentNameResp03Allocated` | manager not Kevin |
+| `agent.allocate_manager_name` | Agent Registry | Allocate the configured root manager name inside one daemon domain | domain + team config | `AgentNameResp03Allocated` | missing or duplicate manager |
 | `agent.allocate_worker_name` | Agent Registry | Allocate worker name from fixed pool or overflow rule inside one daemon domain | domain + project slug + worker index | `AgentNameResp03Allocated` | pool order, overflow |
 | `agent.validate_single_manager` | Agent Registry + Config Center | Enforce one super manager in v1 | team config | capability facts | multiple managers |
 | `agent.build_ta_session_name` | Agent Registry | Build `TA_<domain_id>_<project_slug>_<agent_name>` | domain id + project slug + name | tmux session name | malformed TA name |
@@ -65,7 +66,7 @@ agentteam help agent red-tests
 
 Help content must explain:
 
-- manager name is fixed as `Kevin`
+- root manager name comes from the single configured `team_role = "manager"` member; the default example name is `Kevin`
 - v1 supports exactly one super manager
 - first 20 workers use the fixed English name pool
 - workers beyond 20 use `<project_slug>_worker_<seq>`
@@ -80,7 +81,7 @@ Help content must explain:
 
 Help content must not:
 
-- suggest naming manager anything other than `Kevin`
+- suggest hard-coding the manager name in code instead of reading the configured manager member
 - suggest SDK-only status detection
 - suggest storing session state in `config.toml`
 - suggest operating non-TA sessions
@@ -171,7 +172,7 @@ These names are internal framework identifiers. Agents use domain-qualified addr
 - Each agent has a work role.
 - Each agent has a team role category: `manager` or `worker`.
 - v1 allows exactly one super manager.
-- Super manager name must be `Kevin`.
+- Exactly one root manager must be configured in v1. The default sample config uses `Kevin`.
 - Multiple managers are future expansion, not v1 behavior.
 - Worker capability allows ready report, task-board query, task claim, task update, task done/error for assigned/claimed tasks.
 - Agent owner mapping defines which agent owns a task when assigned or claimed.
@@ -201,6 +202,7 @@ Ready rule:
 - Managed TA tmux session exists.
 - Then agent is ready.
 - Ready projects to `idle` when no task is active.
+- If the root manager just received a request and the session is still alive, silence alone does not become `error`; keep the projection `busy` until an idle or fault signal arrives.
 
 Steady status values:
 
@@ -208,8 +210,8 @@ Steady status values:
 |---|---|---|
 | `offline` | agent not launched or intentionally stopped | Runtime/Adapter |
 | `starting` | launch requested, waiting for TA session confirmation | Runtime/Adapter |
-| `idle` | TUI launched without error, TA session alive, no active task | Adapter + Task Engine |
-| `busy` | agent has active assigned/claimed task | Task Engine |
+| `idle` | TUI launched without error, TA session alive, no active task or pending request | Adapter + Task Engine |
+| `busy` | agent has active assigned/claimed task or an outstanding request/response is still in flight | Task Engine + Adapter |
 | `error` | launch/session/transport/framework fault | Adapter + Error Center |
 
 `ready` is a transition fact, not a long-lived steady status.
@@ -273,7 +275,7 @@ Rules:
 - Duplicate name fails.
 - Invalid name fails.
 - Multiple super managers fail in v1.
-- Manager not named `Kevin` fails.
+- Missing or duplicate configured manager fails.
 - Worker 1-20 allocation order mismatch fails.
 - Worker 21+ not named `<project_slug>_worker_<seq>` fails.
 - Status derived only from Codex SDK fails.

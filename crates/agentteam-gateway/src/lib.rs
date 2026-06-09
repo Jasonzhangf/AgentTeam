@@ -1,9 +1,13 @@
+mod broadcast;
+mod control;
 mod error;
 mod input;
 mod model;
+mod options;
 mod output;
 #[cfg(test)]
 mod tests;
+mod validate;
 
 pub use error::{GatewayError, GatewayResult};
 pub use input::parse_cli_args;

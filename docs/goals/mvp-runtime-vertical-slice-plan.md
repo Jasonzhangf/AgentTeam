@@ -57,7 +57,7 @@ cargo xtask verify-code-size
 - Real TUI provider SDK integration.
 - Full WebUI.
 - Full multi-agent scheduling.
-- Automatic Kevin worker spawn.
+- Automatic manager worker spawn.
 - Long-running daemon service supervision.
 - Broad cleanup or process management.
 
@@ -337,7 +337,7 @@ Work:
 - Build typed launch/input/output envelopes.
 - Validate TA session names using domain id + project slug + agent name.
 - Produce dry-run adapter commands.
-- Return explicit unavailable transport error for real execution until enabled.
+- Return explicit bridge/runtime transport errors for real execution until the SDK bridge is configured and verified.
 
 Verification:
 

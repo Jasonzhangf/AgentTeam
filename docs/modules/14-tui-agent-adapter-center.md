@@ -16,6 +16,7 @@ tmux/zterm gives terminal transport and stdout/buffer evidence. That is too coar
 - Agent status signal normalization.
 - Provider adapter debug snapshot.
 - Provider adapter help.
+- It does not select attach_tui/headless control mode.
 
 ## Does Not Own
 
@@ -67,6 +68,7 @@ Help content must not:
 - classify stdout text as final status
 - mutate Task Engine state
 - route messages or claims
+- own the single-agent control plane
 
 ## Public API Boundary
 
@@ -94,6 +96,8 @@ unknown
 Rules:
 
 - signals are hints/facts, not final status
+- `busy_hint` covers active work and outstanding request/response pending states
+- `waiting_input_hint` is a busy subcase where the agent is alive but waiting for a caller reply
 - `error_hint` must include evidence id or evidence source reference
 - `unknown` is explicit and must not be treated as success
 - provider-specific fields stay in debug/evidence, not business payload
